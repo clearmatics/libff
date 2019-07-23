@@ -136,6 +136,7 @@ T multi_exp_inner(
         result = result + opt_window_wnaf_exp(*vec_it, scalar_bigint, scalar_bigint.num_bits());
     }
     assert(scalar_it == scalar_end);
+    UNUSED(scalar_end);
 
     return result;
 }
@@ -158,6 +159,7 @@ T multi_exp_inner(
         result = result + (*scalar_it) * (*vec_it);
     }
     assert(scalar_it == scalar_end);
+    UNUSED(scalar_end);
 
     return result;
 }
@@ -448,6 +450,7 @@ T multi_exp_with_mixed_addition(typename std::vector<T>::const_iterator vec_star
                                 const size_t chunks)
 {
     assert(std::distance(vec_start, vec_end) == std::distance(scalar_start, scalar_end));
+    UNUSED(vec_end);
     enter_block("Process scalar vector");
     auto value_it = vec_start;
     auto scalar_it = scalar_start;
