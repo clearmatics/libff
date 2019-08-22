@@ -136,6 +136,7 @@ T multi_exp_inner(
         result = result + opt_window_wnaf_exp(*vec_it, scalar_bigint, scalar_bigint.num_bits());
     }
     assert(scalar_it == scalar_end);
+    UNUSED(scalar_end);
 
     return result;
 }
@@ -158,6 +159,7 @@ T multi_exp_inner(
         result = result + (*scalar_it) * (*vec_it);
     }
     assert(scalar_it == scalar_end);
+    UNUSED(scalar_end);
 
     return result;
 }
@@ -448,6 +450,7 @@ T multi_exp_with_mixed_addition(typename std::vector<T>::const_iterator vec_star
                                 const size_t chunks)
 {
     assert(std::distance(vec_start, vec_end) == std::distance(scalar_start, scalar_end));
+    UNUSED(vec_end);
     enter_block("Process scalar vector");
     auto value_it = vec_start;
     auto scalar_it = scalar_start;
@@ -617,16 +620,26 @@ std::vector<T> batch_exp(const size_t scalar_size,
                          const window_table<T> &table,
                          const std::vector<FieldT> &v)
 {
+    return batch_exp(scalar_size, window, table, v, v.size());
+}
+
+template<typename T, typename FieldT>
+std::vector<T> batch_exp(const size_t scalar_size,
+                         const size_t window,
+                         const window_table<T> &table,
+                         const std::vector<FieldT> &v,
+                         size_t num_entries)
+{
     if (!inhibit_profiling_info)
     {
         print_indent();
     }
-    std::vector<T> res(v.size(), table[0][0]);
+    std::vector<T> res(num_entries, table[0][0]);
 
 #ifdef MULTICORE
 #pragma omp parallel for
 #endif
-    for (size_t i = 0; i < v.size(); ++i)
+    for (size_t i = 0; i < num_entries; ++i)
     {
         res[i] = windowed_exp(scalar_size, window, table, v[i]);
 
