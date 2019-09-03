@@ -207,7 +207,7 @@ Fp2_model<n,modulus> Fp2_model<n,modulus>::operator^(const bigint<m> &pow) const
 template<mp_size_t n, const bigint<n>& modulus>
 std::ostream& operator<<(std::ostream &out, const Fp2_model<n, modulus> &el)
 {
-    out << el.c0 << OUTPUT_SEPARATOR << el.c1;
+    out << el.c0 << el.c1;
     return out;
 }
 
