@@ -16,9 +16,9 @@ namespace libff {
 
 class alt_bn128_G2;
 void alt_bn128_G2_write_uncompressed(std::ostream &out, const alt_bn128_G2 &g);
-alt_bn128_G2 alt_bn128_G2_read_uncompressed(std::istream &in);
+void alt_bn128_G2_read_uncompressed(std::istream &in, alt_bn128_G2 &out);
 void alt_bn128_G2_write_compressed(std::ostream &out, const alt_bn128_G2 &g);
-alt_bn128_G2 alt_bn128_G2_read_compressed(std::istream &in);
+void alt_bn128_G2_read_compressed(std::istream &in, alt_bn128_G2 &out);
 std::ostream& operator<<(std::ostream &, const alt_bn128_G2&);
 std::istream& operator>>(std::istream &, alt_bn128_G2&);
 
