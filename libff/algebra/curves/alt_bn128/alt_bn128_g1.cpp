@@ -401,35 +401,58 @@ alt_bn128_G1 alt_bn128_G1::random_element()
     return (scalar_field::random_element().as_bigint()) * G1_one;
 }
 
-std::ostream& operator<<(std::ostream &out, const alt_bn128_G1 &g)
+void alt_bn128_G1_write_uncompressed(std::ostream &out, const alt_bn128_G1 &g)
 {
+    // <is_zero> | <x-coord> | <y-coord>
     alt_bn128_G1 copy(g);
     copy.to_affine_coordinates();
-
-    out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
-#ifdef NO_PT_COMPRESSION
-    out << copy.X << OUTPUT_SEPARATOR << copy.Y;
-#else
-    /* storing LSB of Y */
-    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.as_bigint().data[0] & 1);
-#endif
-
-    return out;
+    const char is_zero = copy.is_zero() ? '1' : '0';
+    out.write(&is_zero, 1);
+    out << OUTPUT_SEPARATOR << copy.X << OUTPUT_SEPARATOR << copy.Y;
 }
 
-std::istream& operator>>(std::istream &in, alt_bn128_G1 &g)
+alt_bn128_G1 alt_bn128_G1_read_uncompressed(std::istream &in)
 {
+    // <is_zero> | <x-coord> | <y-coord>
     char is_zero;
-    alt_bn128_Fq tX, tY;
-
-#ifdef NO_PT_COMPRESSION
-    in >> is_zero >> tX >> tY;
-    is_zero -= '0';
-#else
-    in.read((char*)&is_zero, 1); // this reads is_zero;
+    in.read((char*)&is_zero, 1);
     is_zero -= '0';
     consume_OUTPUT_SEPARATOR(in);
 
+    alt_bn128_Fq tX, tY;
+    in >> tX;
+    consume_OUTPUT_SEPARATOR(in);
+    in >> tY;
+
+    if (!is_zero)
+    {
+        return alt_bn128_G1(tX, tY, alt_bn128_Fq::one());
+    }
+
+    return alt_bn128_G1::zero();
+}
+
+void alt_bn128_G1_write_compressed(std::ostream &out, const alt_bn128_G1 &g)
+{
+    // <is_zero> | <x-coord> | <lsb of Y>
+    alt_bn128_G1 copy(g);
+    copy.to_affine_coordinates();
+    const char is_zero = copy.is_zero() ? '1' : '0';
+    out.write(&is_zero, 1);
+    out << OUTPUT_SEPARATOR << copy.X << OUTPUT_SEPARATOR;
+    const char Y_lsb = (copy.Y.as_bigint().data[0] & 1) ? '1' : '0';
+    out.write(&Y_lsb, 1);
+}
+
+alt_bn128_G1 alt_bn128_G1_read_compressed(std::istream &in)
+{
+    // <is_zero> | <x-coord> | <lsb of Y>
+    char is_zero;
+    in.read((char*)&is_zero, 1);
+    is_zero -= '0';
+    consume_OUTPUT_SEPARATOR(in);
+
+    alt_bn128_Fq tX;
     unsigned char Y_lsb;
     in >> tX;
     consume_OUTPUT_SEPARATOR(in);
@@ -439,27 +462,38 @@ std::istream& operator>>(std::istream &in, alt_bn128_G1 &g)
     // y = +/- sqrt(x^3 + b)
     if (!is_zero)
     {
-        alt_bn128_Fq tX2 = tX.squared();
-        alt_bn128_Fq tY2 = tX2*tX + alt_bn128_coeff_b;
-        tY = tY2.sqrt();
+        const alt_bn128_Fq tX2 = tX.squared();
+        const alt_bn128_Fq tY2 = tX2*tX + alt_bn128_coeff_b;
+        const alt_bn128_Fq tY = tY2.sqrt();
 
-        if ((tY.as_bigint().data[0] & 1) != Y_lsb)
+        if ((char)(tY.as_bigint().data[0] & 1) != Y_lsb)
         {
-            tY = -tY;
+            return alt_bn128_G1(tX, -tY, alt_bn128_Fq::one());
         }
+
+        return alt_bn128_G1(tX, tY, alt_bn128_Fq::one());
     }
+
+    return alt_bn128_G1::zero();
+}
+
+std::ostream& operator<<(std::ostream &out, const alt_bn128_G1 &g)
+{
+#ifdef NO_PT_COMPRESSION
+    alt_bn128_G1_write_uncompressed(out, g);
+#else
+    alt_bn128_G1_write_compressed(out, g);
 #endif
-    // using Jacobian coordinates
-    if (!is_zero)
-    {
-        g.X = tX;
-        g.Y = tY;
-        g.Z = alt_bn128_Fq::one();
-    }
-    else
-    {
-        g = alt_bn128_G1::zero();
-    }
+    return out;
+}
+
+std::istream& operator>>(std::istream &in, alt_bn128_G1 &g)
+{
+#ifdef NO_PT_COMPRESSION
+    g = alt_bn128_G1_read_uncompressed(in);
+#else
+    g = alt_bn128_G1_read_compressed(in);
+#endif
 
     return in;
 }
