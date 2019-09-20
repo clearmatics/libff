@@ -9,6 +9,9 @@
 
 namespace libff {
 
+const uint8_t G2_ZERO_FLAG = 1 << 0;
+const uint8_t G2_Y_LSB_FLAG = 1 << 1;
+
 #ifdef PROFILE_OP_COUNTS
 long long alt_bn128_G2::add_cnt = 0;
 long long alt_bn128_G2::dbl_cnt = 0;
@@ -415,65 +418,92 @@ alt_bn128_G2 alt_bn128_G2::random_element()
     return (alt_bn128_Fr::random_element().as_bigint()) * G2_one;
 }
 
-std::ostream& operator<<(std::ostream &out, const alt_bn128_G2 &g)
+void alt_bn128_G2_write_uncompressed(std::ostream &out, const alt_bn128_G2 &g)
 {
+    // <is_zero> | <x-coord> | <y-coord>
     alt_bn128_G2 copy(g);
     copy.to_affine_coordinates();
-    out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
-#ifdef NO_PT_COMPRESSION
-    out << copy.X << OUTPUT_SEPARATOR << copy.Y;
-#else
-    /* storing LSB of Y */
-    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.c0.as_bigint().data[0] & 1);
-#endif
+    const char is_zero = copy.is_zero() ? '1' : '0';
+    out.write(&is_zero, 1) << copy.X << copy.Y;
+}
 
+void alt_bn128_G2_read_uncompressed(std::istream &in, alt_bn128_G2 &out)
+{
+    // <is_zero> | <x-coord> | <y-coord>
+    char is_zero;
+    in.read(&is_zero, 1) >> out.X >> out.Y;;
+    is_zero -= '0';
+
+    if (!is_zero)
+    {
+        out.Z = alt_bn128_Fq2::one();
+    }
+    else
+    {
+        out = alt_bn128_G2::zero();
+    }
+}
+
+void alt_bn128_G2_write_compressed(std::ostream &out, const alt_bn128_G2 &g)
+{
+    // <flags> | <x-coord>
+    alt_bn128_G2 copy(g);
+    copy.to_affine_coordinates();
+
+    const uint8_t flags =
+        (copy.is_zero() ? G2_ZERO_FLAG : 0) |
+        ((copy.Y.c0.as_bigint().data[0] & 1) ? G2_Y_LSB_FLAG : 0);
+    const char flags_char = '0' + flags;
+    out.write(&flags_char, 1) << copy.X;
+}
+
+void alt_bn128_G2_read_compressed(std::istream &in, alt_bn128_G2 &out)
+{
+    // <flags> | <x-coord>
+    char flags_char;
+    in.read(&flags_char, 1) >> out.X;
+    const uint8_t flags = flags_char - '0';
+
+    // alt_bn128_Fq2 tX;
+
+    // y = +/- sqrt(x^3 + b)
+    if (0 == (flags & G2_ZERO_FLAG))
+    {
+        const uint8_t Y_lsb = (flags & G2_Y_LSB_FLAG) ? 1 : 0;
+        const alt_bn128_Fq2 tX2 = out.X.squared();
+        const alt_bn128_Fq2 tY2 = tX2 * out.X + alt_bn128_twist_coeff_b;
+        out.Y = tY2.sqrt();
+
+        if ((uint8_t)(out.Y.c0.as_bigint().data[0] & 1) != Y_lsb)
+        {
+            out.Y = -out.Y;
+        }
+
+        out.Z = alt_bn128_Fq2::one();
+    }
+    else
+    {
+        out = alt_bn128_G2::zero();
+    }
+}
+
+std::ostream& operator<<(std::ostream &out, const alt_bn128_G2 &g)
+{
+#ifdef NO_PT_COMPRESSION
+    alt_bn128_G2_write_uncompressed(out, g);
+#else
+    alt_bn128_G2_write_compressed(out, g);
+#endif
     return out;
 }
 
 std::istream& operator>>(std::istream &in, alt_bn128_G2 &g)
 {
-    char is_zero;
-    alt_bn128_Fq2 tX, tY;
-
 #ifdef NO_PT_COMPRESSION
-    in >> is_zero >> tX >> tY;
-    is_zero -= '0';
+    alt_bn128_G2_read_uncompressed(in, g);
 #else
-    in.read((char*)&is_zero, 1); // this reads is_zero;
-    is_zero -= '0';
-    consume_OUTPUT_SEPARATOR(in);
-
-    unsigned char Y_lsb;
-    in >> tX;
-    consume_OUTPUT_SEPARATOR(in);
-    in.read((char*)&Y_lsb, 1);
-    Y_lsb -= '0';
-
-    // y = +/- sqrt(x^3 + b)
-    if (!is_zero)
-    {
-        alt_bn128_Fq2 tX2 = tX.squared();
-        alt_bn128_Fq2 tY2 = tX2 * tX + alt_bn128_twist_coeff_b;
-        tY = tY2.sqrt();
-
-        if ((tY.c0.as_bigint().data[0] & 1) != Y_lsb)
-        {
-            tY = -tY;
-        }
-    }
+    alt_bn128_G2_read_compressed(in, g);
 #endif
-    // using projective coordinates
-    if (!is_zero)
-    {
-        g.X = tX;
-        g.Y = tY;
-        g.Z = alt_bn128_Fq2::one();
-    }
-    else
-    {
-        g = alt_bn128_G2::zero();
-    }
-
     return in;
 }
 
