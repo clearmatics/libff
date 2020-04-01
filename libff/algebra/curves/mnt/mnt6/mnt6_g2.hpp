@@ -47,10 +47,6 @@ public:
     mnt6_G2();
     mnt6_G2(const mnt6_Fq3& X, const mnt6_Fq3& Y, const mnt6_Fq3& Z) : X(X), Y(Y), Z(Z) {}
 
-    mnt6_Fq3 X() const { return X; }
-    mnt6_Fq3 Y() const { return Y; }
-    mnt6_Fq3 Z() const { return Z; }
-
     static mnt6_Fq3 mul_by_a(const mnt6_Fq3 &elt);
     static mnt6_Fq3 mul_by_b(const mnt6_Fq3 &elt);
 

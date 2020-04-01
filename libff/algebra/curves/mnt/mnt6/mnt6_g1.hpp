@@ -46,10 +46,6 @@ public:
     mnt6_G1(const mnt6_Fq& X, const mnt6_Fq& Y) : X(X), Y(Y), Z(base_field::one()) {}
     mnt6_G1(const mnt6_Fq& X, const mnt6_Fq& Y, const mnt6_Fq& Z) : X(X), Y(Y), Z(Z) {}
 
-    mnt6_Fq X() const { return X; }
-    mnt6_Fq Y() const { return Y; }
-    mnt6_Fq Z() const { return Z; }
-
     void print() const;
     void print_coordinates() const;
 

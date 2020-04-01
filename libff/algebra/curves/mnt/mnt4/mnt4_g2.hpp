@@ -47,10 +47,6 @@ public:
     mnt4_G2();
     mnt4_G2(const mnt4_Fq2& X, const mnt4_Fq2& Y, const mnt4_Fq2& Z) : X(X), Y(Y), Z(Z) {};
 
-    mnt4_Fq2 X() const { return X; }
-    mnt4_Fq2 Y() const { return Y; }
-    mnt4_Fq2 Z() const { return Z; }
-
     static mnt4_Fq2 mul_by_a(const mnt4_Fq2 &elt);
     static mnt4_Fq2 mul_by_b(const mnt4_Fq2 &elt);
 

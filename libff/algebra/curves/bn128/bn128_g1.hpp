@@ -37,9 +37,10 @@ public:
     typedef bn128_Fr scalar_field;
 
     bn::Fp X, Y, Z;
-    inline bn::Fp[3] coord() { return bn::Fp{this->X, this->Y, this->Z}; }
+    void fill_coord(bn::Fp (*coord)[3]) const { (*coord)[0] = this->X; (*coord)[1] = this->Y; (*coord)[2] = this->Z; return; };
 
     bn128_G1();
+    bn128_G1(bn::Fp coord[3]) : X(coord[0]), Y(coord[1]), Z(coord[2]) {};
 
     void print() const;
     void print_coordinates() const;

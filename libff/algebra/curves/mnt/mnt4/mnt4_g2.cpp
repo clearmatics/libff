@@ -480,7 +480,7 @@ void mnt4_G2::batch_to_special_all_non_zeros(std::vector<mnt4_G2> &vec)
 
     for (auto &el: vec)
     {
-        Z_vec.emplace_back(el.Z());
+        Z_vec.emplace_back(el.Z);
     }
     batch_invert<mnt4_Fq2>(Z_vec);
 
@@ -488,7 +488,7 @@ void mnt4_G2::batch_to_special_all_non_zeros(std::vector<mnt4_G2> &vec)
 
     for (size_t i = 0; i < vec.size(); ++i)
     {
-        vec[i] = mnt4_G2(vec[i].X() * Z_vec[i], vec[i].Y() * Z_vec[i], one);
+        vec[i] = mnt4_G2(vec[i].X * Z_vec[i], vec[i].Y * Z_vec[i], one);
     }
 }
 
