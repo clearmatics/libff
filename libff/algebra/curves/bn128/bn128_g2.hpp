@@ -34,10 +34,13 @@ public:
     static bn128_G2 G2_zero;
     static bn128_G2 G2_one;
 
-    bn::Fp2 coord[3];
-    bn128_G2();
     typedef bn128_Fq base_field;
     typedef bn128_Fr scalar_field;
+
+    bn::Fp2 X, Y, Z;
+    inline bn::Fp2[3] coord() { return bn::Fp2{this->X, this->Y, this->Z}; }
+
+    bn128_G2();
 
     void print() const;
     void print_coordinates() const;

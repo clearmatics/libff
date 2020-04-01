@@ -166,7 +166,7 @@ bn128_ate_G1_precomp bn128_ate_precompute_G1(const bn128_G1& P)
     enter_block("Call to bn128_ate_precompute_G1");
 
     bn128_ate_G1_precomp result;
-    bn::ecop::NormalizeJac(result.P, P.coord);
+    bn::ecop::NormalizeJac(result.P, P.coord());
 
     leave_block("Call to bn128_ate_precompute_G1");
     return result;
@@ -177,7 +177,7 @@ bn128_ate_G2_precomp bn128_ate_precompute_G2(const bn128_G2& Q)
     enter_block("Call to bn128_ate_precompute_G2");
 
     bn128_ate_G2_precomp result;
-    bn::components::precomputeG2(result.coeffs, result.Q, Q.coord);
+    bn::components::precomputeG2(result.coeffs, result.Q, Q.coord());
 
     leave_block("Call to bn128_ate_precompute_G2");
     return result;
