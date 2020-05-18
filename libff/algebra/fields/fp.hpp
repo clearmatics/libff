@@ -59,7 +59,7 @@ public:
     static Fp_model<n, modulus> nqr_to_t; // nqr^t
     static Fp_model<n, modulus> multiplicative_generator; // generator of Fp^*
     static Fp_model<n, modulus> root_of_unity; // generator^((modulus-1)/2^s)
-    static mp_limb_t inv; // modulus^(-1) mod W, where W = 2^(word size)
+    static mp_limb_t inv; // -modulus^(-1) mod W, where W = 2^(word size)
     static bigint<n> Rsquared; // R^2, where R = W^k, where k = ??
     static bigint<n> Rcubed;   // R^3
 
