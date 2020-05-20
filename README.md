@@ -20,7 +20,7 @@ The directory structure is as follows:
 
 ## Elliptic curve choices
 
-The libsnark library currently provides three options:
+The libff library currently provides the following options:
 
 * `edwards`:
    an instantiation based on an Edwards curve, providing 80 bits of security.
@@ -42,6 +42,12 @@ The libsnark library currently provides three options:
 
 * `alt_bn128`:
    an alternative to `bn128`, somewhat slower but avoids dynamic code generation.
+
+* `mnt`:
+   An implementation of the MNT cycle (MNT4-MNT6) with small fields.
+
+* `bls12-377`:
+   An implementation of the BLS12-377 curve as introduced in the [Zexe](https://eprint.iacr.org/2018/962.pdf) paper.
 
 Note that `bn128` requires an x86-64 CPU while the other curve choices
 should be architecture-independent.
