@@ -55,6 +55,14 @@ typedef mnt6_pp default_ec_pp;
 } // libff
 #endif
 
+#ifdef CURVE_BLS12_377
+#define LIBFF_DEFAULT_EC_PP_DEFINED
+#include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
+namespace libff {
+typedef bls12_377_pp default_ec_pp;
+} // libff
+#endif
+
 #ifndef LIBFF_DEFAULT_EC_PP_DEFINED
 #error You must define one of the CURVE_* symbols to pick a curve for pairings.
 #endif
