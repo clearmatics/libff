@@ -197,7 +197,7 @@ bls12_377_Fq12 bls12_377_final_exponentiation_last_chunk(const bls12_377_Fq12 &e
     // U = [(z^2-2z+1) * (q^3) + (z^3-2z^2+z) * (q^2) + (z^4-2z^3+2z-1) * q]
     const bls12_377_Fq12 U = T * Q;
     // result = [(z^2-2z+1) * (q^3) + (z^3-2z^2+z) * (q^2) + (z^4-2z^3+2z-1) * q + z^5-2z^4+2z^2-z+3]
-    //        = [(p^4 - p^2 + 1)/r].                  
+    //        = [(p^4 - p^2 + 1)/r].
     const bls12_377_Fq12 result = U * L;
 
     leave_block("Call to bls12_377_final_exponentiation_last_chunk");
