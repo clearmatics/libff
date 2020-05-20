@@ -107,13 +107,17 @@ bls12_377_Fq12 bls12_377_final_exponentiation_first_chunk(const bls12_377_Fq12 &
 {
     // The content of this file follows: https://eprint.iacr.org/2016/130.pdf
     //
-    // Note: The following can be done by leveraging: https://eprint.iacr.org/2010/354.pdf
+    // Note: in the alt_bn_128 implementation the libff authors used a trick by
+    // Beuchat et al. to compute the first chunk of the exponentiation which seems
+    // faster. Look into that and use it if it applies here too.
+    //
+    // TODO: Look into this.
     enter_block("Call to bls12_377_final_exponentiation_first_chunk");
 
     // elt^(q^6)
     const bls12_377_Fq12 A = elt.Frobenius_map(6);
     // elt^(-1)
-    const bls12_377_Fq12 B = elt.unitary_inverse();
+    const bls12_377_Fq12 B = elt.inverse();
     // elt^(q^6 - 1)
     const bls12_377_Fq12 C = A * B;
     // (elt^(q^6 - 1))^(q^2) = elt^((q^6 - 1) * (q^2))
