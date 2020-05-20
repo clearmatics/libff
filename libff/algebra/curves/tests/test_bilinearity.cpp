@@ -23,9 +23,7 @@ void pairing_test()
 
     printf("Running bilinearity tests:\n");
     G1<ppT> P = (Fr<ppT>::random_element()) * G1<ppT>::one();
-    //G1<ppT> P = Fr<ppT>("2") * G1<ppT>::one();
     G2<ppT> Q = (Fr<ppT>::random_element()) * G2<ppT>::one();
-    //G2<ppT> Q = Fr<ppT>("3") * G2<ppT>::one();
 
     printf("P:\n");
     P.print();
@@ -36,7 +34,6 @@ void pairing_test()
     printf("\n\n");
 
     Fr<ppT> s = Fr<ppT>::random_element();
-    //Fr<ppT> s = Fr<ppT>("2");
     G1<ppT> sP = s * P;
     G2<ppT> sQ = s * Q;
 
@@ -44,15 +41,34 @@ void pairing_test()
     GT<ppT> ans1 = ppT::reduced_pairing(sP, Q);
     GT<ppT> ans2 = ppT::reduced_pairing(P, sQ);
     GT<ppT> ans3 = ppT::reduced_pairing(P, Q)^s;
+    printf("ans1:\n");
     ans1.print();
+    printf("ans2:\n");
     ans2.print();
+    printf("ans3:\n");
     ans3.print();
     assert(ans1 == ans2);
     assert(ans2 == ans3);
+    std::cout << "**** RES (ans1 == ans2) : " << (ans1 == ans2) << " ****" << std::endl;
+    std::cout << "**** RES (ans2 == ans3) : " << (ans2 == ans3) << " ****" << std::endl;
 
     assert(ans1 != GT_one);
     assert((ans1^Fr<ppT>::field_char()) == GT_one);
     printf("\n\n");
+
+    Fr<ppT> r = Fr<ppT>::random_element();
+    G1<ppT> rP = r * P;
+    G2<ppT> r_minus_1_Q = (r-1) * Q;
+
+    printf("Pairing bilinearity tests (two must NOT match):\n");
+    GT<ppT> res1 = ppT::reduced_pairing(rP, Q);
+    GT<ppT> res2 = ppT::reduced_pairing(P, r_minus_1_Q);
+    printf("res1:\n");
+    res1.print();
+    printf("res2:\n");
+    res2.print();
+    assert(res1 != res2);
+    std::cout << "**** RES (res1 != res2) : " << (res1 != res2) << " ****" << std::endl;
 }
 
 template<typename ppT>
