@@ -433,6 +433,7 @@ bls12_377_Fq12 bls12_377_ate_miller_loop(const bls12_377_ate_G1_precomp &prec_P,
         // (skipping leading zeros) in MSB to LSB order
         c = prec_Q.coeffs[idx++];
         f = f.squared();
+        // Sparse multiplication in Fq12
         f = f.mul_by_024(c.ell_0, prec_P.PY * c.ell_VW, prec_P.PX * c.ell_VV);
         nb_double++;
 
