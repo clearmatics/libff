@@ -105,13 +105,13 @@ public:
 };
 
 /**
- * multi_exp_inner<T, FieldT, Method>() implementes the specified
- * multiexponentiation method.
- * this implementation relies on some rather arcane template magic:
- * function templates cannot be partially specialized, so we cannot just write
+ * multi_exp_inner<T, FieldT, Method>() implements the specified
+ * multi-exponentiation method.
+ * This implementation relies on some rather arcane template magic:
+ * function templates cannot be partially specialized, so we cannot just write:
  *     template<typename T, typename FieldT>
  *     T multi_exp_inner<T, FieldT, multi_exp_method_naive>
- * thus we resort to using std::enable_if. the basic idea is that *overloading*
+ * Thus we resort to using std::enable_if. the basic idea is that *overloading*
  * is what's actually happening here, it's just that, for any given value of
  * Method, only one of the templates will be valid, and thus the correct
  * implementation will be used.
