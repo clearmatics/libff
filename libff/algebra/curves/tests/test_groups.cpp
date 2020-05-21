@@ -14,6 +14,7 @@
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
+#include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
 #include <libff/common/profiling.hpp>
 #ifdef CURVE_BN128
 #include <libff/algebra/curves/bn128/bn128_pp.hpp>
@@ -173,7 +174,16 @@ int main(void)
     test_output<G2<alt_bn128_pp> >();
     test_mul_by_q<G2<alt_bn128_pp> >();
 
-#ifdef CURVE_BN128       // BN128 has fancy dependencies so it may be disabled
+    // Make sure that added curves pass the libff tests
+    bls12_377_pp::init_public_params();
+    test_group<G1<bls12_377_pp> >();
+    test_output<G1<bls12_377_pp> >();
+    test_group<G2<bls12_377_pp> >();
+    test_output<G2<bls12_377_pp> >();
+    test_mul_by_q<G2<bls12_377_pp> >();
+
+// BN128 has fancy dependencies so it may be disabled
+#ifdef CURVE_BN128
     bn128_pp::init_public_params();
     test_group<G1<bn128_pp> >();
     test_output<G1<bn128_pp> >();

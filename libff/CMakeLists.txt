@@ -20,35 +20,26 @@ if(${CURVE} STREQUAL "BN128")
   )
 endif()
 
+file(
+  GLOB_RECURSE
+  LIBFF_SOURCE
+
+  algebra/curves/alt_bn128/*.cpp
+  algebra/curves/edwards/*.cpp
+  algebra/curves/mnt/mnt4/*.cpp
+  algebra/curves/mnt/mnt46_common.cpp
+  algebra/curves/mnt/mnt6/*.cpp
+  algebra/curves/bls12_377/*.cpp
+  common/double.cpp
+  common/profiling.cpp
+  common/utils.cpp
+)
+
 add_library(
   ff
   STATIC
 
-  algebra/curves/alt_bn128/alt_bn128_g1.cpp
-  algebra/curves/alt_bn128/alt_bn128_g2.cpp
-  algebra/curves/alt_bn128/alt_bn128_init.cpp
-  algebra/curves/alt_bn128/alt_bn128_pairing.cpp
-  algebra/curves/alt_bn128/alt_bn128_pp.cpp
-  algebra/curves/edwards/edwards_g1.cpp
-  algebra/curves/edwards/edwards_g2.cpp
-  algebra/curves/edwards/edwards_init.cpp
-  algebra/curves/edwards/edwards_pairing.cpp
-  algebra/curves/edwards/edwards_pp.cpp
-  algebra/curves/mnt/mnt4/mnt4_g1.cpp
-  algebra/curves/mnt/mnt4/mnt4_g2.cpp
-  algebra/curves/mnt/mnt4/mnt4_init.cpp
-  algebra/curves/mnt/mnt4/mnt4_pairing.cpp
-  algebra/curves/mnt/mnt4/mnt4_pp.cpp
-  algebra/curves/mnt/mnt46_common.cpp
-  algebra/curves/mnt/mnt6/mnt6_g1.cpp
-  algebra/curves/mnt/mnt6/mnt6_g2.cpp
-  algebra/curves/mnt/mnt6/mnt6_init.cpp
-  algebra/curves/mnt/mnt6/mnt6_pairing.cpp
-  algebra/curves/mnt/mnt6/mnt6_pp.cpp
-  common/double.cpp
-  common/profiling.cpp
-  common/utils.cpp
-
+  ${LIBFF_SOURCE}
   ${FF_EXTRASRCS}
 )
 target_link_libraries(
