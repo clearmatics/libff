@@ -34,9 +34,6 @@ void init_bls12_377_params()
     assert(sizeof(mp_limb_t) == 8 || sizeof(mp_limb_t) == 4);
 
     // Parameters for scalar field Fr
-    //
-    // These parameters match: https://github.com/scipr-lab/zexe/blob/6bfe574f7adea14b97ff554bbb594988635b1908/algebra/src/bls12_377/fields/fr.rs
-    //
     // r = 0x12ab655e9a2ca55660b44d1e5c37b00159aa76fed00000010a11800000000001
     bls12_377_modulus_r = bigint_r("8444461749428370424248824938781546531375899335154063827935233455917409239041");
     assert(bls12_377_Fr::modulus_is_valid());
@@ -65,19 +62,12 @@ void init_bls12_377_params()
     bls12_377_Fr::nqr_to_t = bls12_377_Fr("6924886788847882060123066508223519077232160750698452411071850219367055984476");
 
     // Parameters for base field Fq
-    //
-    // These parameters match: https://github.com/scipr-lab/zexe/blob/6bfe574f7adea14b97ff554bbb594988635b1908/algebra/src/bls12_377/fields/fq.rs
-    //
     // q = 0x1ae3a4617c510eac63b05c06ca1493b1a22d9f300f5138f1ef3622fba094800170b5d44300000008508c00000000001
     // sage: mod(0x1ae3a4617c510eac63b05c06ca1493b1a22d9f300f5138f1ef3622fba094800170b5d44300000008508c00000000001, 6) # = 1
     bls12_377_modulus_q = bigint_q("258664426012969094010652733694893533536393512754914660539884262666720468348340822774968888139573360124440321458177");
     assert(bls12_377_Fq::modulus_is_valid());
     if (sizeof(mp_limb_t) == 8)
     {
-        // For Montgomery reduction and fast FF arithmetic
-        // (Montgomery representation is used to speed up multiplication in the finite field)
-        // http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-        // https://eprint.iacr.org/2013/882.pdf
         bls12_377_Fq::Rsquared = bigint_q("66127428376872697816332570116866232405230528984664918319606315420233909940404532140033099444330447428417853902114");
         bls12_377_Fq::Rcubed = bigint_q("157734475176213061358192738313701451942220138363611391489992831740412033225490229541667992423878570205050777755168");
         bls12_377_Fq::inv = 0x8508bfffffffffff;
@@ -98,8 +88,6 @@ void init_bls12_377_params()
     bls12_377_Fq::root_of_unity = bls12_377_Fq("32863578547254505029601261939868325669770508939375122462904745766352256812585773382134936404344547323199885654433");
     // We need to find a qnr (small preferably) in order to compute square roots in the field
     bls12_377_Fq::nqr = bls12_377_Fq("5");
-    // nqr^t is useful to efficiently extract square roots in the finite field
-    // https://www.math.arizona.edu/~jeremybooher/expos/sqr_qnr.pdf
     bls12_377_Fq::nqr_to_t = bls12_377_Fq("33774956008227656219775876656288133547078610493828613777258829345740556592044969439504850374928261397247202212840");
 
     // Parameters for twist field Fq2
@@ -110,18 +98,15 @@ void init_bls12_377_params()
     // https://github.com/scipr-lab/zexe/blob/6bfe574f7adea14b97ff554bbb594988635b1908/algebra/src/bls12_377/fields/fq2.rs#L11
     // Additive inverse of 5 in GF(q)
     // sage: GF(q)(-5)
-    // Fp2 = Fp[X] / (X^2 - (-5))) = Fp[X] / (X^2 + 5)
+    // Fp2 = Fp[X] / (X^2 - (-5)))
     bls12_377_Fq2::non_residue = bls12_377_Fq
     ("258664426012969094010652733694893533536393512754914660539884262666720468348340822774968888139573360124440321458172");
-    // https://github.com/scipr-lab/zexe/blob/6bfe574f7adea14b97ff554bbb594988635b1908/algebra/src/bls12_377/fields/fq2.rs#L22
-    // nqr = 1*u + 0
     bls12_377_Fq2::nqr = bls12_377_Fq2(bls12_377_Fq("0"),bls12_377_Fq("1"));
     bls12_377_Fq2::nqr_to_t = bls12_377_Fq2(bls12_377_Fq("0"),bls12_377_Fq("257286236321774568987262729980034669694531728092793737444525294935421142460394028155736019924956637466133519652786"));
     bls12_377_Fq2::Frobenius_coeffs_c1[0] = bls12_377_Fq("1");
     bls12_377_Fq2::Frobenius_coeffs_c1[1] = bls12_377_Fq("258664426012969094010652733694893533536393512754914660539884262666720468348340822774968888139573360124440321458176");
 
     // Parameters for Fq6 = (Fq2)^3
-    // 1*u + 0
     bls12_377_Fq6::non_residue = bls12_377_Fq2(bls12_377_Fq("0"),bls12_377_Fq("1"));
     bls12_377_Fq6::Frobenius_coeffs_c1[0] = bls12_377_Fq2(bls12_377_Fq("1"),bls12_377_Fq("0"));
     bls12_377_Fq6::Frobenius_coeffs_c1[1] = bls12_377_Fq2(bls12_377_Fq("80949648264912719408558363140637477264845294720710499478137287262712535938301461879813459410946"),bls12_377_Fq("0"));
@@ -137,7 +122,6 @@ void init_bls12_377_params()
     bls12_377_Fq6::Frobenius_coeffs_c2[5] = bls12_377_Fq2(bls12_377_Fq("258664426012969093929703085429980814127835149614277183275038967946009968870203535512256352201271898244626862047231"),bls12_377_Fq("0"));
 
     // Parameters for Fq12 = ((Fq2)^3)^2
-    // 1*u + 0
     bls12_377_Fq12::non_residue = bls12_377_Fq2(bls12_377_Fq("0"),bls12_377_Fq("1"));
     bls12_377_Fq12::Frobenius_coeffs_c1[0] = bls12_377_Fq2(bls12_377_Fq("1"),bls12_377_Fq("0"));
     bls12_377_Fq12::Frobenius_coeffs_c1[1] = bls12_377_Fq2(bls12_377_Fq("92949345220277864758624960506473182677953048909283248980960104381795901929519566951595905490535835115111760994353"),bls12_377_Fq("0"));
