@@ -30,6 +30,7 @@ file(
   algebra/curves/mnt/mnt46_common.cpp
   algebra/curves/mnt/mnt6/*.cpp
   algebra/curves/bls12_377/*.cpp
+  algebra/curves/bw6_761/*.cpp
   common/double.cpp
   common/profiling.cpp
   common/utils.cpp

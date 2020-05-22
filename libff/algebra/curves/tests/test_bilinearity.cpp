@@ -20,6 +20,7 @@
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
+#include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
 
 using namespace libff;
 
@@ -97,6 +98,26 @@ void double_miller_loop_test()
     assert(ans_1 * ans_2 == ans_12);
 }
 
+void bw6_761_double_miller_loop_test()
+{
+    const G1<bw6_761_pp> P1 = (Fr<bw6_761_pp>::random_element()) * G1<bw6_761_pp>::one();
+    const G1<bw6_761_pp> P2 = (Fr<bw6_761_pp>::random_element()) * G1<bw6_761_pp>::one();
+    const G2<bw6_761_pp> Q1 = (Fr<bw6_761_pp>::random_element()) * G2<bw6_761_pp>::one();
+    const G2<bw6_761_pp> Q2 = (Fr<bw6_761_pp>::random_element()) * G2<bw6_761_pp>::one();
+
+    const G1_precomp<bw6_761_pp> prec_P1 = bw6_761_pp::precompute_G1(P1);
+    const G1_precomp<bw6_761_pp> prec_P2 = bw6_761_pp::precompute_G1(P2);
+    const G2_precomp<bw6_761_pp> prec_Q1_1 = bw6_761_pp::precompute_G2(Q1, bw6_761_ate_loop_count1);
+    const G2_precomp<bw6_761_pp> prec_Q2_1 = bw6_761_pp::precompute_G2(Q2, bw6_761_ate_loop_count2);
+    const G2_precomp<bw6_761_pp> prec_Q1_2 = bw6_761_pp::precompute_G2(Q1, bw6_761_ate_loop_count1);
+    const G2_precomp<bw6_761_pp> prec_Q2_2 = bw6_761_pp::precompute_G2(Q2, bw6_761_ate_loop_count2);
+
+    const Fqk<bw6_761_pp> ans_1 = bw6_761_pp::miller_loop(prec_P1, prec_Q1_1, prec_Q2_1);
+    const Fqk<bw6_761_pp> ans_2 = bw6_761_pp::miller_loop(prec_P2, prec_Q1_2, prec_Q2_2);
+    const Fqk<bw6_761_pp> ans_12 = bw6_761_pp::double_miller_loop(prec_P1, prec_Q1_1, prec_Q2_1, prec_P2, prec_Q1_2, prec_Q2_2);
+    assert(ans_1 * ans_2 == ans_12);
+}
+
 template<typename ppT>
 void affine_pairing_test()
 {
@@ -155,6 +176,10 @@ int main(void)
     bls12_377_pp::init_public_params();
     pairing_test<bls12_377_pp>();
     double_miller_loop_test<bls12_377_pp>();
+
+    bw6_761_pp::init_public_params();
+    pairing_test<bw6_761_pp>();
+    bw6_761_double_miller_loop_test();
 
 #ifdef CURVE_BN128       // BN128 has fancy dependencies so it may be disabled
     bn128_pp::init_public_params();

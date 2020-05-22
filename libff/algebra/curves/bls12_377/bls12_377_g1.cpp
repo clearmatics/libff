@@ -103,27 +103,17 @@ bool bls12_377_G1::operator==(const bls12_377_G1 &other) const
         return false;
     }
 
-    /* now neither is O */
-
-    // using Jacobian coordinates so:
-    // (X1:Y1:Z1) = (X2:Y2:Z2)
-    // iff
-    // X1/Z1^2 == X2/Z2^2 and Y1/Z1^3 == Y2/Z2^3
-    // iff
+    // Using Jacobian coordinates so:
+    // (X1:Y1:Z1) = (X2:Y2:Z2) <=>
+    // X1/Z1^2 == X2/Z2^2 AND Y1/Z1^3 == Y2/Z2^3
+    // <=>
     // X1 * Z2^2 == X2 * Z1^2 and Y1 * Z2^3 == Y2 * Z1^3
-
     bls12_377_Fq Z1_squared = (this->Z).squared();
     bls12_377_Fq Z2_squared = (other.Z).squared();
-
-    if ((this->X * Z2_squared) != (other.X * Z1_squared))
-    {
-        return false;
-    }
-
     bls12_377_Fq Z1_cubed = (this->Z) * Z1_squared;
     bls12_377_Fq Z2_cubed = (other.Z) * Z2_squared;
-
-    if ((this->Y * Z2_cubed) != (other.Y * Z1_cubed))
+    if (((this->X * Z2_squared) != (other.X * Z1_squared)) ||
+        ((this->Y * Z2_cubed) != (other.Y * Z1_cubed)))
     {
         return false;
     }
@@ -149,47 +139,50 @@ bls12_377_G1 bls12_377_G1::operator+(const bls12_377_G1 &other) const
         return *this;
     }
 
-    // no need to handle points of order 2,4
+    // No need to handle points of order 2,4
     // (they cannot exist in a prime-order subgroup)
 
-    // check for doubling case
-
-    // using Jacobian coordinates so:
-    // (X1:Y1:Z1) = (X2:Y2:Z2)
-    // iff
-    // X1/Z1^2 == X2/Z2^2 and Y1/Z1^3 == Y2/Z2^3
-    // iff
-    // X1 * Z2^2 == X2 * Z1^2 and Y1 * Z2^3 == Y2 * Z1^3
-
+    // Z1Z1 = Z1*Z1
     bls12_377_Fq Z1Z1 = (this->Z).squared();
+    // Z2Z2 = Z2*Z2
     bls12_377_Fq Z2Z2 = (other.Z).squared();
 
+    // U1 = X1*Z2Z2
     bls12_377_Fq U1 = this->X * Z2Z2;
+    // U2 = X2*Z1Z1
     bls12_377_Fq U2 = other.X * Z1Z1;
 
-    bls12_377_Fq Z1_cubed = (this->Z) * Z1Z1;
-    bls12_377_Fq Z2_cubed = (other.Z) * Z2Z2;
+    // S1 = Y1*Z2*Z2Z2
+    bls12_377_Fq S1 = (this->Y) * ((other.Z) * Z2Z2);
+    // S2 = Y2*Z1*Z1Z1
+    bls12_377_Fq S2 = (other.Y) * ((this->Z) * Z1Z1);
 
-    bls12_377_Fq S1 = (this->Y) * Z2_cubed;      // S1 = Y1 * Z2 * Z2Z2
-    bls12_377_Fq S2 = (other.Y) * Z1_cubed;      // S2 = Y2 * Z1 * Z1Z1
-
+    // Check if the 2 points are equal, in which can we do a point doubling (i.e. P + P)
     if (U1 == U2 && S1 == S2)
     {
-        // dbl case; nothing of above can be reused
         return this->dbl();
     }
 
-    // rest of add case
-    bls12_377_Fq H = U2 - U1;                            // H = U2-U1
+    // Point addition (i.e. P + Q, P =/= Q)
+    // https://www.hyperelliptic.org/EFD/g1p/data/shortw/jacobian-0/addition/add-2007-bl
+    // H = U2-U1
+    bls12_377_Fq H = U2 - U1;
+    // I = (2*H)^2
+    bls12_377_Fq I = (H+H).squared();
+    // J = H*I
+    bls12_377_Fq J = H * I;
+    // r = 2*(S2-S1)
     bls12_377_Fq S2_minus_S1 = S2-S1;
-    bls12_377_Fq I = (H+H).squared();                    // I = (2 * H)^2
-    bls12_377_Fq J = H * I;                              // J = H * I
-    bls12_377_Fq r = S2_minus_S1 + S2_minus_S1;          // r = 2 * (S2-S1)
-    bls12_377_Fq V = U1 * I;                             // V = U1 * I
-    bls12_377_Fq X3 = r.squared() - J - (V+V);           // X3 = r^2 - J - 2 * V
+    bls12_377_Fq r = S2_minus_S1 + S2_minus_S1;
+    // V = U1*I
+    bls12_377_Fq V = U1 * I;
+    // X3 = r^2-J-2*V
+    bls12_377_Fq X3 = r.squared() - J - (V+V);
     bls12_377_Fq S1_J = S1 * J;
-    bls12_377_Fq Y3 = r * (V-X3) - (S1_J+S1_J);          // Y3 = r * (V-X3)-2 S1 J
-    bls12_377_Fq Z3 = ((this->Z+other.Z).squared()-Z1Z1-Z2Z2) * H; // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
+    // Y3 = r*(V-X3)-2*S1*J
+    bls12_377_Fq Y3 = r * (V-X3) - (S1_J+S1_J);
+    // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
+    bls12_377_Fq Z3 = ((this->Z+other.Z).squared()-Z1Z1-Z2Z2) * H;
 
     return bls12_377_G1(X3, Y3, Z3);
 }
@@ -207,7 +200,7 @@ bls12_377_G1 bls12_377_G1::operator-(const bls12_377_G1 &other) const
 
 bls12_377_G1 bls12_377_G1::add(const bls12_377_G1 &other) const
 {
-    // handle special cases having to do with O
+    // Handle special cases having to do with O
     if (this->is_zero())
     {
         return other;
@@ -218,10 +211,10 @@ bls12_377_G1 bls12_377_G1::add(const bls12_377_G1 &other) const
         return *this;
     }
 
-    // no need to handle points of order 2,4
+    // No need to handle points of order 2,4
     // (they cannot exist in a prime-order subgroup)
 
-    // handle double case
+    // Handle double case
     if (this->operator==(other))
     {
         return this->dbl();
@@ -231,28 +224,44 @@ bls12_377_G1 bls12_377_G1::add(const bls12_377_G1 &other) const
     this->add_cnt++;
 #endif
     // NOTE: does not handle O and pts of order 2,4
-    // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#addition-add-2007-bl
-
-    bls12_377_Fq Z1Z1 = (this->Z).squared();             // Z1Z1 = Z1^2
-    bls12_377_Fq Z2Z2 = (other.Z).squared();             // Z2Z2 = Z2^2
-    bls12_377_Fq U1 = (this->X) * Z2Z2;                  // U1 = X1 * Z2Z2
-    bls12_377_Fq U2 = (other.X) * Z1Z1;                  // U2 = X2 * Z1Z1
-    bls12_377_Fq S1 = (this->Y) * (other.Z) * Z2Z2;      // S1 = Y1 * Z2 * Z2Z2
-    bls12_377_Fq S2 = (other.Y) * (this->Z) * Z1Z1;      // S2 = Y2 * Z1 * Z1Z1
-    bls12_377_Fq H = U2 - U1;                            // H = U2-U1
+    // https://www.hyperelliptic.org/EFD/g1p/data/shortw/jacobian-0/addition/add-2007-bl
+    // Z1Z1 = Z1*Z1
+    bls12_377_Fq Z1Z1 = (this->Z).squared();
+    // Z2Z2 = Z2*Z2
+    bls12_377_Fq Z2Z2 = (other.Z).squared();
+    // U1 = X1*Z2Z2
+    bls12_377_Fq U1 = this->X * Z2Z2;
+    // U2 = X2*Z1Z1
+    bls12_377_Fq U2 = other.X * Z1Z1;
+    // S1 = Y1*Z2*Z2Z2
+    bls12_377_Fq S1 = (this->Y) * ((other.Z) * Z2Z2);
+    // S2 = Y2*Z1*Z1Z1
+    bls12_377_Fq S2 = (other.Y) * ((this->Z) * Z1Z1);
+    // H = U2-U1
+    bls12_377_Fq H = U2 - U1;
+    // I = (2*H)^2
+    bls12_377_Fq I = (H+H).squared();
+    // J = H*I
+    bls12_377_Fq J = H * I;
+    // r = 2*(S2-S1)
     bls12_377_Fq S2_minus_S1 = S2-S1;
-    bls12_377_Fq I = (H+H).squared();                    // I = (2 * H)^2
-    bls12_377_Fq J = H * I;                              // J = H * I
-    bls12_377_Fq r = S2_minus_S1 + S2_minus_S1;          // r = 2 * (S2-S1)
-    bls12_377_Fq V = U1 * I;                             // V = U1 * I
-    bls12_377_Fq X3 = r.squared() - J - (V+V);           // X3 = r^2 - J - 2 * V
+    bls12_377_Fq r = S2_minus_S1 + S2_minus_S1;
+    // V = U1*I
+    bls12_377_Fq V = U1 * I;
+    // X3 = r^2-J-2*V
+    bls12_377_Fq X3 = r.squared() - J - (V+V);
     bls12_377_Fq S1_J = S1 * J;
-    bls12_377_Fq Y3 = r * (V-X3) - (S1_J+S1_J);          // Y3 = r * (V-X3)-2 S1 J
-    bls12_377_Fq Z3 = ((this->Z+other.Z).squared()-Z1Z1-Z2Z2) * H; // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
+    // Y3 = r*(V-X3)-2*S1*J
+    bls12_377_Fq Y3 = r * (V-X3) - (S1_J+S1_J);
+    // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
+    bls12_377_Fq Z3 = ((this->Z+other.Z).squared()-Z1Z1-Z2Z2) * H;
 
     return bls12_377_G1(X3, Y3, Z3);
 }
 
+// This function assumes that:
+// *this is of the form (X1/Z1, Y1/Z1), and that
+// other is of the form (X2, Y2), i.e. Z2=1
 bls12_377_G1 bls12_377_G1::mixed_add(const bls12_377_G1 &other) const
 {
 #ifdef DEBUG
@@ -270,33 +279,19 @@ bls12_377_G1 bls12_377_G1::mixed_add(const bls12_377_G1 &other) const
         return *this;
     }
 
-    // no need to handle points of order 2,4
+    // No need to handle points of order 2,4
     // (they cannot exist in a prime-order subgroup)
-
-    // check for doubling case
-
-    // using Jacobian coordinates so:
-    // (X1:Y1:Z1) = (X2:Y2:Z2)
-    // iff
-    // X1/Z1^2 == X2/Z2^2 and Y1/Z1^3 == Y2/Z2^3
-    // iff
-    // X1 * Z2^2 == X2 * Z1^2 and Y1 * Z2^3 == Y2 * Z1^3
-
-    // we know that Z2 = 1
-
+    // Z1Z1 = Z1*Z1
     const bls12_377_Fq Z1Z1 = (this->Z).squared();
-
-    const bls12_377_Fq &U1 = this->X;
+    // U2 = X2*Z1Z1
     const bls12_377_Fq U2 = other.X * Z1Z1;
+    // S2 = Y2 * Z1 * Z1Z1
+    const bls12_377_Fq S2 = (other.Y) * ((this->Z) * Z1Z1);
 
-    const bls12_377_Fq Z1_cubed = (this->Z) * Z1Z1;
-
-    const bls12_377_Fq &S1 = (this->Y);                // S1 = Y1 * Z2 * Z2Z2
-    const bls12_377_Fq S2 = (other.Y) * Z1_cubed;      // S2 = Y2 * Z1 * Z1Z1
-
-    if (U1 == U2 && S1 == S2)
+    // (X1/Z1^2) == X2 => X1 == X2*Z1^2
+    // (Y1/Z1^3) == Y2 => Y1 == Y2*Z1^3
+    if (this->X == U2 && this->Y == S2)
     {
-        // dbl case; nothing of above can be reused
         return this->dbl();
     }
 
@@ -305,19 +300,28 @@ bls12_377_G1 bls12_377_G1::mixed_add(const bls12_377_G1 &other) const
 #endif
 
     // NOTE: does not handle O and pts of order 2,4
-    // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#addition-madd-2007-bl
-    bls12_377_Fq H = U2-(this->X);                         // H = U2-X1
-    bls12_377_Fq HH = H.squared() ;                        // HH = H&2
-    bls12_377_Fq I = HH+HH;                                // I = 4*HH
+    // https://www.hyperelliptic.org/EFD/g1p/data/shortw/jacobian-0/addition/madd-2007-bl
+    // H = U2-X1
+    bls12_377_Fq H = U2-(this->X);
+    // HH = H^2
+    bls12_377_Fq HH = H.squared();
+    // I = 4*HH
+    bls12_377_Fq I = HH+HH;
     I = I + I;
-    bls12_377_Fq J = H*I;                                  // J = H*I
-    bls12_377_Fq r = S2-(this->Y);                         // r = 2*(S2-Y1)
+    // J = H*I
+    bls12_377_Fq J = H*I;
+    // r = 2*(S2-Y1)
+    bls12_377_Fq r = S2-(this->Y);
     r = r + r;
-    bls12_377_Fq V = (this->X) * I ;                       // V = X1*I
-    bls12_377_Fq X3 = r.squared()-J-V-V;                   // X3 = r^2-J-2*V
-    bls12_377_Fq Y3 = (this->Y)*J;                         // Y3 = r*(V-X3)-2*Y1*J
+    // V = X1*I
+    bls12_377_Fq V = (this->X) * I;
+    // X3 = r^2-J-2*V
+    bls12_377_Fq X3 = r.squared()-J-V-V;
+    // Y3 = r*(V-X3)-2*Y1*J
+    bls12_377_Fq Y3 = (this->Y)*J;
     Y3 = r*(V-X3) - Y3 - Y3;
-    bls12_377_Fq Z3 = ((this->Z)+H).squared() - Z1Z1 - HH; // Z3 = (Z1+H)^2-Z1Z1-HH
+    // Z3 = (Z1+H)^2-Z1Z1-HH
+    bls12_377_Fq Z3 = ((this->Z)+H).squared() - Z1Z1 - HH;
 
     return bls12_377_G1(X3, Y3, Z3);
 }
@@ -327,7 +331,7 @@ bls12_377_G1 bls12_377_G1::dbl() const
 #ifdef PROFILE_OP_COUNTS
     this->dbl_cnt++;
 #endif
-    // handle point at infinity
+    // Handle point at infinity
     if (this->is_zero())
     {
         return (*this);
@@ -337,22 +341,30 @@ bls12_377_G1 bls12_377_G1::dbl() const
     // (they cannot exist in a prime-order subgroup)
 
     // NOTE: does not handle O and pts of order 2,4
-    // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#doubling-dbl-2009-l
-
-    bls12_377_Fq A = (this->X).squared();         // A = X1^2
-    bls12_377_Fq B = (this->Y).squared();        // B = Y1^2
-    bls12_377_Fq C = B.squared();                // C = B^2
+    // https://www.hyperelliptic.org/EFD/g1p/data/shortw/jacobian-0/doubling/dbl-2009-l
+    // A = X1^2
+    bls12_377_Fq A = (this->X).squared();
+    // B = Y1^2
+    bls12_377_Fq B = (this->Y).squared();
+    // C = B^2
+    bls12_377_Fq C = B.squared();
+    // D = 2 * ((X1 + B)^2 - A - C)
     bls12_377_Fq D = (this->X + B).squared() - A - C;
-    D = D+D;                        // D = 2 * ((X1 + B)^2 - A - C)
-    bls12_377_Fq E = A + A + A;                  // E = 3 * A
-    bls12_377_Fq F = E.squared();                // F = E^2
-    bls12_377_Fq X3 = F - (D+D);                 // X3 = F - 2 D
+    D = D+D;
+    // E = 3 * A
+    bls12_377_Fq E = A + A + A;
+    // F = E^2
+    bls12_377_Fq F = E.squared();
+    // X3 = F - 2 D
+    bls12_377_Fq X3 = F - (D+D);
+    // Y3 = E * (D - X3) - 8 * C
     bls12_377_Fq eightC = C+C;
     eightC = eightC + eightC;
     eightC = eightC + eightC;
-    bls12_377_Fq Y3 = E * (D - X3) - eightC;     // Y3 = E * (D - X3) - 8 * C
+    bls12_377_Fq Y3 = E * (D - X3) - eightC;
+    // Z3 = 2 * Y1 * Z1
     bls12_377_Fq Y1Z1 = (this->Y)*(this->Z);
-    bls12_377_Fq Z3 = Y1Z1 + Y1Z1;               // Z3 = 2 * Y1 * Z1
+    bls12_377_Fq Z3 = Y1Z1 + Y1Z1;
 
     return bls12_377_G1(X3, Y3, Z3);
 }
@@ -363,27 +375,19 @@ bool bls12_377_G1::is_well_formed() const
     {
         return true;
     }
-    else
-    {
-        /*
-          y^2 = x^3 + b
 
-          We are using Jacobian coordinates, so equation we need to check is actually
-
-          (y/z^3)^2 = (x/z^2)^3 + b
-          y^2 / z^6 = x^3 / z^6 + b
-          y^2 = x^3 + b z^6
-        */
-        bls12_377_Fq X2 = this->X.squared();
-        bls12_377_Fq Y2 = this->Y.squared();
-        bls12_377_Fq Z2 = this->Z.squared();
-
-        bls12_377_Fq X3 = this->X * X2;
-        bls12_377_Fq Z3 = this->Z * Z2;
-        bls12_377_Fq Z6 = Z3.squared();
-
-        return (Y2 == X3 + bls12_377_coeff_b * Z6);
-    }
+    // The curve equation is
+    // E': y^2 = x^3 + ax + b, where a=0
+    // We are using Jacobian coordinates. As such, the equation becomes:
+    // y^2/z^6 = x^3/z^6 + b
+    // = y^2 = x^3  + b z^6
+    bls12_377_Fq X2 = this->X.squared();
+    bls12_377_Fq Y2 = this->Y.squared();
+    bls12_377_Fq Z2 = this->Z.squared();
+    bls12_377_Fq X3 = this->X * X2;
+    bls12_377_Fq Z3 = this->Z * Z2;
+    bls12_377_Fq Z6 = Z3.squared();
+    return (Y2 == X3 + bls12_377_coeff_b * Z6);
 }
 
 bls12_377_G1 bls12_377_G1::zero()
