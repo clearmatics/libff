@@ -11,7 +11,7 @@ This curve aims to be used along with BLS12_377 in order to build a pairing-frie
 
 2. Run:
 ```bash
-sage -python bw6_761.py
+sage bw6_761.sage
 ```
 
 ## References:
