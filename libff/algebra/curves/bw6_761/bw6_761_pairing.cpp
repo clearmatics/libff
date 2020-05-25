@@ -102,7 +102,7 @@ std::istream& operator>>(std::istream& in, bw6_761_ate_G2_precomp &prec_Q)
 
 bw6_761_Fq6 bw6_761_final_exponentiation_first_chunk(const bw6_761_Fq6 &elt)
 {
-    // Compute elt^[(q^3-1)*(q+1)}
+    // Compute elt^{(q^3-1)*(q+1)}
     enter_block("Call to bw6_761_final_exponentiation_first_chunk");
 
     // A = elt^(q^3)
@@ -121,17 +121,17 @@ bw6_761_Fq6 bw6_761_final_exponentiation_first_chunk(const bw6_761_Fq6 &elt)
 
 bw6_761_Fq6 bw6_761_exp_by_z(const bw6_761_Fq6 &elt)
 {
-  enter_block("Call to bw6_761_exp_by_z");
+    enter_block("Call to bw6_761_exp_by_z");
 
-  bw6_761_Fq6 result = elt.cyclotomic_exp(bw6_761_final_exponent_z);
-  if (bw6_761_final_exponent_is_z_neg)
-  {
-    result = result.unitary_inverse();
-  }
+    bw6_761_Fq6 result = elt.cyclotomic_exp(bw6_761_final_exponent_z);
+    if (bw6_761_final_exponent_is_z_neg)
+    {
+        result = result.unitary_inverse();
+    }
 
-  leave_block("Call to bw6_761_exp_by_z");
+    leave_block("Call to bw6_761_exp_by_z");
 
-  return result;
+    return result;
 }
 
 // See Algorithm 6, Appendix B: https://eprint.iacr.org/2020/351.pdf
@@ -363,15 +363,15 @@ bw6_761_ate_G2_precomp bw6_761_ate_precompute_G2(const bw6_761_G2& Q, const bigi
 
         if (NAF[i] != 0)
         {
-          if (NAF[i] > 0)
-          {
-            mixed_addition_step_for_miller_loop(Qcopy, R, c);
-          }
-          else
-          {
-            mixed_addition_step_for_miller_loop(-Qcopy, R, c);
-          }
-          result.coeffs.push_back(c);
+            if (NAF[i] > 0)
+            {
+                mixed_addition_step_for_miller_loop(Qcopy, R, c);
+            }
+            else
+            {
+                mixed_addition_step_for_miller_loop(-Qcopy, R, c);
+            }
+            result.coeffs.push_back(c);
         }
     }
 
@@ -425,11 +425,6 @@ bw6_761_Fq6 bw6_761_ate_miller_loop(const bw6_761_ate_G1_precomp &prec_P,
 
     }
 
-    //if (bw6_761_ate_is_loop_count_neg)
-    //{
-    //	f_1 = f_1.inverse();
-    //}
-
     // f_{u^3-u^2-u,Q}(P)
     bw6_761_Fq6 f_2 = bw6_761_Fq6::one();
 
@@ -463,11 +458,6 @@ bw6_761_Fq6 bw6_761_ate_miller_loop(const bw6_761_ate_G1_precomp &prec_P,
         }
     }
 
-    //if (bw6_761_ate_is_loop_count_neg)
-    //{
-    //	f_2 = f_2.inverse();
-    //}
-
     leave_block("Call to bw6_761_ate_miller_loop");
 
     f_2 = f_2.Frobenius_map(1);
@@ -476,11 +466,11 @@ bw6_761_Fq6 bw6_761_ate_miller_loop(const bw6_761_ate_G1_precomp &prec_P,
 }
 
 bw6_761_Fq6 bw6_761_ate_double_miller_loop(const bw6_761_ate_G1_precomp &prec_P1,
-                                     const bw6_761_ate_G2_precomp &prec_Q1_1,
-                                     const bw6_761_ate_G2_precomp &prec_Q2_1,
-                                     const bw6_761_ate_G1_precomp &prec_P2,
-                                     const bw6_761_ate_G2_precomp &prec_Q1_2,
-                                     const bw6_761_ate_G2_precomp &prec_Q2_2)
+        const bw6_761_ate_G2_precomp &prec_Q1_1,
+        const bw6_761_ate_G2_precomp &prec_Q2_1,
+        const bw6_761_ate_G1_precomp &prec_P2,
+        const bw6_761_ate_G2_precomp &prec_Q1_2,
+        const bw6_761_ate_G2_precomp &prec_Q2_2)
 {
     enter_block("Call to bw6_761_ate_double_miller_loop");
 
@@ -528,11 +518,6 @@ bw6_761_Fq6 bw6_761_ate_double_miller_loop(const bw6_761_ate_G1_precomp &prec_P1
 
     }
 
-    if (bw6_761_ate_is_loop_count_neg)
-    {
-    	f_1 = f_1.inverse();
-    }
-
     // f_{u^3-u^2-u,Q}(P)
     bw6_761_Fq6 f_2 = bw6_761_Fq6::one();
 
@@ -575,11 +560,6 @@ bw6_761_Fq6 bw6_761_ate_double_miller_loop(const bw6_761_ate_G1_precomp &prec_P1
             f_2 = f_2.mul_by_045(c_2_1.ell_0, prec_P1.PY * c_2_1.ell_VW, prec_P1.PX * c_2_1.ell_VV);
             f_2 = f_2.mul_by_045(c_2_2.ell_0, prec_P2.PY * c_2_2.ell_VW, prec_P2.PX * c_2_2.ell_VV);
         }
-    }
-
-    if (bw6_761_ate_is_loop_count_neg)
-    {
-    	f_2 = f_2.inverse();
     }
 
     leave_block("Call to bw6_761_ate_double_miller_loop");

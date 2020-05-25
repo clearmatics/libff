@@ -369,11 +369,11 @@ bw6_761_G2 bw6_761_G2::dbl() const
     // h = w^2 - 2*B
     const bw6_761_Fq h = w.squared() - (B+B);
     // X3 = h*s
-    const bw6_761_Fq X3   = h * s;
+    const bw6_761_Fq X3 = h * s;
     // Y3 = w*(B-h) - 2*RR
-    const bw6_761_Fq Y3   = w * (B-h)-(RR+RR);
+    const bw6_761_Fq Y3 = w * (B-h)-(RR+RR);
     // Z3 = sss
-    const bw6_761_Fq Z3   = sss;
+    const bw6_761_Fq Z3 = sss;
     return bw6_761_G2(X3, Y3, Z3);
 }
 
@@ -482,6 +482,7 @@ void bw6_761_G2::read_compressed(std::istream &in, bw6_761_G2 &g)
     // y = +/- sqrt(x^3 + a*x + b)
     if (!is_zero)
     {
+        // using projective coordinates
         const bw6_761_Fq tX2 = tX.squared();
         const bw6_761_Fq tY2 = tX2 * tX + bw6_761_twist_coeff_b;
         tY = tY2.sqrt();
@@ -490,11 +491,7 @@ void bw6_761_G2::read_compressed(std::istream &in, bw6_761_G2 &g)
         {
             tY = -tY;
         }
-    }
 
-    // using projective coordinates
-    if (!is_zero)
-    {
         g.X = tX;
         g.Y = tY;
         g.Z = bw6_761_Fq::one();

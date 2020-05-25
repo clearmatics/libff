@@ -473,6 +473,7 @@ void bw6_761_G1::read_compressed(std::istream &in, bw6_761_G1 &g)
     // y = +/- sqrt(x^3 + a*x + b)
     if (!is_zero)
     {
+        // using Projective coordinates
         bw6_761_Fq tX2 = tX.squared();
         bw6_761_Fq tY2 = tX2 * tX + bw6_761_coeff_b;
         tY = tY2.sqrt();
@@ -481,11 +482,7 @@ void bw6_761_G1::read_compressed(std::istream &in, bw6_761_G1 &g)
         {
             tY = -tY;
         }
-    }
 
-    // using Projective coordinates
-    if (!is_zero)
-    {
         g.X = tX;
         g.Y = tY;
         g.Z = bw6_761_Fq::one();
