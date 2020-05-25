@@ -160,6 +160,7 @@ void init_bls12_377_params()
     // can become of interest then.
     //
     // Below we use the same `wnaf_window_table` as used for other curves
+    // TODO: Adjust the `wnaf_window_table` and `fixed_base_exp_window_table`
     bls12_377_G1::wnaf_window_table.resize(0);
     bls12_377_G1::wnaf_window_table.push_back(11);
     bls12_377_G1::wnaf_window_table.push_back(24);

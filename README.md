@@ -47,7 +47,10 @@ The libff library currently provides the following options:
    An implementation of the MNT cycle (MNT4-MNT6) with small fields.
 
 * `bls12-377`:
-   An implementation of the BLS12-377 curve as introduced in the [Zexe](https://eprint.iacr.org/2018/962.pdf) paper.
+   An implementation of the BLS12_377 curve as introduced in the [Zexe](https://eprint.iacr.org/2018/962.pdf) paper.
+
+* `bw6_761`:
+   An implementation of the BW6_761 curve as introduced in [Optimized and secure pairing-friendly elliptic curves suitable for one layer proof composition](https://eprint.iacr.org/2020/351.pdf)
 
 Note that `bn128` requires an x86-64 CPU while the other curve choices
 should be architecture-independent.
