@@ -245,8 +245,8 @@ void doubling_step_for_miller_loop(bw6_761_G2 &current,
     // B4 = 4 * Y1^2
     const bw6_761_Fq B4 = B+B+B+B;
     // C = Z1^2
-    const bw6_761_Fq C = Z.squared();                        
-    // D = 3 * C   
+    const bw6_761_Fq C = Z.squared();
+    // D = 3 * C
     const bw6_761_Fq D = C+C+C;
     // E = bw6_761_twist_coeff_b * D
     const bw6_761_Fq E = bw6_761_twist_coeff_b * D;
@@ -270,9 +270,9 @@ void doubling_step_for_miller_loop(bw6_761_G2 &current,
     // Z3 = 4 * B * H
     current.Z = B4 * H;
 
-    // ell_0 = I                                 
+    // ell_0 = I
     c.ell_0 = I;
-    // ell_VW = -xi * H (later: * yP)                               
+    // ell_VW = -xi * H (later: * yP)
     c.ell_VW = -bw6_761_twist * H;
     // ell_VV = 3*J (later: * xP)
     c.ell_VV = J+J+J;

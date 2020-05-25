@@ -145,7 +145,7 @@ bw6_761_G1 bw6_761_G1::operator+(const bw6_761_G1 &other) const
         // XX = X1^2
         const bw6_761_Fq XX = (this->X).squared();
         // w = a*ZZ + 3*XX = 3*XX (since a=0)
-        const bw6_761_Fq w = XX + XX + XX;                           
+        const bw6_761_Fq w = XX + XX + XX;
         const bw6_761_Fq Y1Z1 = (this->Y) * (this->Z);
         // s = 2*Y1*Z1
         const bw6_761_Fq s = Y1Z1 + Y1Z1;
@@ -346,7 +346,7 @@ bw6_761_G1 bw6_761_G1::dbl() const
     // XX = X1^2
     const bw6_761_Fq XX = (this->X).squared();
     // w = a*ZZ + 3*XX = 3*XX (since a=0)
-    const bw6_761_Fq w = XX + XX + XX;                           
+    const bw6_761_Fq w = XX + XX + XX;
     const bw6_761_Fq Y1Z1 = (this->Y) * (this->Z);
     // s = 2*Y1*Z1
     const bw6_761_Fq s = Y1Z1 + Y1Z1;
