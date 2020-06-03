@@ -83,6 +83,18 @@ if ("${IS_LIBFF_PARENT}")
   )
 
   add_executable(
+    benchmark_test
+    EXCLUDE_FROM_ALL
+
+    algebra/curves/tests/test_bench_pairings.cpp
+  )
+  target_link_libraries(
+    benchmark_test
+
+    ff
+  )
+
+  add_executable(
     algebra_groups_test
     EXCLUDE_FROM_ALL
 

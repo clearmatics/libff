@@ -48,7 +48,7 @@ option(
 option(
   PROFILE_OP_COUNTS
   "Collect counts for field and curve operations"
-  OFF
+  ON
 )
 option(
   USE_MIXED_ADDITION
