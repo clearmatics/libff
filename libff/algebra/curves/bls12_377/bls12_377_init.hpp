@@ -26,8 +26,20 @@ const mp_size_t bls12_377_q_bitcount = 377;
 const mp_size_t bls12_377_r_limbs = (bls12_377_r_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
 const mp_size_t bls12_377_q_limbs = (bls12_377_q_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
 
+// Decalre the r modulus from bw6_761_modulus_r. We must instantiate the field
+// model templates using references to the SAME bigint, otherwise Fr<bw6_761_p>
+// and Fq<bls12_377_pp> are different types (see the Fp_model type parameters).
+extern bigint<bls12_377_q_limbs> bw6_761_modulus_r;
+
 extern bigint<bls12_377_r_limbs> bls12_377_modulus_r;
-extern bigint<bls12_377_q_limbs> bls12_377_modulus_q;
+// Ideally, we would use a reference:
+//
+//   bigint<bls12_377_q_limbs> &bls12_377_modulus_q = bw6_761_modulus_r;
+//
+// but bls12_377_modulus_q cannot then be used as a template parameter. We are
+// forced to use a macro. Note that bw6_761_modulus_r is initialized by both
+// bw6_761_init() and bls12_377_init() (whether references or macros are used).
+#define bls12_377_modulus_q bw6_761_modulus_r
 
 typedef Fp_model<bls12_377_r_limbs, bls12_377_modulus_r> bls12_377_Fr;
 typedef Fp_model<bls12_377_q_limbs, bls12_377_modulus_q> bls12_377_Fq;

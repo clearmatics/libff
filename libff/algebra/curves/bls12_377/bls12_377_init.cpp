@@ -8,7 +8,8 @@
 namespace libff {
 
 bigint<bls12_377_r_limbs> bls12_377_modulus_r;
-bigint<bls12_377_q_limbs> bls12_377_modulus_q;
+// This is just #defined to refer to bw6_761_modulus_r.
+// bigint<bls12_377_q_limbs> bls12_377_modulus_q;
 
 bls12_377_Fq bls12_377_coeff_b;
 bls12_377_Fq2 bls12_377_twist;
