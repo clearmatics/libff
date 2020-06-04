@@ -569,17 +569,19 @@ mnt4_Fq4 mnt4_ate_miller_loop(const mnt4_ate_G1_precomp &prec_P,
         /* code below gets executed for all bits (EXCEPT the MSB itself) of
            mnt4_param_p (skipping leading zeros) in MSB to LSB
            order */
-        mnt4_ate_dbl_coeffs dc = prec_Q.dbl_coeffs[dbl_idx++];
+        const mnt4_ate_dbl_coeffs &dc = prec_Q.dbl_coeffs[dbl_idx++];
 
-        mnt4_Fq4 g_RR_at_P = mnt4_Fq4(- dc.c_4C - dc.c_J * prec_P.PX_twist + dc.c_L,
-                                      dc.c_H * prec_P.PY_twist);
+        const mnt4_Fq4 g_RR_at_P = mnt4_Fq4(
+            - dc.c_4C - dc.c_J * prec_P.PX_twist + dc.c_L,
+            dc.c_H * prec_P.PY_twist);
         f = f.squared() * g_RR_at_P;
         if (bit)
         {
-            mnt4_ate_add_coeffs ac = prec_Q.add_coeffs[add_idx++];
+            const mnt4_ate_add_coeffs &ac = prec_Q.add_coeffs[add_idx++];
 
-            mnt4_Fq4 g_RQ_at_P = mnt4_Fq4(ac.c_RZ * prec_P.PY_twist,
-                                          -(prec_Q.QY_over_twist * ac.c_RZ + L1_coeff * ac.c_L1));
+            const mnt4_Fq4 g_RQ_at_P = mnt4_Fq4(
+                ac.c_RZ * prec_P.PY_twist,
+                -(prec_Q.QY_over_twist * ac.c_RZ + L1_coeff * ac.c_L1));
             f = f * g_RQ_at_P;
         }
     }
