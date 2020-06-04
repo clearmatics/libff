@@ -48,6 +48,13 @@ struct bls12_377_ate_G2_precomp {
     friend std::istream& operator>>(std::istream &in, bls12_377_ate_G2_precomp &prec_Q);
 };
 
+void bls12_377_doubling_step_for_miller_loop(const bls12_377_Fq two_inv,
+                                             bls12_377_G2 &current,
+                                             bls12_377_ate_ell_coeffs &c);
+void bls12_377_mixed_addition_step_for_miller_loop(const bls12_377_G2 &base,
+                                                   bls12_377_G2 &current,
+                                                   bls12_377_ate_ell_coeffs &c);
+
 bls12_377_ate_G1_precomp bls12_377_ate_precompute_G1(const bls12_377_G1& P);
 bls12_377_ate_G2_precomp bls12_377_ate_precompute_G2(const bls12_377_G2& Q);
 
