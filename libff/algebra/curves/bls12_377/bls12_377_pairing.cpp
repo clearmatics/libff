@@ -231,11 +231,11 @@ bls12_377_GT bls12_377_final_exponentiation(const bls12_377_Fq12 &elt)
 
 // Below is the code related to the computation of the Ate pairing
 
-void doubling_step_for_miller_loop(const bls12_377_Fq two_inv,
-                                           bls12_377_G2 &current,
-                                           bls12_377_ate_ell_coeffs &c)
+void bls12_377_doubling_step_for_miller_loop(const bls12_377_Fq two_inv,
+                                             bls12_377_G2 &current,
+                                             bls12_377_ate_ell_coeffs &c)
 {
-    // Below we assume that `current` = (X, Y, Z) \in E'(Fp2) is a  point
+    // Below we assume that `current` = (X, Y, Z) \in E'(Fp2) is a point
     // in homogeneous projective coordinates.
     const bls12_377_Fq2 X = current.X, Y = current.Y, Z = current.Z;
 
@@ -291,11 +291,11 @@ void doubling_step_for_miller_loop(const bls12_377_Fq two_inv,
     c.ell_0 = bls12_377_twist * I;
 }
 
-void mixed_addition_step_for_miller_loop(const bls12_377_G2 base,
-                                                 bls12_377_G2 &current,
-                                                 bls12_377_ate_ell_coeffs &c)
+void bls12_377_mixed_addition_step_for_miller_loop(const bls12_377_G2 &base,
+                                                   bls12_377_G2 &current,
+                                                   bls12_377_ate_ell_coeffs &c)
 {
-    const bls12_377_Fq2 X1 = current.X, Y1 = current.Y, Z1 = current.Z;
+    const bls12_377_Fq2 &X1 = current.X, &Y1 = current.Y, &Z1 = current.Z;
     const bls12_377_Fq2 &X2 = base.X, &Y2 = base.Y;
 
     const bls12_377_Fq2 A = Y2 * Z1;
@@ -383,12 +383,12 @@ bls12_377_ate_G2_precomp bls12_377_ate_precompute_G2(const bls12_377_G2& Q)
             continue;
         }
 
-        doubling_step_for_miller_loop(two_inv, R, c);
+        bls12_377_doubling_step_for_miller_loop(two_inv, R, c);
         result.coeffs.push_back(c);
 
         if (bit)
         {
-            mixed_addition_step_for_miller_loop(Qcopy, R, c);
+            bls12_377_mixed_addition_step_for_miller_loop(Qcopy, R, c);
             result.coeffs.push_back(c);
         }
     }
