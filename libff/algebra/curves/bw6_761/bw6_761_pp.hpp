@@ -26,20 +26,15 @@ public:
     static void init_public_params();
     static bw6_761_GT final_exponentiation(const bw6_761_Fq6 &elt);
     static bw6_761_G1_precomp precompute_G1(const bw6_761_G1 &P);
-    static bw6_761_G2_precomp precompute_G2(const bw6_761_G2& Q, const bigint<bw6_761_Fq::num_limbs> &loop_count);
+    static bw6_761_G2_precomp precompute_G2(const bw6_761_G2& Q);
     static bw6_761_Fq6 miller_loop(const bw6_761_G1_precomp &prec_P,
-                                const bw6_761_G2_precomp &prec_Q_1,
-                                const bw6_761_G2_precomp &prec_Q_2);
+                                   const bw6_761_G2_precomp &prec_Q);
     static bw6_761_Fq6 double_miller_loop(const bw6_761_G1_precomp &prec_P1,
-                                   const bw6_761_G2_precomp &prec_Q1_1,
-                                   const bw6_761_G2_precomp &prec_Q2_1,
+                                   const bw6_761_G2_precomp &prec_Q1,
                                    const bw6_761_G1_precomp &prec_P2,
-                                   const bw6_761_G2_precomp &prec_Q1_2,
-                                   const bw6_761_G2_precomp &prec_Q2_2);
-    static bw6_761_Fq6 pairing(const bw6_761_G1 &P,
-                            const bw6_761_G2 &Q);
-    static bw6_761_Fq6 reduced_pairing(const bw6_761_G1 &P,
-                                    const bw6_761_G2 &Q);
+                                   const bw6_761_G2_precomp &prec_Q2);
+    static bw6_761_Fq6 pairing(const bw6_761_G1 &P, const bw6_761_G2 &Q);
+    static bw6_761_Fq6 reduced_pairing(const bw6_761_G1 &P, const bw6_761_G2 &Q);
 };
 
 } // libff
