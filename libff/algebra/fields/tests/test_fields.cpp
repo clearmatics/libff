@@ -11,6 +11,7 @@
 # undef NDEBUG
 #endif
 
+#include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
@@ -278,6 +279,11 @@ int main(void)
     test_Frobenius<alt_bn128_Fq6>();
     test_all_fields<alt_bn128_pp>();
     test_Fp12_2over3over2_mul_by_024<alt_bn128_Fq12>();
+
+    bls12_377_pp::init_public_params();
+    test_field<bls12_377_Fq6>();
+    test_all_fields<bls12_377_pp>();
+    test_Fp12_2over3over2_mul_by_024<bls12_377_Fq12>();
 
 #ifdef CURVE_BN128       // BN128 has fancy dependencies so it may be disabled
     bn128_pp::init_public_params();
