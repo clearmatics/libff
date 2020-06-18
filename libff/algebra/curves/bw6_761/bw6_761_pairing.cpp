@@ -54,14 +54,14 @@ std::istream& operator>>(std::istream &in, bw6_761_ate_ell_coeffs &c)
     return in;
 }
 
-bool bw6_761_ate_G2_precomp::operator==(const bw6_761_ate_G2_precomp &other) const
+bool bw6_761_ate_G2_precomp_iteration::operator==(const bw6_761_ate_G2_precomp_iteration &other) const
 {
     return (this->QX == other.QX &&
             this->QY == other.QY &&
             this->coeffs == other.coeffs);
 }
 
-std::ostream& operator<<(std::ostream& out, const bw6_761_ate_G2_precomp &prec_Q)
+std::ostream& operator<<(std::ostream& out, const bw6_761_ate_G2_precomp_iteration &prec_Q)
 {
     out << prec_Q.QX << OUTPUT_SEPARATOR << prec_Q.QY << "\n";
     out << prec_Q.coeffs.size() << "\n";
@@ -72,7 +72,7 @@ std::ostream& operator<<(std::ostream& out, const bw6_761_ate_G2_precomp &prec_Q
     return out;
 }
 
-std::istream& operator>>(std::istream& in, bw6_761_ate_G2_precomp &prec_Q)
+std::istream& operator>>(std::istream& in, bw6_761_ate_G2_precomp_iteration &prec_Q)
 {
     in >> prec_Q.QX;
     consume_OUTPUT_SEPARATOR(in);
@@ -95,6 +95,27 @@ std::istream& operator>>(std::istream& in, bw6_761_ate_G2_precomp &prec_Q)
         prec_Q.coeffs.emplace_back(c);
     }
 
+    return in;
+}
+
+bool bw6_761_ate_G2_precomp::operator==(const bw6_761_ate_G2_precomp &other) const
+{
+    return (this->precomp_1 == other.precomp_1 &&
+            this->precomp_2 == other.precomp_2);
+}
+
+std::ostream& operator<<(std::ostream& out, const bw6_761_ate_G2_precomp &prec_Q)
+{
+    out << prec_Q.precomp_1 << OUTPUT_SEPARATOR << prec_Q.precomp_2 << "\n";
+    return out;
+}
+
+std::istream& operator>>(std::istream& in, bw6_761_ate_G2_precomp &prec_Q)
+{
+    in >> prec_Q.precomp_1;
+    consume_OUTPUT_SEPARATOR(in);
+    in >> prec_Q.precomp_2;
+    consume_newline(in);
     return in;
 }
 
@@ -329,14 +350,16 @@ bw6_761_ate_G1_precomp bw6_761_ate_precompute_G1(const bw6_761_G1& P)
     return result;
 }
 
-bw6_761_ate_G2_precomp bw6_761_ate_precompute_G2(const bw6_761_G2& Q, const bigint<bw6_761_Fq::num_limbs> &loop_count)
+static bw6_761_ate_G2_precomp_iteration bw6_761_ate_precompute_G2_internal(
+    const bw6_761_G2& Q,
+    const bigint<bw6_761_Fq::num_limbs> &loop_count)
 {
     enter_block("Call to bw6_761_ate_precompute_G2");
 
     bw6_761_G2 Qcopy(Q);
     Qcopy.to_affine_coordinates();
 
-    bw6_761_ate_G2_precomp result;
+    bw6_761_ate_G2_precomp_iteration result;
     result.QX = Qcopy.X;
     result.QY = Qcopy.Y;
 
@@ -379,12 +402,23 @@ bw6_761_ate_G2_precomp bw6_761_ate_precompute_G2(const bw6_761_G2& Q, const bigi
     return result;
 }
 
+bw6_761_ate_G2_precomp bw6_761_ate_precompute_G2(const bw6_761_G2& Q)
+{
+    return {
+        bw6_761_ate_precompute_G2_internal(Q, bw6_761_ate_loop_count1),
+        bw6_761_ate_precompute_G2_internal(Q, bw6_761_ate_loop_count2),
+    };
+}
+
+
 // https://gitlab.inria.fr/zk-curves/bw6-761/-/blob/master/sage/pairing.py#L344
 bw6_761_Fq6 bw6_761_ate_miller_loop(const bw6_761_ate_G1_precomp &prec_P,
-                                     const bw6_761_ate_G2_precomp &prec_Q_1,
-                                     const bw6_761_ate_G2_precomp &prec_Q_2)
+                                    const bw6_761_ate_G2_precomp &prec_Q)
 {
     enter_block("Call to bw6_761_ate_miller_loop");
+
+    const bw6_761_ate_G2_precomp_iteration &prec_Q_1 = prec_Q.precomp_1;
+    const bw6_761_ate_G2_precomp_iteration &prec_Q_2 = prec_Q.precomp_2;
 
     // f_{u+1,Q}(P)
     bw6_761_Fq6 f_1 = bw6_761_Fq6::one();
@@ -465,14 +499,18 @@ bw6_761_Fq6 bw6_761_ate_miller_loop(const bw6_761_ate_G1_precomp &prec_P,
     return f_1 * f_2;
 }
 
-bw6_761_Fq6 bw6_761_ate_double_miller_loop(const bw6_761_ate_G1_precomp &prec_P1,
-        const bw6_761_ate_G2_precomp &prec_Q1_1,
-        const bw6_761_ate_G2_precomp &prec_Q2_1,
-        const bw6_761_ate_G1_precomp &prec_P2,
-        const bw6_761_ate_G2_precomp &prec_Q1_2,
-        const bw6_761_ate_G2_precomp &prec_Q2_2)
+bw6_761_Fq6 bw6_761_ate_double_miller_loop(
+    const bw6_761_ate_G1_precomp &prec_P1,
+    const bw6_761_ate_G2_precomp &prec_Q1,
+    const bw6_761_ate_G1_precomp &prec_P2,
+    const bw6_761_ate_G2_precomp &prec_Q2)
 {
     enter_block("Call to bw6_761_ate_double_miller_loop");
+
+    const bw6_761_ate_G2_precomp_iteration &prec_Q1_1 = prec_Q1.precomp_1;
+    const bw6_761_ate_G2_precomp_iteration &prec_Q2_1 = prec_Q1.precomp_2;
+    const bw6_761_ate_G2_precomp_iteration &prec_Q1_2 = prec_Q2.precomp_1;
+    const bw6_761_ate_G2_precomp_iteration &prec_Q2_2 = prec_Q2.precomp_2;
 
     // f_{u+1,Q}(P)
     bw6_761_Fq6 f_1 = bw6_761_Fq6::one();
@@ -573,9 +611,8 @@ bw6_761_Fq6 bw6_761_ate_pairing(const bw6_761_G1& P, const bw6_761_G2 &Q)
 {
     enter_block("Call to bw6_761_ate_pairing");
     bw6_761_ate_G1_precomp prec_P = bw6_761_ate_precompute_G1(P);
-    bw6_761_ate_G2_precomp prec_Q_1 = bw6_761_ate_precompute_G2(Q, bw6_761_ate_loop_count1);
-    bw6_761_ate_G2_precomp prec_Q_2 = bw6_761_ate_precompute_G2(Q, bw6_761_ate_loop_count2);
-    bw6_761_Fq6 result = bw6_761_ate_miller_loop(prec_P, prec_Q_1, prec_Q_2);
+    bw6_761_ate_G2_precomp prec_Q = bw6_761_ate_precompute_G2(Q);
+    bw6_761_Fq6 result = bw6_761_ate_miller_loop(prec_P, prec_Q);
     leave_block("Call to bw6_761_ate_pairing");
     return result;
 }
@@ -596,37 +633,33 @@ bw6_761_G1_precomp bw6_761_precompute_G1(const bw6_761_G1& P)
     return bw6_761_ate_precompute_G1(P);
 }
 
-bw6_761_G2_precomp bw6_761_precompute_G2(const bw6_761_G2& Q, const bigint<bw6_761_Fq::num_limbs> &loop_count)
+bw6_761_G2_precomp bw6_761_precompute_G2(const bw6_761_G2& Q)
 {
-    return bw6_761_ate_precompute_G2(Q, loop_count);
+    return bw6_761_ate_precompute_G2(Q);
 }
 
 bw6_761_Fq6 bw6_761_miller_loop(const bw6_761_G1_precomp &prec_P,
-                          const bw6_761_G2_precomp &prec_Q_1,
-                          const bw6_761_G2_precomp &prec_Q_2)
+                                const bw6_761_G2_precomp &prec_Q)
 {
-    return bw6_761_ate_miller_loop(prec_P, prec_Q_1, prec_Q_2);
+    return bw6_761_ate_miller_loop(prec_P, prec_Q);
 }
 
 bw6_761_Fq6 bw6_761_double_miller_loop(const bw6_761_ate_G1_precomp &prec_P1,
-                                     const bw6_761_ate_G2_precomp &prec_Q1_1,
-                                     const bw6_761_ate_G2_precomp &prec_Q2_1,
-                                     const bw6_761_ate_G1_precomp &prec_P2,
-                                     const bw6_761_ate_G2_precomp &prec_Q1_2,
-                                     const bw6_761_ate_G2_precomp &prec_Q2_2)
+                                       const bw6_761_ate_G2_precomp &prec_Q1,
+                                       const bw6_761_ate_G1_precomp &prec_P2,
+                                       const bw6_761_ate_G2_precomp &prec_Q2)
 {
-    return bw6_761_ate_double_miller_loop(prec_P1, prec_Q1_1, prec_Q2_1, prec_P2, prec_Q1_2, prec_Q2_2);
+    return bw6_761_ate_double_miller_loop(prec_P1, prec_Q1, prec_P2, prec_Q2);
 }
 
-bw6_761_Fq6 bw6_761_pairing(const bw6_761_G1& P,
-                      const bw6_761_G2 &Q)
+bw6_761_Fq6 bw6_761_pairing(const bw6_761_G1& P, const bw6_761_G2 &Q)
 {
     return bw6_761_ate_pairing(P, Q);
 }
 
-bw6_761_GT bw6_761_reduced_pairing(const bw6_761_G1 &P,
-                             const bw6_761_G2 &Q)
+bw6_761_GT bw6_761_reduced_pairing(const bw6_761_G1 &P, const bw6_761_G2 &Q)
 {
     return bw6_761_ate_reduced_pairing(P, Q);
 }
+
 } // libff

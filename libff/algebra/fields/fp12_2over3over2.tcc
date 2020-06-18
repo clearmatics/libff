@@ -247,76 +247,64 @@ Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::mul_by_024(
 
        return (*this) * a;
     */
-    my_Fp2 z0 = this->c0.c0;
-    my_Fp2 z1 = this->c0.c1;
-    my_Fp2 z2 = this->c0.c2;
-    my_Fp2 z3 = this->c1.c0;
-    my_Fp2 z4 = this->c1.c1;
-    my_Fp2 z5 = this->c1.c2;
+    const my_Fp2 &z0 = this->c0.c0;
+    const my_Fp2 &z1 = this->c0.c1;
+    const my_Fp2 &z2 = this->c0.c2;
+    const my_Fp2 &z3 = this->c1.c0;
+    const my_Fp2 &z4 = this->c1.c1;
+    const my_Fp2 &z5 = this->c1.c2;
+    const my_Fp2 &x0 = ell_0;
+    const my_Fp2 &x2 = ell_VV;
+    const my_Fp2 &x4 = ell_VW;
 
-    my_Fp2 x0 = ell_0;
-    my_Fp2 x2 = ell_VV;
-    my_Fp2 x4 = ell_VW;
+    // out_z0 = z0*x0 + non_residue * ( z1*x2 + z4*x4 )
+    const my_Fp2 z0_x0 = z0 * x0;
+    const my_Fp2 z1_x2 = z1 * x2;
+    const my_Fp2 z4_x4 = z4 * x4;
+    const my_Fp2 out_z0 = my_Fp6::non_residue * (z1_x2 + z4_x4) + z0_x0;
+    my_Fp2 S = z1_x2;
 
-    my_Fp2 t0, t1, t2, s0, T3, T4, D0, D2, D4, S1;
+    // out_z1 = z1*x0 + non_residue * ( z2*x2 + z5*x4 )
+    const my_Fp2 z2_x2 = z2 * x2;
+    const my_Fp2 z5_x4 = z5 * x4;
+    const my_Fp2 z1_x0 = z1 * x0;
+    const my_Fp2 out_z1 = my_Fp6::non_residue * (z5_x4 + z2_x2) + z1_x0;
+    S = S + z1_x0;
+    S = S + z5_x4;
 
-    D0 = z0 * x0;
-    D2 = z2 * x2;
-    D4 = z4 * x4;
-    t2 = z0 + z4;
-    t1 = z0 + z2;
-    s0 = z1 + z3 + z5;
+    // out_z2 = z0*x2 + z2*x0 + z3*x4
+    // where:
+    //   z0*x2 + z2*x0 = (z0 + z2)*(x0 + x2) - z0*x0 - z2*x2
+    const my_Fp2 z0_x2_plus_z2_x0 = (z0 + z2) * (x0 + x2) - z0_x0 - z2_x2;
+    const my_Fp2 z3_x4 = z3 * x4;
+    const my_Fp2 out_z2 = z0_x2_plus_z2_x0 + z3_x4;
+    S = S + z3_x4;
 
-    // For z.a_.a_ = z0.
-    S1 = z1 * x2;
-    T3 = S1 + D4;
-    T4 = my_Fp6::non_residue * T3 + D0;
-    z0 = T4;
+    // out_z3 = z3*x0 + non_residue * (z2*x4 + z4*x2)
+    // where:
+    //   z2*x4 + z4*x2 = (z2 + z4)*(x2 + x4) - z2*x2 - z4*x4
+    const my_Fp2 z2_x3_plus_z4_x2 = (z2 + z4) * (x2 + x4) - z2_x2 - z4_x4;
+    const my_Fp2 z3_x0 = z3 * x0;
+    const my_Fp2 out_z3 = my_Fp6::non_residue * z2_x3_plus_z4_x2 + z3_x0;
+    S = S + z3_x0;
 
-    // For z.a_.b_ = z1
-    T3 = z5 * x4;
-    S1 = S1 + T3;
-    T3 = T3 + D2;
-    T4 = my_Fp6::non_residue * T3;
-    T3 = z1 * x0;
-    S1 = S1 + T3;
-    T4 = T4 + T3;
-    z1 = T4;
+    // out_z4 = z0*x4 + z4*x0 + non_residue * z5*x2
+    // where:
+    //   z0*x4 + z4*x0 = (z0 + z4)*(x0 + x4) - z0*x0 - z4*x4
+    const my_Fp2 z0_x4_plus_z4_x0 = (z0 + z4) * (x0 + x4) - z0_x0 - z4_x4;
+    const my_Fp2 z5_x2 = z5 * x2;
+    const my_Fp2 out_z4 = my_Fp6::non_residue * z5_x2 + z0_x4_plus_z4_x0;
+    S = S + z5_x2;
 
-    // For z.a_.c_ = z2
-    t0 = x0 + x2;
-    T3 = t1 * t0 - D0 - D2;
-    T4 = z3 * x4;
-    S1 = S1 + T4;
-    T3 = T3 + T4;
+    // out_z5 = z1*x4 + z3*x2 + z5*x0
+    //        = (z1 + z3 + z5)*(x0 + x2 + x4)
+    //            - z1_x0 - z1_x2 - z3_x0 - z3*x4 - z5_x2 - z5*x4
+    //        = (z1 + z3 + z5)*(x0 + x2 + x4) - S
+    const my_Fp2 out_z5 = (z1 + z3 + z5)*(x0 + x2 + x4) - S;
 
-    // For z.b_.a_ = z3 (z3 needs z2)
-    t0 = z2 + z4;
-    z2 = T3;
-    t1 = x2 + x4;
-    T3 = t0 * t1 - D2 - D4;
-    T4 = my_Fp6::non_residue * T3;
-    T3 = z3 * x0;
-    S1 = S1 + T3;
-    T4 = T4 + T3;
-    z3 = T4;
-
-    // For z.b_.b_ = z4
-    T3 = z5 * x2;
-    S1 = S1 + T3;
-    T4 = my_Fp6::non_residue * T3;
-    t0 = x0 + x4;
-    T3 = t2 * t0 - D0 - D4;
-    T4 = T4 + T3;
-    z4 = T4;
-
-    // For z.b_.c_ = z5.
-    t0 = x0 + x2 + x4;
-    T3 = s0 * t0 - S1;
-    z5 = T3;
-
-    return Fp12_2over3over2_model<n,modulus>(my_Fp6(z0,z1,z2),my_Fp6(z3,z4,z5));
-
+    return Fp12_2over3over2_model<n,modulus>(
+        my_Fp6(out_z0,out_z1,out_z2),
+        my_Fp6(out_z3,out_z4,out_z5));
 }
 
 template<mp_size_t n, const bigint<n>& modulus, mp_size_t m>

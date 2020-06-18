@@ -11,6 +11,7 @@
 # undef NDEBUG
 #endif
 
+#include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
@@ -223,6 +224,40 @@ void test_Fp4_tom_cook()
     }
 }
 
+template<typename Fp12T>
+void test_Fp12_2over3over2_mul_by_024()
+{
+    using FpT = typename Fp12T::my_Fp;
+    using Fp2T = typename Fp12T::my_Fp2;
+    using Fp6T = typename Fp12T::my_Fp6;
+
+    // Let z be some Fp12 element, and x be a sparse element. Compute the
+    // results of z * x in the long way, and using the mul_by_024 method.
+
+    const Fp12T z(
+        Fp6T(
+            Fp2T(FpT("5"), FpT("6")),
+            Fp2T(FpT("7"), FpT("8")),
+            Fp2T(FpT("9"), FpT("10"))),
+        Fp6T(
+            Fp2T(FpT("21"), FpT("22")),
+            Fp2T(FpT("23"), FpT("24")),
+            Fp2T(FpT("25"), FpT("26"))));
+    const Fp12T x(
+        Fp6T(
+            Fp2T(FpT("11"), FpT("12")),
+            Fp2T::zero(),
+            Fp2T(FpT("15"), FpT("16"))),
+        Fp6T(
+            Fp2T::zero(),
+            Fp2T(FpT("3"), FpT("4")),
+            Fp2T::zero()));
+
+    const Fp12T result_slow = z * x;
+    const Fp12T result_mul_024 = z.mul_by_024(x.c0.c0, x.c1.c1, x.c0.c2);
+    assert(result_slow == result_mul_024);
+}
+
 int main(void)
 {
     edwards_pp::init_public_params();
@@ -243,6 +278,12 @@ int main(void)
     test_field<alt_bn128_Fq6>();
     test_Frobenius<alt_bn128_Fq6>();
     test_all_fields<alt_bn128_pp>();
+    test_Fp12_2over3over2_mul_by_024<alt_bn128_Fq12>();
+
+    bls12_377_pp::init_public_params();
+    test_field<bls12_377_Fq6>();
+    test_all_fields<bls12_377_pp>();
+    test_Fp12_2over3over2_mul_by_024<bls12_377_Fq12>();
 
 #ifdef CURVE_BN128       // BN128 has fancy dependencies so it may be disabled
     bn128_pp::init_public_params();
