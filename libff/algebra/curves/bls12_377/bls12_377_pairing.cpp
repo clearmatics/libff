@@ -134,11 +134,22 @@ bls12_377_Fq12 bls12_377_exp_by_z(const bls12_377_Fq12 &elt)
 {
     enter_block("Call to bls12_377_exp_by_z");
 
+    bls12_377_Fq12 result = elt;
+    const size_t num_bits = bls12_377_final_exponent_z.num_bits();
+    for (size_t bit_idx = num_bits - 1 ; bit_idx > 0 ; --bit_idx)
+    {
+        result = result.cyclotomic_squared();
+        if (bls12_377_final_exponent_z.test_bit(bit_idx - 1)) {
+            result = result * elt;
+        }
+    }
+#if 0
     bls12_377_Fq12 result = elt.cyclotomic_exp(bls12_377_final_exponent_z);
     if (bls12_377_final_exponent_is_z_neg)
     {
         result = result.unitary_inverse();
     }
+#endif
 
     leave_block("Call to bls12_377_exp_by_z");
 

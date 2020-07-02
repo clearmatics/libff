@@ -176,21 +176,66 @@ Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::cyclotomic_
        return (*this).squared();
     */
     my_Fp2 z0 = this->c0.c0;
+    my_Fp2 z1 = this->c0.c1;
+    my_Fp2 z2 = this->c0.c2;
+    my_Fp2 z3 = this->c1.c0;
+    my_Fp2 z4 = this->c1.c1;
+    my_Fp2 z5 = this->c1.c2;
+
+    const my_Fp2 z0z4 = z0 * z4; // MUL
+    const my_Fp2 t0_L = (z0 + z4) * (z0 + my_Fp6::non_residue * z4); // MUL
+    const my_Fp2 t0_R = z0z4 * (my_Fp2::one() + my_Fp6::non_residue);
+    const my_Fp2 t1 = z0z4 + z0z4;
+
+    const my_Fp2 z3z2 = z3 * z2; // MUL
+    const my_Fp2 t2_L = (z3 + z2) * (z3 + my_Fp6::non_residue * z2); // MUL
+    const my_Fp2 t2_R = z3z2 * (my_Fp2::one() + my_Fp6::non_residue);
+    const my_Fp2 t3 = z3z2 + z3z2;
+
+    const my_Fp2 z1z5 = z1 * z5; // MUL
+    const my_Fp2 t4_L = (z1 + z5) * (z1 + my_Fp6::non_residue * z5); // MUL
+    const my_Fp2 t4_R = z1z5 * (my_Fp2::one() + my_Fp6::non_residue);
+    const my_Fp2 t5 = z1z5 + z1z5;
+
+    // t0 = t0_L - t0_R = (z0 + z4) * (z0 + my_Fp6::non_residue * z4) - z0z4 * (my_Fp2::one() + my_Fp6::non_residue)
+    // out0 = 3 * t0 - 2 * z0
+    const my_Fp2 out0 = t0_L + t0_L + t0_L - t0_R - t0_R - t0_R - z0 - z0;
+    // out4 = 3 * t1 + 2 * z4
+    const my_Fp2 out4 = t1 + t1 + t1 + z4 + z4;
+
+    // out3 = 3 * (xi * t5) + 2 * z3
+    const my_Fp2 out3 = (my_Fp(3) * my_Fp6::non_residue * t5) + z3 + z3;
+    // t4 = t4_L - t4_R = (z1 + z5) * (z1 + my_Fp6::non_residue * z5) - z1z5 * (my_Fp2::one() + my_Fp6::non_residue)
+    // out2 = 3 * t4 - 2 * z2
+    const my_Fp2 out2 = t4_L + t4_L + t4_L - t4_R - t4_R - t4_R - z2 - z2;
+
+    // t2 = t2_L - t2_R = (z3 + z2) * (z3 + my_Fp6::non_residue * z2) - z3z2 * (my_Fp2::one() + my_Fp6::non_residue)
+    // out1 = 3 * t2 - 2 * z1
+    //      = 3 * (t2_L - t2_R) - 2 * z1
+    //   <=>
+    // 3 * t2_L = out1 + 2 * z1 + 3 * t2_R
+    const my_Fp2 out1 = t2_L + t2_L + t2_L - t2_R - t2_R - t2_R - z1 - z1;
+    // out5 = 3 * t3 + 2 * z5;
+    const my_Fp2 out5 = t3 + t3 + t3 + z5 + z5;;
+
+    return Fp12_2over3over2_model<n,modulus>(my_Fp6(out0,out1,out2),my_Fp6(out3,out4,out5));
+
+#if 0
+    my_Fp2 z0 = this->c0.c0;
     my_Fp2 z4 = this->c0.c1;
     my_Fp2 z3 = this->c0.c2;
     my_Fp2 z2 = this->c1.c0;
     my_Fp2 z1 = this->c1.c1;
     my_Fp2 z5 = this->c1.c2;
-
     my_Fp2 t0, t1, t2, t3, t4, t5, tmp;
 
-    // t0 + t1*y = (z0 + z1*y)^2 = a^2
-    tmp = z0 * z1;
-    t0 = (z0 + z1) * (z0 + my_Fp6::non_residue * z1) - tmp - my_Fp6::non_residue * tmp;
+    // t0 + t1*y = (z0 + _z4*y)^2 = a^2
+    tmp = z0 * _z4;
+    t0 = (z0 + _z4) * (z0 + my_Fp6::non_residue * _z4) - tmp - my_Fp6::non_residue * tmp;
     t1 = tmp + tmp;
-    // t2 + t3*y = (z2 + z3*y)^2 = b^2
-    tmp = z2 * z3;
-    t2 = (z2 + z3) * (z2 + my_Fp6::non_residue * z3) - tmp - my_Fp6::non_residue * tmp;
+    // t2 + t3*y = (z2 + _z2*y)^2 = b^2
+    tmp = z2 * _z2;
+    t2 = (z2 + _z2) * (z2 + my_Fp6::non_residue * _z2) - tmp - my_Fp6::non_residue * tmp;
     t3 = tmp + tmp;
     // t4 + t5*y = (z4 + z5*y)^2 = c^2
     tmp = z4 * z5;
@@ -234,6 +279,7 @@ Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::cyclotomic_
     z5 = z5 + t3;
 
     return Fp12_2over3over2_model<n,modulus>(my_Fp6(z0,z4,z3),my_Fp6(z2,z1,z5));
+#endif
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
