@@ -65,6 +65,10 @@ bls12_377_Fq12 bls12_377_ate_double_miller_loop(const bls12_377_ate_G1_precomp &
                                      const bls12_377_ate_G1_precomp &prec_P2,
                                      const bls12_377_ate_G2_precomp &prec_Q2);
 
+bls12_377_Fq12 bls12_377_final_exponentiation_first_chunk(const bls12_377_Fq12 &elt);
+bls12_377_Fq12 bls12_377_exp_by_z(const bls12_377_Fq12 &elt);
+bls12_377_Fq12 bls12_377_final_exponentiation_last_chunk(const bls12_377_Fq12 &elt);
+
 bls12_377_Fq12 bls12_377_ate_pairing(const bls12_377_G1& P,
                           const bls12_377_G2 &Q);
 bls12_377_GT bls12_377_ate_reduced_pairing(const bls12_377_G1 &P,
