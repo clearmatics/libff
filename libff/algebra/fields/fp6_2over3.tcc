@@ -17,7 +17,7 @@ namespace libff {
 template<mp_size_t n, const bigint<n>& modulus>
 Fp3_model<n,modulus> Fp6_2over3_model<n, modulus>::mul_by_non_residue(const Fp3_model<n,modulus> &elem)
 {
-    return Fp3_model<n, modulus>(non_residue * elem.c2, elem.c0, elem.c1);
+    return Fp3_model<n, modulus>(non_residue * elem.coeffs[2], elem.coeffs[0], elem.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -38,8 +38,8 @@ template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::random_element()
 {
     Fp6_2over3_model<n, modulus> r;
-    r.c0 = my_Fp3::random_element();
-    r.c1 = my_Fp3::random_element();
+    r.coeffs[0] = my_Fp3::random_element();
+    r.coeffs[1] = my_Fp3::random_element();
 
     return r;
 }
@@ -47,7 +47,7 @@ Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::random_element()
 template<mp_size_t n, const bigint<n>& modulus>
 bool Fp6_2over3_model<n,modulus>::operator==(const Fp6_2over3_model<n,modulus> &other) const
 {
-    return (this->c0 == other.c0 && this->c1 == other.c1);
+    return (this->coeffs[0] == other.coeffs[0] && this->coeffs[1] == other.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -59,22 +59,22 @@ bool Fp6_2over3_model<n,modulus>::operator!=(const Fp6_2over3_model<n,modulus> &
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::operator+(const Fp6_2over3_model<n,modulus> &other) const
 {
-    return Fp6_2over3_model<n,modulus>(this->c0 + other.c0,
-                                this->c1 + other.c1);
+    return Fp6_2over3_model<n,modulus>(this->coeffs[0] + other.coeffs[0],
+                                this->coeffs[1] + other.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::operator-(const Fp6_2over3_model<n,modulus> &other) const
 {
-    return Fp6_2over3_model<n,modulus>(this->c0 - other.c0,
-                                this->c1 - other.c1);
+    return Fp6_2over3_model<n,modulus>(this->coeffs[0] - other.coeffs[0],
+                                this->coeffs[1] - other.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n, modulus> operator*(const Fp_model<n, modulus> &lhs, const Fp6_2over3_model<n, modulus> &rhs)
 {
-    return Fp6_2over3_model<n,modulus>(lhs*rhs.c0,
-                                lhs*rhs.c1);
+    return Fp6_2over3_model<n,modulus>(lhs*rhs.coeffs[0],
+                                lhs*rhs.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -82,8 +82,8 @@ Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::operator*(const Fp6_2ov
 {
     /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Karatsuba) */
 
-    const my_Fp3 &B = other.c1, &A = other.c0,
-                 &b = this->c1, &a = this->c0;
+    const my_Fp3 &B = other.coeffs[1], &A = other.coeffs[0],
+                 &b = this->coeffs[1], &a = this->coeffs[0];
     const my_Fp3 aA = a*A;
     const my_Fp3 bB = b*B;
     const my_Fp3 beta_bB = Fp6_2over3_model<n,modulus>::mul_by_non_residue(bB);
@@ -103,12 +103,12 @@ Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::mul_by_045(
     // my_Fp3(my_Fp::zero(), ell_0, ell_VV));
     // return (*this) * a;
 
-    my_Fp z0 = this->c0.c0;
-    my_Fp z1 = this->c0.c1;
-    my_Fp z2 = this->c0.c2;
-    my_Fp z3 = this->c1.c0;
-    my_Fp z4 = this->c1.c1;
-    my_Fp z5 = this->c1.c2;
+    my_Fp z0 = this->coeffs[0].coeffs[0];
+    my_Fp z1 = this->coeffs[0].coeffs[1];
+    my_Fp z2 = this->coeffs[0].coeffs[2];
+    my_Fp z3 = this->coeffs[1].coeffs[0];
+    my_Fp z4 = this->coeffs[1].coeffs[1];
+    my_Fp z5 = this->coeffs[1].coeffs[2];
 
     my_Fp x0 = ell_VW;
     my_Fp x4 = ell_0;
@@ -134,12 +134,12 @@ template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::mul_by_2345(const Fp6_2over3_model<n,modulus> &other) const
 {
     /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Karatsuba) */
-    assert(other.c0.c0.is_zero());
-    assert(other.c0.c1.is_zero());
+    assert(other.coeffs[0].coeffs[0].is_zero());
+    assert(other.coeffs[0].coeffs[1].is_zero());
 
-    const my_Fp3 &B = other.c1, &A = other.c0,
-                 &b = this->c1, &a = this->c0;
-    const my_Fp3 aA = my_Fp3(a.c1 * A.c2 * non_residue, a.c2 * A.c2 * non_residue, a.c0 * A.c2);
+    const my_Fp3 &B = other.coeffs[1], &A = other.coeffs[0],
+                 &b = this->coeffs[1], &a = this->coeffs[0];
+    const my_Fp3 aA = my_Fp3(a.coeffs[1] * A.coeffs[2] * non_residue, a.coeffs[2] * A.coeffs[2] * non_residue, a.coeffs[0] * A.coeffs[2]);
     const my_Fp3 bB = b*B;
     const my_Fp3 beta_bB = Fp6_2over3_model<n,modulus>::mul_by_non_residue(bB);
 
@@ -150,15 +150,15 @@ Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::mul_by_2345(const Fp6_2
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::operator-() const
 {
-    return Fp6_2over3_model<n,modulus>(-this->c0,
-                                -this->c1);
+    return Fp6_2over3_model<n,modulus>(-this->coeffs[0],
+                                -this->coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::squared() const
 {
     /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Complex) */
-    const my_Fp3 &b = this->c1, &a = this->c0;
+    const my_Fp3 &b = this->coeffs[1], &a = this->coeffs[0];
     const my_Fp3 ab = a * b;
 
     return Fp6_2over3_model<n,modulus>((a+b)*(a+Fp6_2over3_model<n,modulus>::mul_by_non_residue(b))-ab-Fp6_2over3_model<n,modulus>::mul_by_non_residue(ab),
@@ -170,7 +170,7 @@ Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::inverse() const
 {
     /* From "High-Speed Software Implementation of the Optimal Ate Pairing over Barreto-Naehrig Curves"; Algorithm 8 */
 
-    const my_Fp3 &b = this->c1, &a = this->c0;
+    const my_Fp3 &b = this->coeffs[1], &a = this->coeffs[0];
     const my_Fp3 t1 = b.squared();
     const my_Fp3 t0 = a.squared() - Fp6_2over3_model<n,modulus>::mul_by_non_residue(t1);
     const my_Fp3 new_t1 = t0.inverse();
@@ -182,31 +182,31 @@ Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::inverse() const
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::Frobenius_map(unsigned long power) const
 {
-    return Fp6_2over3_model<n,modulus>(c0.Frobenius_map(power),
-                                       Frobenius_coeffs_c1[power % 6] * c1.Frobenius_map(power));
+    return Fp6_2over3_model<n,modulus>(coeffs[0].Frobenius_map(power),
+                                       Frobenius_coeffs_c1[power % 6] * coeffs[1].Frobenius_map(power));
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::unitary_inverse() const
 {
-    return Fp6_2over3_model<n,modulus>(this->c0,
-                                -this->c1);
+    return Fp6_2over3_model<n,modulus>(this->coeffs[0],
+                                -this->coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::cyclotomic_squared() const
 {
-    my_Fp2 a = my_Fp2(c0.c0, c1.c1);
-    //my_Fp a_a = c0.c0; // a = Fp2([c0[0],c1[1]])
-    //my_Fp a_b = c1.c1;
+    my_Fp2 a = my_Fp2(coeffs[0].coeffs[0], coeffs[0].coeffs[1]);
+    //my_Fp a_a = c0.coeffs[0]; // a = Fp2([c0[0],c1[1]])
+    //my_Fp a_b = c1.coeffs[1];
 
-    my_Fp2 b = my_Fp2(c1.c0, c0.c2);
-    //my_Fp b_a = c1.c0; // b = Fp2([c1[0],c0[2]])
-    //my_Fp b_b = c0.c2;
+    my_Fp2 b = my_Fp2(coeffs[0].coeffs[0], coeffs[0].coeffs[2]);
+    //my_Fp b_a = c1.coeffs[0]; // b = Fp2([c1[0],c0[2]])
+    //my_Fp b_b = c0.coeffs[2];
 
-    my_Fp2 c = my_Fp2(c0.c1, c1.c2);
-    //my_Fp c_a = c0.c1; // c = Fp2([c0[1],c1[2]])
-    //my_Fp c_b = c1.c2;
+    my_Fp2 c = my_Fp2(coeffs[0].coeffs[1], coeffs[1].coeffs[2]);
+    //my_Fp c_a = c0.coeffs[1]; // c = Fp2([c0[1],c1[2]])
+    //my_Fp c_b = c1.coeffs[2];
 
     my_Fp2 asq = a.squared();
     my_Fp2 bsq = b.squared();
@@ -214,29 +214,29 @@ Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::cyclotomic_squared() co
 
     // A = vector(3*a^2 - 2*Fp2([vector(a)[0],-vector(a)[1]]))
     //my_Fp A_a = my_Fp(3l) * asq_a - my_Fp(2l) * a_a;
-    my_Fp A_a = asq.c0 - a.c0;
-    A_a = A_a + A_a + asq.c0;
+    my_Fp A_a = asq.coeffs[0] - a.coeffs[0];
+    A_a = A_a + A_a + asq.coeffs[0];
     //my_Fp A_b = my_Fp(3l) * asq_b + my_Fp(2l) * a_b;
-    my_Fp A_b = asq.c1 + a.c1;
-    A_b = A_b + A_b + asq.c1;
+    my_Fp A_b = asq.coeffs[1] + a.coeffs[1];
+    A_b = A_b + A_b + asq.coeffs[1];
 
     // B = vector(3*Fp2([non_residue*c2[1],c2[0]]) + 2*Fp2([vector(b)[0],-vector(b)[1]]))
     //my_Fp B_a = my_Fp(3l) * my_Fp3::non_residue * csq_b + my_Fp(2l) * b_a;
-    my_Fp B_tmp = my_Fp3::non_residue * csq.c1;
-    my_Fp B_a = B_tmp + b.c0;
+    my_Fp B_tmp = my_Fp3::non_residue * csq.coeffs[1];
+    my_Fp B_a = B_tmp + b.coeffs[0];
     B_a = B_a + B_a + B_tmp;
 
     //my_Fp B_b = my_Fp(3l) * csq_a - my_Fp(2l) * b_b;
-    my_Fp B_b = csq.c0 - b.c1;
-    B_b = B_b + B_b + csq.c0;
+    my_Fp B_b = csq.coeffs[0] - b.coeffs[1];
+    B_b = B_b + B_b + csq.coeffs[0];
 
     // C = vector(3*b^2 - 2*Fp2([vector(c)[0],-vector(c)[1]]))
     //my_Fp C_a = my_Fp(3l) * bsq_a - my_Fp(2l) * c_a;
-    my_Fp C_a = bsq.c0 - c.c0;
-    C_a = C_a + C_a + bsq.c0;
+    my_Fp C_a = bsq.coeffs[0] - c.coeffs[0];
+    C_a = C_a + C_a + bsq.coeffs[0];
     // my_Fp C_b = my_Fp(3l) * bsq_b + my_Fp(2l) * c_b;
-    my_Fp C_b = bsq.c1 + c.c1;
-    C_b = C_b + C_b + bsq.c1;
+    my_Fp C_b = bsq.coeffs[1] + c.coeffs[1];
+    C_b = C_b + C_b + bsq.coeffs[1];
 
     // e0 = Fp3([A[0],C[0],B[1]])
     // e1 = Fp3([B[0],A[1],C[1]])
@@ -285,14 +285,14 @@ Fp6_2over3_model<n, modulus> Fp6_2over3_model<n,modulus>::cyclotomic_exp(const b
 template<mp_size_t n, const bigint<n>& modulus>
 std::ostream& operator<<(std::ostream &out, const Fp6_2over3_model<n, modulus> &el)
 {
-    out << el.c0 << OUTPUT_SEPARATOR << el.c1;
+    out << el.coeffs[0] << OUTPUT_SEPARATOR << el.coeffs[1];
     return out;
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &in, Fp6_2over3_model<n, modulus> &el)
 {
-    in >> el.c0 >> el.c1;
+    in >> el.coeffs[0] >> el.coeffs[1];
     return in;
 }
 

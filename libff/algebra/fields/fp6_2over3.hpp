@@ -43,18 +43,20 @@ public:
     static my_Fp non_residue;
     static my_Fp Frobenius_coeffs_c1[6]; // non_residue^((modulus^i-1)/6)   for i=0,1,2,3,4,5
 
-    my_Fp3 c0, c1;
-    Fp6_2over3_model() {};
-    Fp6_2over3_model(const my_Fp3& c0, const my_Fp3& c1) : c0(c0), c1(c1) {};
+    static const size_t extension_degree = 2;
 
-    void print() const { printf("c0/c1:\n"); c0.print(); c1.print(); }
-    void clear() { c0.clear(); c1.clear(); }
+    my_Fp3 coeffs[2];
+    Fp6_2over3_model() {};
+    Fp6_2over3_model(const my_Fp3& c0, const my_Fp3& c1) { coeffs = {c0, c1}; };
+
+    void print() const { printf("c0/c1:\n"); coeffs[0].print(); coeffs[1].print(); }
+    void clear() { coeffs[0].clear(); coeffs[1].clear(); }
 
     static Fp6_2over3_model<n, modulus> zero();
     static Fp6_2over3_model<n, modulus> one();
     static Fp6_2over3_model<n, modulus> random_element();
 
-    bool is_zero() const { return c0.is_zero() && c1.is_zero(); }
+    bool is_zero() const { return coeffs[0].is_zero() && coeffs[1].is_zero(); }
     bool operator==(const Fp6_2over3_model &other) const;
     bool operator!=(const Fp6_2over3_model &other) const;
 

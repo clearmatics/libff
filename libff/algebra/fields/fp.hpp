@@ -50,6 +50,10 @@ public:
     static long long sqr_cnt;
     static long long inv_cnt;
 #endif
+
+    // The "base"/"ground" field
+    static const size_t extension_degree = 1;
+
     static size_t num_bits;
     static bigint<n> euler; // (modulus-1)/2
     static size_t s; // modulus = 2^s * t + 1

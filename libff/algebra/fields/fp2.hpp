@@ -37,6 +37,12 @@ class Fp2_model {
 public:
     typedef Fp_model<n, modulus> my_Fp;
 
+    // Exposing the field extension degree via a static member
+    // allows to retrieve the value from the type. This can be useful.
+    // Note that, the degree can be retrieved from a Fp2_model value
+    // by invoking the `size()` method on the `coeffs` container.
+    static const size_t extension_degree = 2;
+
     static bigint<2*n> euler; // (modulus^2-1)/2
     static size_t s;       // modulus^2 = 2^s * t + 1
     static bigint<2*n> t;  // with t odd
@@ -46,9 +52,10 @@ public:
     static Fp2_model<n, modulus> nqr_to_t; // nqr^t
     static my_Fp Frobenius_coeffs_c1[2]; // non_residue^((modulus^i-1)/2) for i=0,1
 
-    my_Fp[2] coeffs;
+    my_Fp coeffs[2];
     Fp2_model() {};
-    Fp2_model(const my_Fp& c0, const my_Fp& c1) : coeffs(c0, c1) {};
+    //Fp2_model(const my_Fp& c0, const my_Fp& c1) : coeffs(c0, c1) {};
+    Fp2_model(const my_Fp& c0, const my_Fp& c1) { coeffs = {c0, c1}; };
 
     void clear() { coeffs[0].clear(); coeffs[1].clear(); }
     void print() const { printf("c0/c1:\n"); coeffs[0].print(); coeffs[1].print(); }
