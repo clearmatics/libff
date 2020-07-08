@@ -30,8 +30,8 @@ template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n,modulus> Fp2_model<n,modulus>::random_element()
 {
     Fp2_model<n, modulus> r;
-    r.c0 = my_Fp::random_element();
-    r.c1 = my_Fp::random_element();
+    r.coeffs[0] = my_Fp::random_element();
+    r.coeffs[1] = my_Fp::random_element();
 
     return r;
 }
@@ -39,7 +39,7 @@ Fp2_model<n,modulus> Fp2_model<n,modulus>::random_element()
 template<mp_size_t n, const bigint<n>& modulus>
 bool Fp2_model<n,modulus>::operator==(const Fp2_model<n,modulus> &other) const
 {
-    return (this->c0 == other.c0 && this->c1 == other.c1);
+    return (this->coeffs[0] == other.coeffs[0] && this->coeffs[1] == other.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -51,22 +51,22 @@ bool Fp2_model<n,modulus>::operator!=(const Fp2_model<n,modulus> &other) const
 template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n,modulus> Fp2_model<n,modulus>::operator+(const Fp2_model<n,modulus> &other) const
 {
-    return Fp2_model<n,modulus>(this->c0 + other.c0,
-                                this->c1 + other.c1);
+    return Fp2_model<n,modulus>(this->coeffs[0] + other.coeffs[0],
+                                this->coeffs[1] + other.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n,modulus> Fp2_model<n,modulus>::operator-(const Fp2_model<n,modulus> &other) const
 {
-    return Fp2_model<n,modulus>(this->c0 - other.c0,
-                                this->c1 - other.c1);
+    return Fp2_model<n,modulus>(this->coeffs[0] - other.coeffs[0],
+                                this->coeffs[1] - other.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n, modulus> operator*(const Fp_model<n, modulus> &lhs, const Fp2_model<n, modulus> &rhs)
 {
-    return Fp2_model<n,modulus>(lhs*rhs.c0,
-                                lhs*rhs.c1);
+    return Fp2_model<n,modulus>(lhs*rhs.coeffs[0],
+                                lhs*rhs.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -74,8 +74,8 @@ Fp2_model<n,modulus> Fp2_model<n,modulus>::operator*(const Fp2_model<n,modulus> 
 {
     /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Karatsuba) */
     const my_Fp
-        &A = other.c0, &B = other.c1,
-        &a = this->c0, &b = this->c1;
+        &A = other.coeffs[0], &B = other.coeffs[1],
+        &a = this->coeffs[0], &b = this->coeffs[1];
     const my_Fp aA = a * A;
     const my_Fp bB = b * B;
 
@@ -86,8 +86,8 @@ Fp2_model<n,modulus> Fp2_model<n,modulus>::operator*(const Fp2_model<n,modulus> 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n,modulus> Fp2_model<n,modulus>::operator-() const
 {
-    return Fp2_model<n,modulus>(-this->c0,
-                                -this->c1);
+    return Fp2_model<n,modulus>(-this->coeffs[0],
+                                -this->coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -100,7 +100,7 @@ template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n,modulus> Fp2_model<n,modulus>::squared_karatsuba() const
 {
     /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Karatsuba squaring) */
-    const my_Fp &a = this->c0, &b = this->c1;
+    const my_Fp &a = this->coeffs[0], &b = this->coeffs[1];
     const my_Fp asq = a.squared();
     const my_Fp bsq = b.squared();
 
@@ -112,7 +112,7 @@ template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n,modulus> Fp2_model<n,modulus>::squared_complex() const
 {
     /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Complex squaring) */
-    const my_Fp &a = this->c0, &b = this->c1;
+    const my_Fp &a = this->coeffs[0], &b = this->coeffs[1];
     const my_Fp ab = a * b;
 
     return Fp2_model<n,modulus>((a + b) * (a + non_residue * b) - ab - non_residue * ab,
@@ -122,7 +122,7 @@ Fp2_model<n,modulus> Fp2_model<n,modulus>::squared_complex() const
 template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n,modulus> Fp2_model<n,modulus>::inverse() const
 {
-    const my_Fp &a = this->c0, &b = this->c1;
+    const my_Fp &a = this->coeffs[0], &b = this->coeffs[1];
 
     /* From "High-Speed Software Implementation of the Optimal Ate Pairing over Barreto-Naehrig Curves"; Algorithm 8 */
     const my_Fp t0 = a.squared();
@@ -138,8 +138,8 @@ Fp2_model<n,modulus> Fp2_model<n,modulus>::inverse() const
 template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n,modulus> Fp2_model<n,modulus>::Frobenius_map(unsigned long power) const
 {
-    return Fp2_model<n,modulus>(c0,
-                                Frobenius_coeffs_c1[power % 2] * c1);
+    return Fp2_model<n,modulus>(coeffs[0],
+                                Frobenius_coeffs_c1[power % 2] * coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -207,14 +207,14 @@ Fp2_model<n,modulus> Fp2_model<n,modulus>::operator^(const bigint<m> &pow) const
 template<mp_size_t n, const bigint<n>& modulus>
 std::ostream& operator<<(std::ostream &out, const Fp2_model<n, modulus> &el)
 {
-    out << el.c0 << el.c1;
+    out << el.coeffs[0] << el.coeffs[1];
     return out;
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &in, Fp2_model<n, modulus> &el)
 {
-    in >> el.c0 >> el.c1;
+    in >> el.coeffs[0] >> el.coeffs[1];
     return in;
 }
 
