@@ -43,6 +43,7 @@ public:
     //
     // TODO: Maybe chosen another name for this static member to avoid confusion
     // with the actual "total" extension degree.
+    // Note: `final_extension_degree` could be a good name.
     static const size_t extension_degree = 2;
 
     static my_Fp non_residue;
