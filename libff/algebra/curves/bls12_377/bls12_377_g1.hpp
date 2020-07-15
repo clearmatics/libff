@@ -28,6 +28,8 @@ public:
     static std::vector<size_t> fixed_base_exp_window_table;
     static bls12_377_G1 G1_zero;
     static bls12_377_G1 G1_one;
+    static bls12_377_Fq coeff_a;
+    static bls12_377_Fq coeff_b;
 
     typedef bls12_377_Fq base_field;
     typedef bls12_377_Fr scalar_field;
