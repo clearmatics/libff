@@ -18,6 +18,8 @@ std::vector<size_t> bls12_377_G1::wnaf_window_table;
 std::vector<size_t> bls12_377_G1::fixed_base_exp_window_table;
 bls12_377_G1 bls12_377_G1::G1_zero;
 bls12_377_G1 bls12_377_G1::G1_one;
+bls12_377_Fq bls12_377_G1::coeff_a;
+bls12_377_Fq bls12_377_G1::coeff_b;
 
 bls12_377_G1::bls12_377_G1()
 {
