@@ -1,4 +1,4 @@
-name: Clearmatics libsnark library
+name: Clearmatics libff library
 
 on:
   push:
