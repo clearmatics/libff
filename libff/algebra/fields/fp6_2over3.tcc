@@ -196,11 +196,11 @@ Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::unitary_inverse() const
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_2over3_model<n,modulus> Fp6_2over3_model<n,modulus>::cyclotomic_squared() const
 {
-    my_Fp2 a = my_Fp2(coeffs[0].coeffs[0], coeffs[0].coeffs[1]);
+    my_Fp2 a = my_Fp2(coeffs[0].coeffs[0], coeffs[1].coeffs[1]);
     //my_Fp a_a = c0.coeffs[0]; // a = Fp2([c0[0],c1[1]])
     //my_Fp a_b = c1.coeffs[1];
 
-    my_Fp2 b = my_Fp2(coeffs[0].coeffs[0], coeffs[0].coeffs[2]);
+    my_Fp2 b = my_Fp2(coeffs[1].coeffs[0], coeffs[0].coeffs[2]);
     //my_Fp b_a = c1.coeffs[0]; // b = Fp2([c1[0],c0[2]])
     //my_Fp b_b = c0.coeffs[2];
 
