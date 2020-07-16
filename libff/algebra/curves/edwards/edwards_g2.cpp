@@ -30,14 +30,14 @@ edwards_G2::edwards_G2()
 edwards_Fq3 edwards_G2::mul_by_a(const edwards_Fq3 &elt)
 {
 	// should be
-	//  edwards_Fq3(edwards_twist_mul_by_a_c0 * elt.c2, edwards_twist_mul_by_a_c1 * elt.c0, edwards_twist_mul_by_a_c2 * elt.c1)
+	//  edwards_Fq3(edwards_twist_mul_by_a_c0 * elt.coeffs[2], edwards_twist_mul_by_a_c1 * elt.coeffs[0], edwards_twist_mul_by_a_c2 * elt.coeffs[1])
 	// but optimizing the fact that edwards_twist_mul_by_a_c1 = edwards_twist_mul_by_a_c2 = 1
-    return edwards_Fq3(edwards_twist_mul_by_a_c0 * elt.c2, elt.c0, elt.c1);
+    return edwards_Fq3(edwards_twist_mul_by_a_c0 * elt.coeffs[2], elt.coeffs[0], elt.coeffs[1]);
 }
 
 edwards_Fq3 edwards_G2::mul_by_d(const edwards_Fq3 &elt)
 {
-	return edwards_Fq3(edwards_twist_mul_by_d_c0 * elt.c2, edwards_twist_mul_by_d_c1 * elt.c0, edwards_twist_mul_by_d_c2 * elt.c1);
+	return edwards_Fq3(edwards_twist_mul_by_d_c0 * elt.coeffs[2], edwards_twist_mul_by_d_c1 * elt.coeffs[0], edwards_twist_mul_by_d_c2 * elt.coeffs[1]);
 }
 
 void edwards_G2::print() const
@@ -51,12 +51,12 @@ void edwards_G2::print() const
         edwards_G2 copy(*this);
         copy.to_affine_coordinates();
         gmp_printf("(%Nd*z^2 + %Nd*z + %Nd , %Nd*z^2 + %Nd*z + %Nd)\n",
-                   copy.X.c2.as_bigint().data, edwards_Fq::num_limbs,
-                   copy.X.c1.as_bigint().data, edwards_Fq::num_limbs,
-                   copy.X.c0.as_bigint().data, edwards_Fq::num_limbs,
-                   copy.Y.c2.as_bigint().data, edwards_Fq::num_limbs,
-                   copy.Y.c1.as_bigint().data, edwards_Fq::num_limbs,
-                   copy.Y.c0.as_bigint().data, edwards_Fq::num_limbs);
+                   copy.X.coeffs[2].as_bigint().data, edwards_Fq::num_limbs,
+                   copy.X.coeffs[1].as_bigint().data, edwards_Fq::num_limbs,
+                   copy.X.coeffs[0].as_bigint().data, edwards_Fq::num_limbs,
+                   copy.Y.coeffs[2].as_bigint().data, edwards_Fq::num_limbs,
+                   copy.Y.coeffs[1].as_bigint().data, edwards_Fq::num_limbs,
+                   copy.Y.coeffs[0].as_bigint().data, edwards_Fq::num_limbs);
     }
 }
 
@@ -69,15 +69,15 @@ void edwards_G2::print_coordinates() const
     else
     {
         gmp_printf("(%Nd*z^2 + %Nd*z + %Nd : %Nd*z^2 + %Nd*z + %Nd : %Nd*z^2 + %Nd*z + %Nd)\n",
-                   this->X.c2.as_bigint().data, edwards_Fq::num_limbs,
-                   this->X.c1.as_bigint().data, edwards_Fq::num_limbs,
-                   this->X.c0.as_bigint().data, edwards_Fq::num_limbs,
-                   this->Y.c2.as_bigint().data, edwards_Fq::num_limbs,
-                   this->Y.c1.as_bigint().data, edwards_Fq::num_limbs,
-                   this->Y.c0.as_bigint().data, edwards_Fq::num_limbs,
-                   this->Z.c2.as_bigint().data, edwards_Fq::num_limbs,
-                   this->Z.c1.as_bigint().data, edwards_Fq::num_limbs,
-                   this->Z.c0.as_bigint().data, edwards_Fq::num_limbs);
+                   this->X.coeffs[2].as_bigint().data, edwards_Fq::num_limbs,
+                   this->X.coeffs[1].as_bigint().data, edwards_Fq::num_limbs,
+                   this->X.coeffs[0].as_bigint().data, edwards_Fq::num_limbs,
+                   this->Y.coeffs[2].as_bigint().data, edwards_Fq::num_limbs,
+                   this->Y.coeffs[1].as_bigint().data, edwards_Fq::num_limbs,
+                   this->Y.coeffs[0].as_bigint().data, edwards_Fq::num_limbs,
+                   this->Z.coeffs[2].as_bigint().data, edwards_Fq::num_limbs,
+                   this->Z.coeffs[1].as_bigint().data, edwards_Fq::num_limbs,
+                   this->Z.coeffs[0].as_bigint().data, edwards_Fq::num_limbs);
     }
 }
 
@@ -344,7 +344,7 @@ void edwards_G2::write_compressed(std::ostream &out) const
     edwards_G2 copy(*this);
     copy.to_affine_coordinates();
     /* storing LSB of Y */
-    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.c0.as_bigint().data[0] & 1);
+    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.coeffs[0].as_bigint().data[0] & 1);
 }
 
 void edwards_G2::read_uncompressed(std::istream &in, edwards_G2 &g)
@@ -384,7 +384,7 @@ void edwards_G2::read_compressed(std::istream &in, edwards_G2 &g)
         (edwards_Fq3::one() - edwards_G2::mul_by_d(tX2)).inverse();
     tY = tY2.sqrt();
 
-    if ((tY.c0.as_bigint().data[0] & 1) != Y_lsb)
+    if ((tY.coeffs[0].as_bigint().data[0] & 1) != Y_lsb)
     {
         tY = -tY;
     }

@@ -47,7 +47,7 @@ public:
 
     my_Fp2 coeffs[3];
     Fp6_3over2_model() {};
-    Fp6_3over2_model(const my_Fp2& c0, const my_Fp2& c1, const my_Fp2& c2) { coeffs = {c0, c1, c2}; };
+    Fp6_3over2_model(const my_Fp2& c0, const my_Fp2& c1, const my_Fp2& c2) { this->coeffs[0] = c0; this->coeffs[1] = c1; this->coeffs[2] = c2; return; };
 
     void clear() { coeffs[0].clear(); coeffs[1].clear(); coeffs[2].clear(); }
     void print() const { printf("c0/c1/c2:\n"); coeffs[0].print(); coeffs[1].print(); coeffs[2].print(); }

@@ -55,7 +55,7 @@ public:
     my_Fp coeffs[2];
     Fp2_model() {};
     //Fp2_model(const my_Fp& c0, const my_Fp& c1) : coeffs(c0, c1) {};
-    Fp2_model(const my_Fp& c0, const my_Fp& c1) { coeffs = {c0, c1}; };
+    Fp2_model(const my_Fp& c0, const my_Fp& c1) { this->coeffs[0] = c0; this->coeffs[1] = c1; return; };
 
     void clear() { coeffs[0].clear(); coeffs[1].clear(); }
     void print() const { printf("c0/c1:\n"); coeffs[0].print(); coeffs[1].print(); }

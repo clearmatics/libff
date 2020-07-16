@@ -30,12 +30,12 @@ mnt4_G2 mnt4_G2::G2_one;
 
 mnt4_Fq2 mnt4_G2::mul_by_a(const mnt4_Fq2 &elt)
 {
-    return mnt4_Fq2(mnt4_twist_mul_by_a_c0 * elt.c0, mnt4_twist_mul_by_a_c1 * elt.c1);
+    return mnt4_Fq2(mnt4_twist_mul_by_a_c0 * elt.coeffs[0], mnt4_twist_mul_by_a_c1 * elt.coeffs[1]);
 }
 
 mnt4_Fq2 mnt4_G2::mul_by_b(const mnt4_Fq2 &elt)
 {
-    return mnt4_Fq2(mnt4_twist_mul_by_b_c0 * elt.c1, mnt4_twist_mul_by_b_c1 * elt.c0);
+    return mnt4_Fq2(mnt4_twist_mul_by_b_c0 * elt.coeffs[1], mnt4_twist_mul_by_b_c1 * elt.coeffs[0]);
 }
 
 mnt4_G2::mnt4_G2()
@@ -56,10 +56,10 @@ void mnt4_G2::print() const
         mnt4_G2 copy(*this);
         copy.to_affine_coordinates();
         gmp_printf("(%Nd*z + %Nd , %Nd*z + %Nd)\n",
-                   copy.X.c1.as_bigint().data, mnt4_Fq::num_limbs,
-                   copy.X.c0.as_bigint().data, mnt4_Fq::num_limbs,
-                   copy.Y.c1.as_bigint().data, mnt4_Fq::num_limbs,
-                   copy.Y.c0.as_bigint().data, mnt4_Fq::num_limbs);
+                   copy.X.coeffs[1].as_bigint().data, mnt4_Fq::num_limbs,
+                   copy.X.coeffs[0].as_bigint().data, mnt4_Fq::num_limbs,
+                   copy.Y.coeffs[1].as_bigint().data, mnt4_Fq::num_limbs,
+                   copy.Y.coeffs[0].as_bigint().data, mnt4_Fq::num_limbs);
     }
 }
 
@@ -72,12 +72,12 @@ void mnt4_G2::print_coordinates() const
     else
     {
         gmp_printf("(%Nd*z + %Nd : %Nd*z + %Nd : %Nd*z + %Nd)\n",
-                   this->X.c1.as_bigint().data, mnt4_Fq::num_limbs,
-                   this->X.c0.as_bigint().data, mnt4_Fq::num_limbs,
-                   this->Y.c1.as_bigint().data, mnt4_Fq::num_limbs,
-                   this->Y.c0.as_bigint().data, mnt4_Fq::num_limbs,
-                   this->Z.c1.as_bigint().data, mnt4_Fq::num_limbs,
-                   this->Z.c0.as_bigint().data, mnt4_Fq::num_limbs);
+                   this->X.coeffs[1].as_bigint().data, mnt4_Fq::num_limbs,
+                   this->X.coeffs[0].as_bigint().data, mnt4_Fq::num_limbs,
+                   this->Y.coeffs[1].as_bigint().data, mnt4_Fq::num_limbs,
+                   this->Y.coeffs[0].as_bigint().data, mnt4_Fq::num_limbs,
+                   this->Z.coeffs[1].as_bigint().data, mnt4_Fq::num_limbs,
+                   this->Z.coeffs[0].as_bigint().data, mnt4_Fq::num_limbs);
     }
 }
 
@@ -426,7 +426,7 @@ void mnt4_G2::write_compressed(std::ostream &out) const
 
     out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
     /* storing LSB of Y */
-    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.c0.as_bigint().data[0] & 1);
+    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.coeffs[0].as_bigint().data[0] & 1);
 }
 
 void mnt4_G2::read_uncompressed(std::istream &in, mnt4_G2 &g)
@@ -470,7 +470,7 @@ void mnt4_G2::read_compressed(std::istream &in, mnt4_G2 &g)
         mnt4_Fq2 tY2 = (tX2 + mnt4_twist_coeff_a ) * tX + mnt4_twist_coeff_b;
         tY = tY2.sqrt();
 
-        if ((tY.c0.as_bigint().data[0] & 1) != Y_lsb)
+        if ((tY.coeffs[0].as_bigint().data[0] & 1) != Y_lsb)
         {
             tY = -tY;
         }

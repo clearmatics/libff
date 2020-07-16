@@ -173,22 +173,22 @@ void test_Fp4_tom_cook()
         Fp4T res;
 
         const FieldT
-            &a0 = a.c0.c0,
-            &a1 = a.c1.c0,
-            &a2 = a.c0.c1,
-            &a3 = a.c1.c1;
+            &a0 = a.coeffs[0].coeffs[0],
+            &a1 = a.coeffs[1].coeffs[0],
+            &a2 = a.coeffs[0].coeffs[1],
+            &a3 = a.coeffs[1].coeffs[1];
 
         const FieldT
-            &b0 = b.c0.c0,
-            &b1 = b.c1.c0,
-            &b2 = b.c0.c1,
-            &b3 = b.c1.c1;
+            &b0 = b.coeffs[0].coeffs[0],
+            &b1 = b.coeffs[1].coeffs[0],
+            &b2 = b.coeffs[0].coeffs[1],
+            &b3 = b.coeffs[1].coeffs[1];
 
         FieldT
-            &c0 = res.c0.c0,
-            &c1 = res.c1.c0,
-            &c2 = res.c0.c1,
-            &c3 = res.c1.c1;
+            &c0 = res.coeffs[0].coeffs[0],
+            &c1 = res.coeffs[1].coeffs[0],
+            &c2 = res.coeffs[0].coeffs[1],
+            &c3 = res.coeffs[1].coeffs[1];
 
         const FieldT v0 = a0 * b0;
         const FieldT v1 = (a0 + a1 + a2 + a3) * (b0 + b1 + b2 + b3);
@@ -254,7 +254,7 @@ void test_Fp12_2over3over2_mul_by_024()
             Fp2T::zero()));
 
     const Fp12T result_slow = z * x;
-    const Fp12T result_mul_024 = z.mul_by_024(x.c0.c0, x.c1.c1, x.c0.c2);
+    const Fp12T result_mul_024 = z.mul_by_024(x.coeffs[0].coeffs[0], x.coeffs[1].coeffs[1], x.coeffs[0].coeffs[2]);
     assert(result_slow == result_mul_024);
 }
 
