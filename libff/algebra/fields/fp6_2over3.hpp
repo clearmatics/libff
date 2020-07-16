@@ -43,7 +43,7 @@ public:
     static my_Fp non_residue;
     static my_Fp Frobenius_coeffs_c1[6]; // non_residue^((modulus^i-1)/6)   for i=0,1,2,3,4,5
 
-    static const size_t extension_degree = 2;
+    static const size_t tower_extension_degree = 2;
 
     my_Fp3 coeffs[2];
     Fp6_2over3_model() {};

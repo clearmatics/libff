@@ -37,7 +37,7 @@ class Fp3_model {
 public:
     typedef Fp_model<n, modulus> my_Fp;
 
-    static const size_t extension_degree = 3;
+    static const size_t tower_extension_degree = 3;
 
     static bigint<3*n> euler; // (modulus^3-1)/2
     static size_t s;       // modulus^3 = 2^s * t + 1
@@ -78,6 +78,7 @@ public:
 
     static size_t size_in_bits() { return 3*my_Fp::size_in_bits(); }
     static bigint<n> base_field_char() { return modulus; }
+    static constexpr size_t extension_degree() { return 3; }
 
     friend std::ostream& operator<< <n, modulus>(std::ostream &out, const Fp3_model<n, modulus> &el);
     friend std::istream& operator>> <n, modulus>(std::istream &in, Fp3_model<n, modulus> &el);

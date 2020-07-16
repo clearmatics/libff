@@ -52,7 +52,7 @@ public:
 #endif
 
     // The "base"/"ground" field
-    static const size_t extension_degree = 1;
+    static const size_t tower_extension_degree = 1;
 
     static size_t num_bits;
     static bigint<n> euler; // (modulus-1)/2
@@ -118,6 +118,7 @@ public:
     static size_t size_in_bits() { return num_bits; }
     static size_t capacity() { return num_bits - 1; }
     static bigint<n> field_char() { return modulus; }
+    static constexpr size_t extension_degree() { return 1; }
 
     static Fp_model<n, modulus> zero();
     static Fp_model<n, modulus> one();

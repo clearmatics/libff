@@ -41,7 +41,7 @@ public:
     // allows to retrieve the value from the type. This can be useful.
     // Note that, the degree can be retrieved from a Fp2_model value
     // by invoking the `size()` method on the `coeffs` container.
-    static const size_t extension_degree = 2;
+    static const size_t tower_extension_degree = 2;
 
     static bigint<2*n> euler; // (modulus^2-1)/2
     static size_t s;       // modulus^2 = 2^s * t + 1
@@ -84,6 +84,7 @@ public:
 
     static size_t size_in_bits() { return 2*my_Fp::size_in_bits(); }
     static bigint<n> base_field_char() { return modulus; }
+    static constexpr size_t extension_degree() { return 2; }
 
     friend std::ostream& operator<< <n, modulus>(std::ostream &out, const Fp2_model<n, modulus> &el);
     friend std::istream& operator>> <n, modulus>(std::istream &in, Fp2_model<n, modulus> &el);
