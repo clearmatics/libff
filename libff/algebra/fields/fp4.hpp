@@ -37,13 +37,6 @@ public:
     typedef Fp2_model<n, modulus> my_Fp2;
     typedef my_Fp2 my_Fpe;
 
-    // The field extension here is 4, but this is built as 2 over 2. As such, the
-    // value of `extension_degree` only contains the field extension used to
-    // obtain the top most level in the field tower, which is 2 here, not 4.
-    //
-    // TODO: Maybe chosen another name for this static member to avoid confusion
-    // with the actual "total" extension degree.
-    // Note: `final_extension_degree` could be a good name.
     static const size_t tower_extension_degree = 2;
 
     static my_Fp non_residue;
@@ -52,6 +45,7 @@ public:
     my_Fp2 coeffs[2];
     Fp4_model() {};
     Fp4_model(const my_Fp2& c0, const my_Fp2& c1) { this->coeffs[0] = c0; this->coeffs[1] = c1; return; };
+    Fp4_model(const my_Fp2 in_coeffs[2]) { this->coeffs[0] = in_coeffs[0]; this->coeffs[1] = in_coeffs[1]; return; };
 
     void print() const { printf("c0/c1:\n"); coeffs[0].print(); coeffs[1].print(); }
     void clear() { coeffs[0].clear(); coeffs[1].clear(); }

@@ -51,8 +51,8 @@ public:
 
     my_Fp coeffs[3];
     Fp3_model() {};
-    //Fp3_model(const my_Fp& c0, const my_Fp& c1, const my_Fp& c2) { coeffs = {c0, c1, c2}; };
     Fp3_model(const my_Fp& c0, const my_Fp& c1, const my_Fp& c2) { this->coeffs[0] = c0; this->coeffs[1] = c1; this->coeffs[2] = c2; return; };
+    Fp3_model(const my_Fp in_coeffs[3]) {  this->coeffs[0] = in_coeffs[0]; this->coeffs[1] = in_coeffs[1]; this->coeffs[2] = in_coeffs[2]; return; };
 
     void clear() { coeffs[0].clear(); coeffs[1].clear(); coeffs[2].clear(); }
     void print() const { printf("c0/c1/c2:\n"); coeffs[0].print(); coeffs[1].print(); coeffs[2].print(); }

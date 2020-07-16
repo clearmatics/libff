@@ -50,8 +50,6 @@ public:
     static long long sqr_cnt;
     static long long inv_cnt;
 #endif
-
-    // The "base"/"ground" field
     static const size_t tower_extension_degree = 1;
 
     static size_t num_bits;

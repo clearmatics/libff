@@ -37,10 +37,6 @@ class Fp2_model {
 public:
     typedef Fp_model<n, modulus> my_Fp;
 
-    // Exposing the field extension degree via a static member
-    // allows to retrieve the value from the type. This can be useful.
-    // Note that, the degree can be retrieved from a Fp2_model value
-    // by invoking the `size()` method on the `coeffs` container.
     static const size_t tower_extension_degree = 2;
 
     static bigint<2*n> euler; // (modulus^2-1)/2
@@ -54,8 +50,8 @@ public:
 
     my_Fp coeffs[2];
     Fp2_model() {};
-    //Fp2_model(const my_Fp& c0, const my_Fp& c1) : coeffs(c0, c1) {};
     Fp2_model(const my_Fp& c0, const my_Fp& c1) { this->coeffs[0] = c0; this->coeffs[1] = c1; return; };
+    Fp2_model(const my_Fp in_coeffs[2]) { this->coeffs[0] = in_coeffs[0], this->coeffs[1] = in_coeffs[1]; return; };
 
     void clear() { coeffs[0].clear(); coeffs[1].clear(); }
     void print() const { printf("c0/c1:\n"); coeffs[0].print(); coeffs[1].print(); }
