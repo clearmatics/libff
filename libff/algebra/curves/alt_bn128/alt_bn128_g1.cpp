@@ -363,7 +363,7 @@ alt_bn128_G1 alt_bn128_G1::dbl() const
 
 alt_bn128_G1 alt_bn128_G1::mul_by_cofactor() const
 {
-    // Cofactor = 1, let's save a function call here
+    // Cofactor = 1
     return *this;
 }
 

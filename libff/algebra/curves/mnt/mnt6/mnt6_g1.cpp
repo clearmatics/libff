@@ -348,7 +348,7 @@ mnt6_G1 mnt6_G1::dbl() const
 
 mnt6_G1 mnt6_G1::mul_by_cofactor() const
 {
-    // Cofactor = 1, let's save a function call
+    // Cofactor = 1
     return (*this);
 }
 

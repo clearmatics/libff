@@ -35,8 +35,6 @@ public:
     typedef bls12_377_Fr scalar_field;
 
     // Cofactor
-    // See value in libff/algebra/curves/bls12_377/bls12_377_init.cpp
-    // 125-bit long
     static const mp_size_t h_bitcount = 125;
     static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
     static bigint<h_limbs> h;
