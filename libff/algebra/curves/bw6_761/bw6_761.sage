@@ -61,3 +61,11 @@ Fr = GF(prime_r)
 prime_q = q(u)
 params_generator.generate_libff_Fp_model_params(prime_q)
 Fq = GF(prime_q)
+
+# G1 cofactor
+def g1_h(x):
+    return ((103*x^6) - (173*x^5) - (96*x^4) + (293*x^3) + (21*x^2) + (52*x) + 172) // 3 
+
+# G2 cofactor
+def g2_h(x):
+    return ((103*x^6) - (173*x^5) - (96*x^4) + (293*x^3) + (21*x^2) + (52*x) + 151) // 3

@@ -345,6 +345,12 @@ mnt6_G1 mnt6_G1::dbl() const
     }
 }
 
+mnt6_G1 mnt6_G1::mul_by_cofactor() const
+{
+    // Cofactor = 1, let's save a function call
+    return (*this);
+}
+
 bool mnt6_G1::is_well_formed() const
 {
     if (this->is_zero())

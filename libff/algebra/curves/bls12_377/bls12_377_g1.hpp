@@ -34,6 +34,13 @@ public:
     typedef bls12_377_Fq base_field;
     typedef bls12_377_Fr scalar_field;
 
+    // Cofactor
+    // See value in libff/algebra/curves/bls12_377/bls12_377_init.cpp
+    // 125-bit long
+    static const mp_size_t h_bitcount = 125;
+    static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+    static bigint<h_limbs> h;
+
     bls12_377_Fq X, Y, Z;
 
     // using Jacobian coordinates
@@ -59,6 +66,11 @@ public:
     bls12_377_G1 add(const bls12_377_G1 &other) const;
     bls12_377_G1 mixed_add(const bls12_377_G1 &other) const;
     bls12_377_G1 dbl() const;
+
+    // Multiply point by h, the cofactor, to eliminate the h-torsion components
+    // Note: Doing so isn't a silver bullet and may need to be be replaced by a
+    // proper subgroup membership test.
+    bls12_377_G1 mul_by_cofactor() const;
 
     bool is_well_formed() const;
 

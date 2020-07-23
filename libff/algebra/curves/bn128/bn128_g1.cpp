@@ -333,6 +333,12 @@ bn128_G1 bn128_G1::dbl() const
     return result;
 }
 
+bn128_G1 bn128_G1::mul_by_cofactor() const
+{
+    // Cofactor = 1, let's save a function call here
+    return (*this);
+}
+
 bn128_G1 bn128_G1::zero()
 {
     return G1_zero;

@@ -129,15 +129,18 @@ void init_mnt4_params()
     mnt4_twist_mul_by_q_Y = mnt4_Fq("7684163245453501615621351552473337069301082060976805004625011694147890954040864167002308");
 
     /* choice of group G1 */
+    // Identities
     mnt4_G1::G1_zero = mnt4_G1(mnt4_Fq::zero(),
                                mnt4_Fq::one(),
                                mnt4_Fq::zero());
-
-
     mnt4_G1::G1_one = mnt4_G1(mnt4_Fq("60760244141852568949126569781626075788424196370144486719385562369396875346601926534016838"),
                               mnt4_Fq("363732850702582978263902770815145784459747722357071843971107674179038674942891694705904306"),
                               mnt4_Fq::one());
 
+    // Cofactor
+    mnt4_G1::h = bigint<mnt4_G1::h_limbs>("1");
+
+    // WNAF
     mnt4_G1::wnaf_window_table.resize(0);
     mnt4_G1::wnaf_window_table.push_back(11);
     mnt4_G1::wnaf_window_table.push_back(24);
@@ -191,16 +194,20 @@ void init_mnt4_params()
     mnt4_G1::fixed_base_exp_window_table.push_back(42363731);
 
     /* choice of group G2 */
+    // Identities
     mnt4_G2::G2_zero = mnt4_G2(mnt4_Fq2::zero(),
                                mnt4_Fq2::one(),
                                mnt4_Fq2::zero());
-
     mnt4_G2::G2_one = mnt4_G2(mnt4_Fq2(mnt4_Fq("438374926219350099854919100077809681842783509163790991847867546339851681564223481322252708"),
                                        mnt4_Fq("37620953615500480110935514360923278605464476459712393277679280819942849043649216370485641")),
                               mnt4_Fq2(mnt4_Fq("37437409008528968268352521034936931842973546441370663118543015118291998305624025037512482"),
                                        mnt4_Fq("424621479598893882672393190337420680597584695892317197646113820787463109735345923009077489")),
                               mnt4_Fq2::one());
 
+    // Cofactor
+    mnt4_G2::h = bigint<mnt4_G2::h_limbs>("475922286169261325753349249653048451545124879932565935237842521413255878328503110407553024");
+
+    // WNAF
     mnt4_G2::wnaf_window_table.resize(0);
     mnt4_G2::wnaf_window_table.push_back(5);
     mnt4_G2::wnaf_window_table.push_back(15);

@@ -360,6 +360,12 @@ alt_bn128_G1 alt_bn128_G1::dbl() const
     return alt_bn128_G1(X3, Y3, Z3);
 }
 
+alt_bn128_G1 alt_bn128_G1::mul_by_cofactor() const
+{
+    // Cofactor = 1, let's save a function call here
+    return *this;
+}
+
 bool alt_bn128_G1::is_well_formed() const
 {
     if (this->is_zero())

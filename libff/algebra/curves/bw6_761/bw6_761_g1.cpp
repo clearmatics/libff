@@ -371,6 +371,11 @@ bw6_761_G1 bw6_761_G1::dbl() const
     return bw6_761_G1(X3, Y3, Z3);
 }
 
+bw6_761_G1 bw6_761_G1::mul_by_cofactor() const
+{
+    return bw6_761_G1::h * (*this);
+}
+
 bool bw6_761_G1::is_well_formed() const
 {
     if (this->is_zero())

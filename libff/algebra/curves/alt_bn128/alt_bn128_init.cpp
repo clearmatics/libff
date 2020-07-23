@@ -142,12 +142,18 @@ void init_alt_bn128_params()
                                            alt_bn128_Fq("3505843767911556378687030309984248845540243509899259641013678093033130930403"));
 
     /* choice of group G1 */
+
+    // Identities
     alt_bn128_G1::G1_zero = alt_bn128_G1(alt_bn128_Fq::zero(),
                                      alt_bn128_Fq::one(),
                                      alt_bn128_Fq::zero());
     alt_bn128_G1::G1_one = alt_bn128_G1(alt_bn128_Fq("1"),
                                     alt_bn128_Fq("2"),
                                     alt_bn128_Fq::one());
+    // Cofactor
+    alt_bn128_G1::h = bigint<alt_bn128_G1::h_limbs>("1");
+
+    // WNAF
     alt_bn128_G1::wnaf_window_table.resize(0);
     alt_bn128_G1::wnaf_window_table.push_back(11);
     alt_bn128_G1::wnaf_window_table.push_back(24);
@@ -202,6 +208,7 @@ void init_alt_bn128_params()
 
     /* choice of group G2 */
 
+    // Identities
     alt_bn128_G2::G2_zero = alt_bn128_G2(alt_bn128_Fq2::zero(),
                                      alt_bn128_Fq2::one(),
                                      alt_bn128_Fq2::zero());
@@ -211,6 +218,15 @@ void init_alt_bn128_params()
                                     alt_bn128_Fq2(alt_bn128_Fq("8495653923123431417604973247489272438418190587263600148770280649306958101930"),
                                                 alt_bn128_Fq("4082367875863433681332203403145435568316851327593401208105741076214120093531")),
                                     alt_bn128_Fq2::one());
+    
+    // Cofactor
+    // [Sage excerpt]
+    // u = 4965661367192848881
+    // h2 = (36 * u^4) + (36 * u^3) + (30 * u^2) + 6*u + 1; h2
+    // # 21888242871839275222246405745257275088844257914179612981679871602714643921549
+    alt_bn128_G2::h = bigint<alt_bn128_G2::h_limbs>("21888242871839275222246405745257275088844257914179612981679871602714643921549");
+
+    // WNAF
     alt_bn128_G2::wnaf_window_table.resize(0);
     alt_bn128_G2::wnaf_window_table.push_back(5);
     alt_bn128_G2::wnaf_window_table.push_back(15);

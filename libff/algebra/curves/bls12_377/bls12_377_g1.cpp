@@ -371,6 +371,11 @@ bls12_377_G1 bls12_377_G1::dbl() const
     return bls12_377_G1(X3, Y3, Z3);
 }
 
+bls12_377_G1 bls12_377_G1::mul_by_cofactor() const
+{
+    return bls12_377_G1::h * (*this);
+}
+
 bool bls12_377_G1::is_well_formed() const
 {
     if (this->is_zero())

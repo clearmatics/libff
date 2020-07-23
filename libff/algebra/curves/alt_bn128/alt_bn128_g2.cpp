@@ -374,6 +374,11 @@ alt_bn128_G2 alt_bn128_G2::mul_by_q() const
                       (this->Z).Frobenius_map(1));
 }
 
+alt_bn128_G2 alt_bn128_G2::mul_by_cofactor() const
+{
+    return alt_bn128_G2::h * (*this);
+}
+
 bool alt_bn128_G2::is_well_formed() const
 {
     if (this->is_zero())

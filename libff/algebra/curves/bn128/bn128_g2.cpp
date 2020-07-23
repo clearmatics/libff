@@ -333,6 +333,11 @@ bn128_G2 bn128_G2::dbl() const
     return result;
 }
 
+bn128_G2 bn128_G2::mul_by_cofactor() const
+{
+    return bn128_G2::h * (*this);
+}
+
 bool bn128_G2::is_well_formed() const
 {
     if (this->is_zero())

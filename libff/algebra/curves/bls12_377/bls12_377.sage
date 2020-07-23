@@ -16,6 +16,14 @@ def r(x):
 def q(x):
     return ((x - 1)^2) * (r(x) / 3) + x
 
+# Compute G1 cofactor
+def g1_h(x):
+    return ((x - 1)^2) // 3
+
+# Compute G2 cofactor
+def g2_h(x):
+    return ((x - 1)^2) // 3
+
 prime_r = r(u)
 assert(prime_r == 8444461749428370424248824938781546531375899335154063827935233455917409239041)
 prime_q = q(u)
@@ -30,6 +38,12 @@ Fr = GF(prime_r)
 print('prime_q = {}'.format(prime_q))
 params_generator.generate_libff_Fp_model_params(prime_q)
 Fq = GF(prime_q)
+
+# Cofactors
+h1 = g1_h(u)
+print('h1 = {}'.format(h1))
+h2 = g2_h(u)
+print('h2 = {}'.format(h2))
 
 # Generate Fp2_model
 euler_fp2 = (prime_q**2 - 1)/2; print('euler = {}'.format(euler_fp2))

@@ -382,6 +382,11 @@ bw6_761_G2 bw6_761_G2::mul_by_q() const
   return bw6_761_G2::base_field_char() * (*this);
 }
 
+bw6_761_G2 bw6_761_G2::mul_by_cofactor() const
+{
+    return bw6_761_G2::h * (*this);
+}
+
 bool bw6_761_G2::is_well_formed() const
 {
     if (this->is_zero())

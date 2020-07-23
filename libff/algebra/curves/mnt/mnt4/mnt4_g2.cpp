@@ -368,6 +368,11 @@ mnt4_G2 mnt4_G2::mul_by_q() const
                    (this->Z).Frobenius_map(1));
 }
 
+mnt4_G2 mnt4_G2::mul_by_cofactor() const
+{
+    return mnt4_G2::h * (*this);
+}
+
 bool mnt4_G2::is_well_formed() const
 {
     if (this->is_zero())
