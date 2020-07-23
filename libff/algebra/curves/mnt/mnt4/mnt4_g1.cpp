@@ -26,6 +26,7 @@ mnt4_G1 mnt4_G1::G1_zero;
 mnt4_G1 mnt4_G1::G1_one;
 mnt4_Fq mnt4_G1::coeff_a;
 mnt4_Fq mnt4_G1::coeff_b;
+bigint<mnt4_G1::h_limbs> mnt4_G1::h;
 
 mnt4_G1::mnt4_G1()
 {

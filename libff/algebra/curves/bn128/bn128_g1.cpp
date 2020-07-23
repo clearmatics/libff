@@ -19,6 +19,7 @@ std::vector<size_t> bn128_G1::wnaf_window_table;
 std::vector<size_t> bn128_G1::fixed_base_exp_window_table;
 bn128_G1 bn128_G1::G1_zero;
 bn128_G1 bn128_G1::G1_one;
+bigint<bn128_G1::h_limbs> bn128_G1::h;
 
 bn::Fp bn128_G1::sqrt(const bn::Fp &el)
 {

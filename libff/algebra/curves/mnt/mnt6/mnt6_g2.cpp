@@ -27,6 +27,7 @@ mnt6_Fq3 mnt6_G2::coeff_a;
 mnt6_Fq3 mnt6_G2::coeff_b;
 mnt6_G2 mnt6_G2::G2_zero;
 mnt6_G2 mnt6_G2::G2_one;
+bigint<mnt6_G2::h_limbs> mnt6_G2::h;
 
 mnt6_G2::mnt6_G2()
 {

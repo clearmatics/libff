@@ -20,6 +20,7 @@ bls12_377_G2 bls12_377_G2::G2_zero;
 bls12_377_G2 bls12_377_G2::G2_one;
 bls12_377_Fq2 bls12_377_G2::coeff_a;
 bls12_377_Fq2 bls12_377_G2::coeff_b;
+bigint<bls12_377_G2::h_limbs> bls12_377_G2::h;
 
 bls12_377_G2::bls12_377_G2()
 {

@@ -21,6 +21,7 @@ std::vector<size_t> alt_bn128_G1::wnaf_window_table;
 std::vector<size_t> alt_bn128_G1::fixed_base_exp_window_table;
 alt_bn128_G1 alt_bn128_G1::G1_zero;
 alt_bn128_G1 alt_bn128_G1::G1_one;
+bigint<alt_bn128_G1::h_limbs> alt_bn128_G1::h;
 
 alt_bn128_G1::alt_bn128_G1()
 {

@@ -27,6 +27,7 @@ mnt4_Fq2 mnt4_G2::coeff_a;
 mnt4_Fq2 mnt4_G2::coeff_b;
 mnt4_G2 mnt4_G2::G2_zero;
 mnt4_G2 mnt4_G2::G2_one;
+bigint<mnt4_G2::h_limbs> mnt4_G2::h;
 
 mnt4_Fq2 mnt4_G2::mul_by_a(const mnt4_Fq2 &elt)
 {

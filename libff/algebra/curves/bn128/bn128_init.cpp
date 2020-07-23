@@ -108,7 +108,7 @@ void init_bn128_params()
     bn128_G1::G1_one.Z = bn::Fp(1);
 
     // Cofactor
-    bn128_G1::G1_h = bn128_Fr("1");
+    bn128_G1::h = bigint<bn128_G1::h_limbs>("1");
 
     // WNAF
     bn128_G1::wnaf_window_table.resize(0);
@@ -176,7 +176,7 @@ void init_bn128_params()
     bn128_G2::G2_one.Z = bn::Fp2(bn::Fp(1), bn::Fp(0));
 
     // Cofactor
-    bn128_G2::G2_h = bn128_Fr("21888242871839275222246405745257275088844257914179612981679871602714643921549");
+    bn128_G2::h = bigint<bn128_G2::h_limbs>("21888242871839275222246405745257275088844257914179612981679871602714643921549");
 
     // WNAF
     bn128_G2::wnaf_window_table.resize(0);
