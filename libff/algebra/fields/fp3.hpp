@@ -37,6 +37,8 @@ class Fp3_model {
 public:
     typedef Fp_model<n, modulus> my_Fp;
 
+    static const size_t tower_extension_degree = 3;
+
     static bigint<3*n> euler; // (modulus^3-1)/2
     static size_t s;       // modulus^3 = 2^s * t + 1
     static bigint<3*n> t;  // with t odd
@@ -47,18 +49,19 @@ public:
     static my_Fp Frobenius_coeffs_c1[3]; // non_residue^((modulus^i-1)/3)   for i=0,1,2
     static my_Fp Frobenius_coeffs_c2[3]; // non_residue^((2*modulus^i-2)/3) for i=0,1,2
 
-    my_Fp c0, c1, c2;
+    my_Fp coeffs[3];
     Fp3_model() {};
-    Fp3_model(const my_Fp& c0, const my_Fp& c1, const my_Fp& c2) : c0(c0), c1(c1), c2(c2) {};
+    //Fp3_model(const my_Fp& c0, const my_Fp& c1, const my_Fp& c2) { coeffs = {c0, c1, c2}; };
+    Fp3_model(const my_Fp& c0, const my_Fp& c1, const my_Fp& c2) { this->coeffs[0] = c0; this->coeffs[1] = c1; this->coeffs[2] = c2; return; };
 
-    void clear() { c0.clear(); c1.clear(); c2.clear(); }
-    void print() const { printf("c0/c1/c2:\n"); c0.print(); c1.print(); c2.print(); }
+    void clear() { coeffs[0].clear(); coeffs[1].clear(); coeffs[2].clear(); }
+    void print() const { printf("c0/c1/c2:\n"); coeffs[0].print(); coeffs[1].print(); coeffs[2].print(); }
 
     static Fp3_model<n, modulus> zero();
     static Fp3_model<n, modulus> one();
     static Fp3_model<n, modulus> random_element();
 
-    bool is_zero() const { return c0.is_zero() && c1.is_zero() && c2.is_zero(); }
+    bool is_zero() const { return coeffs[0].is_zero() && coeffs[1].is_zero() && coeffs[2].is_zero(); }
     bool operator==(const Fp3_model &other) const;
     bool operator!=(const Fp3_model &other) const;
 
@@ -76,6 +79,7 @@ public:
 
     static size_t size_in_bits() { return 3*my_Fp::size_in_bits(); }
     static bigint<n> base_field_char() { return modulus; }
+    static constexpr size_t extension_degree() { return 3; }
 
     friend std::ostream& operator<< <n, modulus>(std::ostream &out, const Fp3_model<n, modulus> &el);
     friend std::istream& operator>> <n, modulus>(std::istream &in, Fp3_model<n, modulus> &el);

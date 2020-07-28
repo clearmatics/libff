@@ -31,7 +31,7 @@ alt_bn128_G2::alt_bn128_G2()
 
 alt_bn128_Fq2 alt_bn128_G2::mul_by_b(const alt_bn128_Fq2 &elt)
 {
-    return alt_bn128_Fq2(alt_bn128_twist_mul_by_b_c0 * elt.c0, alt_bn128_twist_mul_by_b_c1 * elt.c1);
+    return alt_bn128_Fq2(alt_bn128_twist_mul_by_b_c0 * elt.coeffs[0], alt_bn128_twist_mul_by_b_c1 * elt.coeffs[1]);
 }
 
 void alt_bn128_G2::print() const
@@ -45,10 +45,10 @@ void alt_bn128_G2::print() const
         alt_bn128_G2 copy(*this);
         copy.to_affine_coordinates();
         gmp_printf("(%Nd*z + %Nd , %Nd*z + %Nd)\n",
-                   copy.X.c1.as_bigint().data, alt_bn128_Fq::num_limbs,
-                   copy.X.c0.as_bigint().data, alt_bn128_Fq::num_limbs,
-                   copy.Y.c1.as_bigint().data, alt_bn128_Fq::num_limbs,
-                   copy.Y.c0.as_bigint().data, alt_bn128_Fq::num_limbs);
+                   copy.X.coeffs[1].as_bigint().data, alt_bn128_Fq::num_limbs,
+                   copy.X.coeffs[0].as_bigint().data, alt_bn128_Fq::num_limbs,
+                   copy.Y.coeffs[1].as_bigint().data, alt_bn128_Fq::num_limbs,
+                   copy.Y.coeffs[0].as_bigint().data, alt_bn128_Fq::num_limbs);
     }
 }
 
@@ -61,12 +61,12 @@ void alt_bn128_G2::print_coordinates() const
     else
     {
         gmp_printf("(%Nd*z + %Nd : %Nd*z + %Nd : %Nd*z + %Nd)\n",
-                   this->X.c1.as_bigint().data, alt_bn128_Fq::num_limbs,
-                   this->X.c0.as_bigint().data, alt_bn128_Fq::num_limbs,
-                   this->Y.c1.as_bigint().data, alt_bn128_Fq::num_limbs,
-                   this->Y.c0.as_bigint().data, alt_bn128_Fq::num_limbs,
-                   this->Z.c1.as_bigint().data, alt_bn128_Fq::num_limbs,
-                   this->Z.c0.as_bigint().data, alt_bn128_Fq::num_limbs);
+                   this->X.coeffs[1].as_bigint().data, alt_bn128_Fq::num_limbs,
+                   this->X.coeffs[0].as_bigint().data, alt_bn128_Fq::num_limbs,
+                   this->Y.coeffs[1].as_bigint().data, alt_bn128_Fq::num_limbs,
+                   this->Y.coeffs[0].as_bigint().data, alt_bn128_Fq::num_limbs,
+                   this->Z.coeffs[1].as_bigint().data, alt_bn128_Fq::num_limbs,
+                   this->Z.coeffs[0].as_bigint().data, alt_bn128_Fq::num_limbs);
     }
 }
 
@@ -435,7 +435,7 @@ void alt_bn128_G2::write_compressed(std::ostream &out) const
 
     const uint8_t flags =
         (copy.is_zero() ? G2_ZERO_FLAG : 0) |
-        ((copy.Y.c0.as_bigint().data[0] & 1) ? G2_Y_LSB_FLAG : 0);
+        ((copy.Y.coeffs[0].as_bigint().data[0] & 1) ? G2_Y_LSB_FLAG : 0);
     const char flags_char = '0' + flags;
     out.write(&flags_char, 1) << copy.X;
 }
@@ -474,7 +474,7 @@ void alt_bn128_G2::read_compressed(std::istream &in, alt_bn128_G2 &g)
         const alt_bn128_Fq2 tY2 = tX2 * g.X + alt_bn128_twist_coeff_b;
         g.Y = tY2.sqrt();
 
-        if ((uint8_t)(g.Y.c0.as_bigint().data[0] & 1) != Y_lsb)
+        if ((uint8_t)(g.Y.coeffs[0].as_bigint().data[0] & 1) != Y_lsb)
         {
             g.Y = -g.Y;
         }

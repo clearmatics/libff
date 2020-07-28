@@ -43,18 +43,20 @@ public:
     static my_Fp2 Frobenius_coeffs_c1[6]; // non_residue^((modulus^i-1)/3)   for i=0,1,2,3,4,5
     static my_Fp2 Frobenius_coeffs_c2[6]; // non_residue^((2*modulus^i-2)/3) for i=0,1,2,3,4,5
 
-    my_Fp2 c0, c1, c2;
-    Fp6_3over2_model() {};
-    Fp6_3over2_model(const my_Fp2& c0, const my_Fp2& c1, const my_Fp2& c2) : c0(c0), c1(c1), c2(c2) {};
+    static const size_t tower_extension_degree = 3;
 
-    void clear() { c0.clear(); c1.clear(); c2.clear(); }
-    void print() const { printf("c0/c1/c2:\n"); c0.print(); c1.print(); c2.print(); }
+    my_Fp2 coeffs[3];
+    Fp6_3over2_model() {};
+    Fp6_3over2_model(const my_Fp2& c0, const my_Fp2& c1, const my_Fp2& c2) { this->coeffs[0] = c0; this->coeffs[1] = c1; this->coeffs[2] = c2; return; };
+
+    void clear() { coeffs[0].clear(); coeffs[1].clear(); coeffs[2].clear(); }
+    void print() const { printf("c0/c1/c2:\n"); coeffs[0].print(); coeffs[1].print(); coeffs[2].print(); }
 
     static Fp6_3over2_model<n, modulus> zero();
     static Fp6_3over2_model<n, modulus> one();
     static Fp6_3over2_model<n, modulus> random_element();
 
-    bool is_zero() const { return c0.is_zero() && c1.is_zero() && c2.is_zero(); }
+    bool is_zero() const { return coeffs[0].is_zero() && coeffs[1].is_zero() && coeffs[2].is_zero(); }
     bool operator==(const Fp6_3over2_model &other) const;
     bool operator!=(const Fp6_3over2_model &other) const;
 

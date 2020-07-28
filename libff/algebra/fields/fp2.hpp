@@ -37,6 +37,12 @@ class Fp2_model {
 public:
     typedef Fp_model<n, modulus> my_Fp;
 
+    // Exposing the field extension degree via a static member
+    // allows to retrieve the value from the type. This can be useful.
+    // Note that, the degree can be retrieved from a Fp2_model value
+    // by invoking the `size()` method on the `coeffs` container.
+    static const size_t tower_extension_degree = 2;
+
     static bigint<2*n> euler; // (modulus^2-1)/2
     static size_t s;       // modulus^2 = 2^s * t + 1
     static bigint<2*n> t;  // with t odd
@@ -46,18 +52,19 @@ public:
     static Fp2_model<n, modulus> nqr_to_t; // nqr^t
     static my_Fp Frobenius_coeffs_c1[2]; // non_residue^((modulus^i-1)/2) for i=0,1
 
-    my_Fp c0, c1;
+    my_Fp coeffs[2];
     Fp2_model() {};
-    Fp2_model(const my_Fp& c0, const my_Fp& c1) : c0(c0), c1(c1) {};
+    //Fp2_model(const my_Fp& c0, const my_Fp& c1) : coeffs(c0, c1) {};
+    Fp2_model(const my_Fp& c0, const my_Fp& c1) { this->coeffs[0] = c0; this->coeffs[1] = c1; return; };
 
-    void clear() { c0.clear(); c1.clear(); }
-    void print() const { printf("c0/c1:\n"); c0.print(); c1.print(); }
+    void clear() { coeffs[0].clear(); coeffs[1].clear(); }
+    void print() const { printf("c0/c1:\n"); coeffs[0].print(); coeffs[1].print(); }
 
     static Fp2_model<n, modulus> zero();
     static Fp2_model<n, modulus> one();
     static Fp2_model<n, modulus> random_element();
 
-    bool is_zero() const { return c0.is_zero() && c1.is_zero(); }
+    bool is_zero() const { return coeffs[0].is_zero() && coeffs[1].is_zero(); }
     bool operator==(const Fp2_model &other) const;
     bool operator!=(const Fp2_model &other) const;
 
@@ -77,6 +84,7 @@ public:
 
     static size_t size_in_bits() { return 2*my_Fp::size_in_bits(); }
     static bigint<n> base_field_char() { return modulus; }
+    static constexpr size_t extension_degree() { return 2; }
 
     friend std::ostream& operator<< <n, modulus>(std::ostream &out, const Fp2_model<n, modulus> &el);
     friend std::istream& operator>> <n, modulus>(std::istream &in, Fp2_model<n, modulus> &el);

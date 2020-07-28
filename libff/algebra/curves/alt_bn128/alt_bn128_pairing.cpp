@@ -123,7 +123,7 @@ alt_bn128_Fq12 alt_bn128_final_exponentiation_first_chunk(const alt_bn128_Fq12 &
       result = D * C
     */
 
-    const alt_bn128_Fq12 A = alt_bn128_Fq12(elt.c0,-elt.c1);
+    const alt_bn128_Fq12 A = alt_bn128_Fq12(elt.coeffs[0],-elt.coeffs[1]);
     const alt_bn128_Fq12 B = elt.inverse();
     const alt_bn128_Fq12 C = A * B;
     const alt_bn128_Fq12 D = C.Frobenius_map(2);
