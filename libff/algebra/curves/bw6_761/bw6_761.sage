@@ -55,17 +55,22 @@ def q(x):
     return (t(x)**2  + 3 *y(x)**2 )/4
 
 prime_r = r(u)
-params_generator.generate_libff_Fp_model_params(prime_r)
+#params_generator.generate_libff_Fp_model_params(prime_r)
 Fr = GF(prime_r)
 
 prime_q = q(u)
-params_generator.generate_libff_Fp_model_params(prime_q)
+#params_generator.generate_libff_Fp_model_params(prime_q)
 Fq = GF(prime_q)
 
 # G1 cofactor
 def g1_h(x):
-    return ((103*x^6) - (173*x^5) - (96*x^4) + (293*x^3) + (21*x^2) + (52*x) + 172) // 3 
+    return ((103*x^6) - (173*x^5) - (96*x^4) + (293*x^3) + (21*x^2) + (52*x) + 172) // 3
 
 # G2 cofactor
 def g2_h(x):
     return ((103*x^6) - (173*x^5) - (96*x^4) + (293*x^3) + (21*x^2) + (52*x) + 151) // 3
+
+h1 = g1_h(u)
+print('h1 = {}'.format(h1))
+h2 = g2_h(u)
+print('h2 = {}'.format(h2))
