@@ -18,6 +18,7 @@ def g1_h(x):
     return ((x - 1)^2) // 3
 
 # Compute G2 cofactor
+# See: Proposition 2, Section 3.4: https://eprint.iacr.org/2015/247.pdf
 def g2_h(x):
     return ((x**8) - (4 * (x**7)) + (5 * (x**6)) - (4 * (x**4)) + (6 * (x**3)) - (4 * (x**2)) - (4*x) + 13) // 9
 
@@ -108,7 +109,6 @@ def main():
 
     frob_coeff_c1_1 = non_residue^((0/2)) # = 1
     frob_coeff_c1_2 = non_residue^(((prime_q) - 1)/2)
-
 
     curve_order = curve.order()
     twist_order = twist.order()
