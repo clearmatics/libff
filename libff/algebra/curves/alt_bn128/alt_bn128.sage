@@ -56,8 +56,8 @@ def main():
 
     # Cofactors
     h1 = curve_order // g1_order(curve_order)
-    # Check that the cofactor formula is sound
-    assert(h1 == curve_order // g1_order(curve_order))
+    # G1 cofactor should be 1
+    assert(h1 == 1)
     print('h1 = {}'.format(h1))
     h2 = g2_h(param)
     print('h2 = {}'.format(h2))
