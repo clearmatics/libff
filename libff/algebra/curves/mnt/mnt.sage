@@ -24,10 +24,9 @@ def mnt4_298_params():
 
     # E'/Fq2
     non_residue = Fq(17)
-    print('non_residue = {}'.format(non_residue))
     Fqx.<j> = PolynomialRing(Fq, 'j')
     assert(Fqx(j^2 + non_residue).is_irreducible())
-    Fq2.<u> = GF(prime_q^2, modulus=j^2 + non_residue)
+    Fq2.<u> = GF(prime_q^2, modulus=j^2 - non_residue)
 
     twist_coeff_a = Fq2(coeff_a * non_residue)
     twist_coeff_b = Fq2(coeff_b * non_residue * u)
@@ -35,7 +34,9 @@ def mnt4_298_params():
 
     # Cofactors
     curve_order = curve.order()
+    print('curve_order = {}'.format(curve_order))
     twist_order = twist.order()
+    print('twist_order = {}'.format(twist_order))
 
     g1_h = curve_order // g1_order(curve_order)
     print('g1_h = {}'.format(g1_h))
@@ -58,7 +59,7 @@ def mnt6_298_params():
     print('non_residue = {}'.format(non_residue))
     Fqx.<j> = PolynomialRing(Fq, 'j')
     assert(Fqx(j^3 + non_residue).is_irreducible())
-    Fq3.<u> = GF(prime_q^3, modulus=j^3 + non_residue)
+    Fq3.<u> = GF(prime_q^3, modulus=j^3 - non_residue)
 
     twist_coeff_a = Fq3(coeff_a * u^2)
     twist_coeff_b = Fq3(coeff_b * non_residue)
@@ -67,7 +68,9 @@ def mnt6_298_params():
 
     # Cofactors
     curve_order = curve.order()
+    print('curve_order = {}'.format(curve_order))
     twist_order = twist.order()
+    print('twist_order = {}'.format(twist_order))
 
     g1_h = curve_order // g1_order(curve_order)
     print('g1_h = {}'.format(g1_h))
