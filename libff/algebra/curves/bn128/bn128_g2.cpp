@@ -19,6 +19,7 @@ std::vector<size_t> bn128_G2::wnaf_window_table;
 std::vector<size_t> bn128_G2::fixed_base_exp_window_table;
 bn128_G2 bn128_G2::G2_zero;
 bn128_G2 bn128_G2::G2_one;
+bigint<bn128_G2::h_limbs> bn128_G2::h;
 
 bn::Fp2 bn128_G2::sqrt(const bn::Fp2 &el)
 {
@@ -331,6 +332,11 @@ bn128_G2 bn128_G2::dbl() const
 
     bn128_G2 result(result_coord);
     return result;
+}
+
+bn128_G2 bn128_G2::mul_by_cofactor() const
+{
+    return bn128_G2::h * (*this);
 }
 
 bool bn128_G2::is_well_formed() const

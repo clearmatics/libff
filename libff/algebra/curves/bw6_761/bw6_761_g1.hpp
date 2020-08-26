@@ -25,6 +25,11 @@ public:
     typedef bw6_761_Fq base_field;
     typedef bw6_761_Fr scalar_field;
 
+    // Cofactor
+    static const mp_size_t h_bitcount = 384;
+    static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+    static bigint<h_limbs> h;
+
     bw6_761_Fq X, Y, Z;
 
     // using projective coordinates
@@ -50,6 +55,7 @@ public:
     bw6_761_G1 add(const bw6_761_G1 &other) const;
     bw6_761_G1 mixed_add(const bw6_761_G1 &other) const;
     bw6_761_G1 dbl() const;
+    bw6_761_G1 mul_by_cofactor() const;
 
     bool is_well_formed() const;
 

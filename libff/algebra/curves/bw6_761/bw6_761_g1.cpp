@@ -11,6 +11,7 @@ std::vector<size_t> bw6_761_G1::wnaf_window_table;
 std::vector<size_t> bw6_761_G1::fixed_base_exp_window_table;
 bw6_761_G1 bw6_761_G1::G1_zero;
 bw6_761_G1 bw6_761_G1::G1_one;
+bigint<bw6_761_G1::h_limbs> bw6_761_G1::h;
 
 bw6_761_G1::bw6_761_G1()
 {
@@ -369,6 +370,11 @@ bw6_761_G1 bw6_761_G1::dbl() const
     // Z3 = sss
     const bw6_761_Fq Z3   = sss;
     return bw6_761_G1(X3, Y3, Z3);
+}
+
+bw6_761_G1 bw6_761_G1::mul_by_cofactor() const
+{
+    return bw6_761_G1::h * (*this);
 }
 
 bool bw6_761_G1::is_well_formed() const

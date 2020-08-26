@@ -27,6 +27,7 @@ mnt6_Fq3 mnt6_G2::coeff_a;
 mnt6_Fq3 mnt6_G2::coeff_b;
 mnt6_G2 mnt6_G2::G2_zero;
 mnt6_G2 mnt6_G2::G2_one;
+bigint<mnt6_G2::h_limbs> mnt6_G2::h;
 
 mnt6_G2::mnt6_G2()
 {
@@ -372,6 +373,11 @@ mnt6_G2 mnt6_G2::mul_by_q() const
     return mnt6_G2(mnt6_twist_mul_by_q_X * (this->X).Frobenius_map(1),
                    mnt6_twist_mul_by_q_Y * (this->Y).Frobenius_map(1),
                    (this->Z).Frobenius_map(1));
+}
+
+mnt6_G2 mnt6_G2::mul_by_cofactor() const
+{
+    return mnt6_G2::h * (*this);
 }
 
 bool mnt6_G2::is_well_formed() const

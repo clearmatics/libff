@@ -98,6 +98,7 @@ void init_bn128_params()
     bn128_Fq2_t_minus_1_over_2 = mie::Vuint("14971724250519463826312126413021210649976634891596900701138993820439690427699319920245032869357433499099632259837909383182382988566862092145199781964621");
 
     /* choice of group G1 */
+    // Identities
     bn128_G1::G1_zero.X = bn::Fp(1);
     bn128_G1::G1_zero.Y = bn::Fp(1);
     bn128_G1::G1_zero.Z = bn::Fp(0);
@@ -106,6 +107,10 @@ void init_bn128_params()
     bn128_G1::G1_one.Y = bn::Fp(2);
     bn128_G1::G1_one.Z = bn::Fp(1);
 
+    // Cofactor
+    bn128_G1::h = bigint<bn128_G1::h_limbs>("1");
+
+    // WNAF
     bn128_G1::wnaf_window_table.resize(0);
     bn128_G1::wnaf_window_table.push_back(10);
     bn128_G1::wnaf_window_table.push_back(24);
@@ -159,6 +164,7 @@ void init_bn128_params()
     bn128_G1::fixed_base_exp_window_table.push_back(29482996);
 
     /* choice of group G2 */
+    // Identities
     bn128_G2::G2_zero.X = bn::Fp2(bn::Fp(1), bn::Fp(0));
     bn128_G2::G2_zero.Y = bn::Fp2(bn::Fp(1), bn::Fp(0));
     bn128_G2::G2_zero.Z = bn::Fp2(bn::Fp(0), bn::Fp(0));
@@ -169,6 +175,10 @@ void init_bn128_params()
                                         bn::Fp("20532875081203448695448744255224543661959516361327385779878476709582931298750"));
     bn128_G2::G2_one.Z = bn::Fp2(bn::Fp(1), bn::Fp(0));
 
+    // Cofactor
+    bn128_G2::h = bigint<bn128_G2::h_limbs>("21888242871839275222246405745257275088844257914179612981679871602714643921549");
+
+    // WNAF
     bn128_G2::wnaf_window_table.resize(0);
     bn128_G2::wnaf_window_table.push_back(7);
     bn128_G2::wnaf_window_table.push_back(18);

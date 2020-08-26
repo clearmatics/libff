@@ -21,6 +21,7 @@ std::vector<size_t> alt_bn128_G2::wnaf_window_table;
 std::vector<size_t> alt_bn128_G2::fixed_base_exp_window_table;
 alt_bn128_G2 alt_bn128_G2::G2_zero;
 alt_bn128_G2 alt_bn128_G2::G2_one;
+bigint<alt_bn128_G2::h_limbs> alt_bn128_G2::h;
 
 alt_bn128_G2::alt_bn128_G2()
 {
@@ -372,6 +373,11 @@ alt_bn128_G2 alt_bn128_G2::mul_by_q() const
     return alt_bn128_G2(alt_bn128_twist_mul_by_q_X * (this->X).Frobenius_map(1),
                       alt_bn128_twist_mul_by_q_Y * (this->Y).Frobenius_map(1),
                       (this->Z).Frobenius_map(1));
+}
+
+alt_bn128_G2 alt_bn128_G2::mul_by_cofactor() const
+{
+    return alt_bn128_G2::h * (*this);
 }
 
 bool alt_bn128_G2::is_well_formed() const

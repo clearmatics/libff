@@ -142,6 +142,7 @@ void init_mnt6_params()
     mnt6_twist_mul_by_q_Y = mnt6_Fq("475922286169261325753349249653048451545124878552823515553267735739164647307408490559963136");
 
     /* choice of group G1 */
+    // Identities
     mnt6_G1::G1_zero = mnt6_G1(mnt6_Fq::zero(),
                                mnt6_Fq::one(),
                                mnt6_Fq::zero());
@@ -149,6 +150,10 @@ void init_mnt6_params()
                               mnt6_Fq("402596290139780989709332707716568920777622032073762749862342374583908837063963736098549800"),
                               mnt6_Fq::one());
 
+    // Cofactor
+    mnt6_G1::h = bigint<mnt6_G1::h_limbs>("1");
+
+    // WNAF
     mnt6_G1::wnaf_window_table.resize(0);
     mnt6_G1::wnaf_window_table.push_back(11);
     mnt6_G1::wnaf_window_table.push_back(24);
@@ -202,6 +207,7 @@ void init_mnt6_params()
     mnt6_G1::fixed_base_exp_window_table.push_back(42682375);
 
     /* choice of group G2 */
+    // Identities
     mnt6_G2::G2_zero = mnt6_G2(mnt6_Fq3::zero(),
                                mnt6_Fq3::one(),
                                mnt6_Fq3::zero());
@@ -213,6 +219,10 @@ void init_mnt6_params()
                                        mnt6_Fq("123019855502969896026940545715841181300275180157288044663051565390506010149881373807142903")),
                               mnt6_Fq3::one());
 
+    // Cofactor
+    mnt6_G2::h = bigint<mnt6_G2::h_limbs>("226502022472576270196498690498308461791828762732602586162207535351960270082712694977333372361549082214519252261735048131889018501404377856786623430385820659037970876666767495659520");
+
+    // WNAF
     mnt6_G2::wnaf_window_table.resize(0);
     mnt6_G2::wnaf_window_table.push_back(5);
     mnt6_G2::wnaf_window_table.push_back(15);

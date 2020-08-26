@@ -11,6 +11,7 @@ std::vector<size_t> bw6_761_G2::wnaf_window_table;
 std::vector<size_t> bw6_761_G2::fixed_base_exp_window_table;
 bw6_761_G2 bw6_761_G2::G2_zero;
 bw6_761_G2 bw6_761_G2::G2_one;
+bigint<bw6_761_G2::h_limbs> bw6_761_G2::h;
 
 bw6_761_G2::bw6_761_G2()
 {
@@ -380,6 +381,11 @@ bw6_761_G2 bw6_761_G2::dbl() const
 bw6_761_G2 bw6_761_G2::mul_by_q() const
 {
   return bw6_761_G2::base_field_char() * (*this);
+}
+
+bw6_761_G2 bw6_761_G2::mul_by_cofactor() const
+{
+    return bw6_761_G2::h * (*this);
 }
 
 bool bw6_761_G2::is_well_formed() const

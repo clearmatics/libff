@@ -21,6 +21,7 @@ std::vector<size_t> alt_bn128_G1::wnaf_window_table;
 std::vector<size_t> alt_bn128_G1::fixed_base_exp_window_table;
 alt_bn128_G1 alt_bn128_G1::G1_zero;
 alt_bn128_G1 alt_bn128_G1::G1_one;
+bigint<alt_bn128_G1::h_limbs> alt_bn128_G1::h;
 
 alt_bn128_G1::alt_bn128_G1()
 {
@@ -358,6 +359,12 @@ alt_bn128_G1 alt_bn128_G1::dbl() const
     alt_bn128_Fq Z3 = Y1Z1 + Y1Z1;               // Z3 = 2 * Y1 * Z1
 
     return alt_bn128_G1(X3, Y3, Z3);
+}
+
+alt_bn128_G1 alt_bn128_G1::mul_by_cofactor() const
+{
+    // Cofactor = 1
+    return *this;
 }
 
 bool alt_bn128_G1::is_well_formed() const

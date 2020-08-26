@@ -20,6 +20,7 @@ bls12_377_G1 bls12_377_G1::G1_zero;
 bls12_377_G1 bls12_377_G1::G1_one;
 bls12_377_Fq bls12_377_G1::coeff_a;
 bls12_377_Fq bls12_377_G1::coeff_b;
+bigint<bls12_377_G1::h_limbs> bls12_377_G1::h;
 
 bls12_377_G1::bls12_377_G1()
 {
@@ -369,6 +370,11 @@ bls12_377_G1 bls12_377_G1::dbl() const
     bls12_377_Fq Z3 = Y1Z1 + Y1Z1;
 
     return bls12_377_G1(X3, Y3, Z3);
+}
+
+bls12_377_G1 bls12_377_G1::mul_by_cofactor() const
+{
+    return bls12_377_G1::h * (*this);
 }
 
 bool bls12_377_G1::is_well_formed() const

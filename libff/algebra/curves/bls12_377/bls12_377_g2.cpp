@@ -20,6 +20,7 @@ bls12_377_G2 bls12_377_G2::G2_zero;
 bls12_377_G2 bls12_377_G2::G2_one;
 bls12_377_Fq2 bls12_377_G2::coeff_a;
 bls12_377_Fq2 bls12_377_G2::coeff_b;
+bigint<bls12_377_G2::h_limbs> bls12_377_G2::h;
 
 bls12_377_G2::bls12_377_G2()
 {
@@ -385,6 +386,11 @@ bls12_377_G2 bls12_377_G2::mul_by_q() const
     return bls12_377_G2(bls12_377_twist_mul_by_q_X * (this->X).Frobenius_map(1),
                       bls12_377_twist_mul_by_q_Y * (this->Y).Frobenius_map(1),
                       (this->Z).Frobenius_map(1));
+}
+
+bls12_377_G2 bls12_377_G2::mul_by_cofactor() const
+{
+    return bls12_377_G2::h * (*this);
 }
 
 bool bls12_377_G2::is_well_formed() const
