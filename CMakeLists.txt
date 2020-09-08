@@ -86,6 +86,8 @@ option(
   ON
 )
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 if(APPLE)
   set(WITH_PROCPS OFF)
 endif()
@@ -232,5 +234,7 @@ if ("${IS_LIBFF_PARENT}")
   )
 
   add_subdirectory(depends)
+
+  add_subdirectory(ffi)
 endif()
 add_subdirectory(libff)
