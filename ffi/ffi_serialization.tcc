@@ -82,6 +82,18 @@ public:
     }
 };
 
+template<typename FieldT>
+bool field_element_equals_zero(const FieldT &f)
+{
+    return f == FieldT::zero();
+}
+
+template<typename FieldT>
+bool field_element_equals_one(const FieldT &f)
+{
+    return f == FieldT::one();
+}
+
 } // namespace internal
 
 template<typename T>
@@ -144,7 +156,12 @@ bool group_element_read(GroupT &g, const void *buffer, size_t buffer_size)
         if (field_element_read(g.X, buffer, coordinate_size)) {
             buffer = ((const char *)buffer) + coordinate_size;
             if (field_element_read(g.Y, buffer, coordinate_size)) {
-                g.Z = g.Z.one();
+                if (internal::field_element_equals_zero(g.X) &&
+                    internal::field_element_equals_one(g.Y)) {
+                    g.Z = g.Z.zero();
+                } else {
+                    g.Z = g.Z.one();
+                }
                 return true;
             }
         }
