@@ -386,6 +386,11 @@ bool bn128_G1::is_well_formed() const
     }
 }
 
+bool bn128_G1::is_in_safe_subgroup() const
+{
+    return true;
+}
+
 void bn128_G1::write_uncompressed(std::ostream &out) const
 {
     bn128_G1 gcopy(*this);

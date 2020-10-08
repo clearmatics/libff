@@ -411,6 +411,11 @@ bool alt_bn128_G2::is_well_formed() const
     }
 }
 
+bool alt_bn128_G2::is_in_safe_subgroup() const
+{
+    return zero() == scalar_field::mod * (*this);
+}
+
 alt_bn128_G2 alt_bn128_G2::zero()
 {
     return G2_zero;

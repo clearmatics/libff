@@ -398,6 +398,11 @@ bool alt_bn128_G1::is_well_formed() const
     }
 }
 
+bool alt_bn128_G1::is_in_safe_subgroup() const
+{
+    return true;
+}
+
 alt_bn128_G1 alt_bn128_G1::zero()
 {
     return G1_zero;
