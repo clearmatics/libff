@@ -411,6 +411,11 @@ bool bw6_761_G2::is_well_formed() const
     return (this->Z * (Y2 - bw6_761_twist_coeff_b * Z2) == this->X * X2);
 }
 
+bool bw6_761_G2::is_in_safe_subgroup() const
+{
+    return zero() == scalar_field::mod * (*this);
+}
+
 bw6_761_G2 bw6_761_G2::zero()
 {
     return G2_zero;

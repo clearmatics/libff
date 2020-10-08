@@ -398,6 +398,11 @@ bool bls12_377_G1::is_well_formed() const
     return (Y2 == X3 + bls12_377_coeff_b * Z6);
 }
 
+bool bls12_377_G1::is_in_safe_subgroup() const
+{
+    return zero() == scalar_field::mod * (*this);
+}
+
 bls12_377_G1 bls12_377_G1::zero()
 {
     return G1_zero;

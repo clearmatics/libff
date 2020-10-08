@@ -408,6 +408,11 @@ bool mnt6_G2::is_well_formed() const
     }
 }
 
+bool mnt6_G2::is_in_safe_subgroup() const
+{
+    return zero() == scalar_field::mod * (*this);
+}
+
 mnt6_G2 mnt6_G2::zero()
 {
     return G2_zero;

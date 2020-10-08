@@ -70,6 +70,7 @@ public:
     bn128_G2 mul_by_cofactor() const;
 
     bool is_well_formed() const;
+    bool is_in_safe_subgroup() const;
 
     static bn128_G2 zero();
     static bn128_G2 one();
