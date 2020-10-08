@@ -150,6 +150,11 @@ void init_alt_bn128_params()
     alt_bn128_G1::G1_one = alt_bn128_G1(alt_bn128_Fq("1"),
                                     alt_bn128_Fq("2"),
                                     alt_bn128_Fq::one());
+
+    // Curve coeffs
+    alt_bn128_G1::coeff_a = alt_bn128_Fq::zero();
+    alt_bn128_G1::coeff_b = alt_bn128_coeff_b;
+
     // Cofactor
     alt_bn128_G1::h = bigint<alt_bn128_G1::h_limbs>("1");
 
@@ -218,7 +223,11 @@ void init_alt_bn128_params()
                                     alt_bn128_Fq2(alt_bn128_Fq("8495653923123431417604973247489272438418190587263600148770280649306958101930"),
                                                 alt_bn128_Fq("4082367875863433681332203403145435568316851327593401208105741076214120093531")),
                                     alt_bn128_Fq2::one());
-    
+
+    // Curve coeffs
+    alt_bn128_G2::coeff_a = alt_bn128_Fq2::zero();
+    alt_bn128_G2::coeff_b = alt_bn128_twist_coeff_b;
+
     // Cofactor
     // [Sage excerpt]
     // u = 4965661367192848881

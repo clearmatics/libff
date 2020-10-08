@@ -28,6 +28,8 @@ public:
     static std::vector<size_t> fixed_base_exp_window_table;
     static alt_bn128_G2 G2_zero;
     static alt_bn128_G2 G2_one;
+    static alt_bn128_Fq2 coeff_a;
+    static alt_bn128_Fq2 coeff_b;
 
     typedef alt_bn128_Fq base_field;
     typedef alt_bn128_Fq2 twist_field;

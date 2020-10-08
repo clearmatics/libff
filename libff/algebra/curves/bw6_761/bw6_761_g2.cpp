@@ -11,6 +11,8 @@ std::vector<size_t> bw6_761_G2::wnaf_window_table;
 std::vector<size_t> bw6_761_G2::fixed_base_exp_window_table;
 bw6_761_G2 bw6_761_G2::G2_zero;
 bw6_761_G2 bw6_761_G2::G2_one;
+bw6_761_Fq bw6_761_G2::coeff_a;
+bw6_761_Fq bw6_761_G2::coeff_b;
 bigint<bw6_761_G2::h_limbs> bw6_761_G2::h;
 
 bw6_761_G2::bw6_761_G2()
