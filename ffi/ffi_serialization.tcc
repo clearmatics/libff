@@ -66,7 +66,8 @@ public:
         FieldT &f, const void *buffer, size_t buffer_size)
     {
         libff::bigint<n> bigint;
-        if (object_read_from_buffer(bigint, buffer, buffer_size)) {
+        if (object_read_from_buffer(bigint, buffer, buffer_size) &&
+            mpn_cmp(modulus.data, bigint.data, n) > 0) {
             f = libff::Fp_model<n, modulus>(bigint);
             return true;
         }
