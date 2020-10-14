@@ -77,9 +77,6 @@ public:
     static void read_uncompressed(std::istream &, bw6_761_G2 &);
     static void read_compressed(std::istream &, bw6_761_G2 &);
 
-    friend std::ostream& operator<<(std::ostream &out, const bw6_761_G2 &g);
-    friend std::istream& operator>>(std::istream &in, bw6_761_G2 &g);
-
     static void batch_to_special_all_non_zeros(std::vector<bw6_761_G2> &vec);
 };
 
