@@ -447,7 +447,7 @@ void mnt6_G2::write_compressed(std::ostream &out) const
     out << copy.X << OUTPUT_SEPARATOR << (copy.Y.coeffs[0].as_bigint().data[0] & 1);
 }
 
-void mnt6_G2::read_uncompressed(std::istream &in, mnt6_G2 &g)
+void mnt6_G2::read_uncompressed_unsafe(std::istream &in, mnt6_G2 &g)
 {
     char is_zero;
     mnt6_Fq3 tX, tY;
@@ -468,7 +468,7 @@ void mnt6_G2::read_uncompressed(std::istream &in, mnt6_G2 &g)
     }
 }
 
-void mnt6_G2::read_compressed(std::istream &in, mnt6_G2 &g)
+void mnt6_G2::read_compressed_unsafe(std::istream &in, mnt6_G2 &g)
 {
     char is_zero;
     mnt6_Fq3 tX, tY;
@@ -506,6 +506,22 @@ void mnt6_G2::read_compressed(std::istream &in, mnt6_G2 &g)
     else
     {
         g = mnt6_G2::zero();
+    }
+}
+
+void mnt6_G2::read_uncompressed(std::istream &in, mnt6_G2 &g)
+{
+    read_uncompressed_unsafe(in, g);
+    if (!g.is_well_formed() || !g.is_in_safe_subgroup()) {
+        throw std::invalid_argument("point is outside safe subgroup");
+    }
+}
+
+void mnt6_G2::read_compressed(std::istream &in, mnt6_G2 &g)
+{
+    read_compressed_unsafe(in, g);
+    if (!g.is_in_safe_subgroup()) {
+        throw std::invalid_argument("point is outside safe subgroup");
     }
 }
 

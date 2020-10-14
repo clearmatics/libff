@@ -458,7 +458,7 @@ std::ostream& operator<<(std::ostream &out, const bw6_761_G2 &g)
     return out;
 }
 
-void bw6_761_G2::read_uncompressed(std::istream &in, bw6_761_G2 &g)
+void bw6_761_G2::read_uncompressed_unsafe(std::istream &in, bw6_761_G2 &g)
 {
     char is_zero;
     bw6_761_Fq tX, tY;
@@ -478,7 +478,7 @@ void bw6_761_G2::read_uncompressed(std::istream &in, bw6_761_G2 &g)
     }
 }
 
-void bw6_761_G2::read_compressed(std::istream &in, bw6_761_G2 &g)
+void bw6_761_G2::read_compressed_unsafe(std::istream &in, bw6_761_G2 &g)
 {
     char is_zero;
     bw6_761_Fq tX, tY;
@@ -512,6 +512,22 @@ void bw6_761_G2::read_compressed(std::istream &in, bw6_761_G2 &g)
     else
     {
         g = bw6_761_G2::zero();
+    }
+}
+
+void bw6_761_G2::read_uncompressed(std::istream &in, bw6_761_G2 &g)
+{
+    read_uncompressed_unsafe(in, g);
+    if (!g.is_well_formed() || !g.is_in_safe_subgroup()) {
+        throw std::invalid_argument("point is outside safe subgroup");
+    }
+}
+
+void bw6_761_G2::read_compressed(std::istream &in, bw6_761_G2 &g)
+{
+    read_compressed_unsafe(in, g);
+    if (!g.is_in_safe_subgroup()) {
+        throw std::invalid_argument("point is outside safe subgroup");
     }
 }
 

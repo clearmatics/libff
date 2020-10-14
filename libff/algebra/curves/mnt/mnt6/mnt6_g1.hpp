@@ -87,6 +87,8 @@ public:
     void write_compressed(std::ostream &) const;
     static void read_uncompressed(std::istream &, mnt6_G1 &);
     static void read_compressed(std::istream &, mnt6_G1 &);
+    static void read_uncompressed_unsafe(std::istream &, mnt6_G1 &);
+    static void read_compressed_unsafe(std::istream &, mnt6_G1 &);
 
     static void batch_to_special_all_non_zeros(std::vector<mnt6_G1> &vec);
 };

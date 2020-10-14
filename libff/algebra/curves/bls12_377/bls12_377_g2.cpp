@@ -451,7 +451,7 @@ void bls12_377_G2::write_compressed(std::ostream &out) const
     out << copy.X << OUTPUT_SEPARATOR << (copy.Y.coeffs[0].as_bigint().data[0] & 1);
 }
 
-void bls12_377_G2::read_uncompressed(std::istream &in, bls12_377_G2 &g)
+void bls12_377_G2::read_uncompressed_unsafe(std::istream &in, bls12_377_G2 &g)
 {
     char is_zero;
     bls12_377_Fq2 tX, tY;
@@ -470,7 +470,7 @@ void bls12_377_G2::read_uncompressed(std::istream &in, bls12_377_G2 &g)
     }
 }
 
-void bls12_377_G2::read_compressed(std::istream &in, bls12_377_G2 &g)
+void bls12_377_G2::read_compressed_unsafe(std::istream &in, bls12_377_G2 &g)
 {
     char is_zero;
     bls12_377_Fq2 tX, tY;
@@ -503,6 +503,22 @@ void bls12_377_G2::read_compressed(std::istream &in, bls12_377_G2 &g)
     else
     {
         g = bls12_377_G2::zero();
+    }
+}
+
+void bls12_377_G2::read_uncompressed(std::istream &in, bls12_377_G2 &g)
+{
+    read_uncompressed_unsafe(in, g);
+    if (!g.is_well_formed() || !g.is_in_safe_subgroup()) {
+        throw std::invalid_argument("point is outside safe subgroup");
+    }
+}
+
+void bls12_377_G2::read_compressed(std::istream &in, bls12_377_G2 &g)
+{
+    read_compressed_unsafe(in, g);
+    if (!g.is_in_safe_subgroup()) {
+        throw std::invalid_argument("point is outside safe subgroup");
     }
 }
 

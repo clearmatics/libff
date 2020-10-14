@@ -85,6 +85,8 @@ public:
     void write_compressed(std::ostream &) const;
     static void read_uncompressed(std::istream &, alt_bn128_G2 &);
     static void read_compressed(std::istream &, alt_bn128_G2 &);
+    static void read_uncompressed_unsafe(std::istream &, alt_bn128_G2 &);
+    static void read_compressed_unsafe(std::istream &, alt_bn128_G2 &);
 
     static void batch_to_special_all_non_zeros(std::vector<alt_bn128_G2> &vec);
 };

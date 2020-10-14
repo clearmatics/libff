@@ -425,7 +425,7 @@ void bn128_G2::write_compressed(std::ostream &out) const
     out << OUTPUT_SEPARATOR << (((unsigned char*)&gcopy.Y.a_)[0] & 1 ? '1' : '0');
 }
 
-void bn128_G2::read_uncompressed(std::istream &in, bn128_G2 &g)
+void bn128_G2::read_uncompressed_unsafe(std::istream &in, bn128_G2 &g)
 {
     char is_zero;
     in.read((char*)&is_zero, 1); // this reads is_zero;
@@ -458,7 +458,7 @@ void bn128_G2::read_uncompressed(std::istream &in, bn128_G2 &g)
     }
 }
 
-void bn128_G2::read_compressed(std::istream &in, bn128_G2 &g)
+void bn128_G2::read_compressed_unsafe(std::istream &in, bn128_G2 &g)
 {
     char is_zero;
     in.read((char*)&is_zero, 1); // this reads is_zero;
@@ -503,6 +503,22 @@ void bn128_G2::read_compressed(std::istream &in, bn128_G2 &g)
     else
     {
         g = bn128_G2::zero();
+    }
+}
+
+void bn128_G2::read_uncompressed(std::istream &in, bn128_G2 &g)
+{
+    read_uncompressed_unsafe(in, g);
+    if (!g.is_well_formed() || !g.is_in_safe_subgroup()) {
+        throw std::invalid_argument("point is outside safe subgroup");
+    }
+}
+
+void bn128_G2::read_compressed(std::istream &in, bn128_G2 &g)
+{
+    read_compressed_unsafe(in, g);
+    if (!g.is_in_safe_subgroup()) {
+        throw std::invalid_argument("point is outside safe subgroup");
     }
 }
 

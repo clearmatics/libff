@@ -417,7 +417,7 @@ void mnt6_G1::write_compressed(std::ostream &out) const
     out << copy.X << OUTPUT_SEPARATOR << (copy.Y.as_bigint().data[0] & 1);
 }
 
-void mnt6_G1::read_uncompressed(std::istream &in, mnt6_G1 &g)
+void mnt6_G1::read_uncompressed_unsafe(std::istream &in, mnt6_G1 &g)
 {
     char is_zero;
     mnt6_Fq tX, tY;
@@ -437,7 +437,7 @@ void mnt6_G1::read_uncompressed(std::istream &in, mnt6_G1 &g)
     }
 }
 
-void mnt6_G1::read_compressed(std::istream &in, mnt6_G1 &g)
+void mnt6_G1::read_compressed_unsafe(std::istream &in, mnt6_G1 &g)
 {
     char is_zero;
     mnt6_Fq tX, tY;
@@ -475,6 +475,19 @@ void mnt6_G1::read_compressed(std::istream &in, mnt6_G1 &g)
     {
         g = mnt6_G1::zero();
     }
+}
+
+void mnt6_G1::read_uncompressed(std::istream &in, mnt6_G1 &g)
+{
+    read_uncompressed_unsafe(in, g);
+    if (!g.is_well_formed()) {
+        throw std::invalid_argument("point is not on curve");
+    }
+}
+
+void mnt6_G1::read_compressed(std::istream &in, mnt6_G1 &g)
+{
+    read_compressed_unsafe(in, g);
 }
 
 void mnt6_G1::batch_to_special_all_non_zeros(std::vector<mnt6_G1> &vec)

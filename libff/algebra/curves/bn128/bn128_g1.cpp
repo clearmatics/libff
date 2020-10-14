@@ -421,7 +421,7 @@ void bn128_G1::write_compressed(std::ostream &out) const
     out << OUTPUT_SEPARATOR << (((unsigned char*)&gcopy.Y)[0] & 1 ? '1' : '0');
 }
 
-void bn128_G1::read_uncompressed(std::istream &in, bn128_G1 &g)
+void bn128_G1::read_uncompressed_unsafe(std::istream &in, bn128_G1 &g)
 {
     char is_zero;
     in.read((char*)&is_zero, 1); // this reads is_zero;
@@ -448,7 +448,7 @@ void bn128_G1::read_uncompressed(std::istream &in, bn128_G1 &g)
     }
 }
 
-void bn128_G1::read_compressed(std::istream &in, bn128_G1 &g)
+void bn128_G1::read_compressed_unsafe(std::istream &in, bn128_G1 &g)
 {
     char is_zero;
     in.read((char*)&is_zero, 1); // this reads is_zero;
@@ -491,6 +491,19 @@ void bn128_G1::read_compressed(std::istream &in, bn128_G1 &g)
     {
         g = bn128_G1::zero();
     }
+}
+
+void bn128_G1::read_uncompressed(std::istream &in, bn128_G1 &g)
+{
+    read_uncompressed_unsafe(in, g);
+    if (!g.is_well_formed()) {
+        throw std::invalid_argument("point is not on curve");
+    }
+}
+
+void bn128_G1::read_compressed(std::istream &in, bn128_G1 &g)
+{
+    read_compressed_unsafe(in, g);
 }
 
 std::ostream& operator<<(std::ostream &out, const bn128_G1 &g)
