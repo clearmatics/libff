@@ -388,9 +388,70 @@ bls12_377_G2 bls12_377_G2::mul_by_q() const
                       (this->Z).Frobenius_map(1));
 }
 
+bls12_377_G2 bls12_377_G2::untwist_frobenius_twist() const
+{
+    bls12_377_G2 g = *this;
+    g.to_affine_coordinates();
+
+    // Untwist
+    const bls12_377_Fq6 x_fq6(g.X, bls12_377_Fq2::zero(), bls12_377_Fq2::zero());
+    const bls12_377_Fq12 y_fq12 = bls12_377_Fq12(
+        bls12_377_Fq6(g.Y, bls12_377_Fq2::zero(), bls12_377_Fq2::zero()),
+        bls12_377_Fq6::zero());
+    const bls12_377_Fq6 untwist_x = x_fq6 * bls12_377_g2_untwist_frobenius_twist_v.coeffs[0];
+    const bls12_377_Fq12 untwist_y = y_fq12 * bls12_377_g2_untwist_frobenius_twist_w_3;
+    // Frobenius
+    const bls12_377_Fq6 frob_untwist_x = untwist_x.Frobenius_map(1);
+    const bls12_377_Fq12 frob_untwist_y = untwist_y.Frobenius_map(1);
+    // Twist
+    const bls12_377_Fq6 twist_frob_untwist_x = frob_untwist_x * bls12_377_g2_untwist_frobenius_twist_v_inverse.coeffs[0];
+    const bls12_377_Fq12 twist_frob_untwist_y = frob_untwist_y * bls12_377_g2_untwist_frobenius_twist_w_3_inverse;
+
+    assert(twist_frob_untwist_x.coeffs[2] == bls12_377_Fq2::zero());
+    assert(twist_frob_untwist_x.coeffs[1] == bls12_377_Fq2::zero());
+    assert(twist_frob_untwist_y.coeffs[1] == bls12_377_Fq6::zero());
+    assert(twist_frob_untwist_y.coeffs[0].coeffs[2] == bls12_377_Fq2::zero());
+    assert(twist_frob_untwist_y.coeffs[0].coeffs[1] == bls12_377_Fq2::zero());
+
+    return bls12_377_G2(
+        twist_frob_untwist_x.coeffs[0],
+        twist_frob_untwist_y.coeffs[0].coeffs[0],
+        bls12_377_Fq2::one());
+}
+
 bls12_377_G2 bls12_377_G2::mul_by_cofactor() const
 {
-    return bls12_377_G2::h * (*this);
+#if 0
+    // Original implementation
+    return h*(*this);
+#elif 0
+    //   [m * h2]P = [h2_0]P + [h2_1]psi_p + psi_2_2p
+    // where:
+    //   m = 2642714419370766126774451514764150856000046127864520638464
+    //   h2_0=91893752504881257691937156713741811711
+    //   h2_1=9586122913090633728
+
+    const bls12_377_G2 psi_p = untwist_frobenius_twist();
+    const bls12_377_G2 psi_2p = (*this+*this).untwist_frobenius_twist();
+    const bls12_377_G2 psi_2_2p = psi_2p.untwist_frobenius_twist();
+    const bls12_377_G2 result =
+        bls12_377_Fr("91893752504881257691937156713741811711") * (*this) +
+        bls12_377_Fr("9586122913090633728") * psi_p +
+        psi_2_2p;
+    return result;
+#else
+    // [h2]P = [h2_0]P + [h2_1]([t] psi_p - psi_2_p), where
+    // h2_0 = 293634935485640680722085584138834120318524213360527933441
+    // h2_1 = 30631250834960419227450344600217059328
+    // t = 9586122913090633730
+    const bls12_377_G2 psi_p = untwist_frobenius_twist();
+    const bls12_377_G2 psi_2_p = psi_p.untwist_frobenius_twist();
+    const bls12_377_G2 t_psi_mins_psi_2 = bls12_377_trace_of_frobenius * psi_p - psi_2_p;
+    const bls12_377_G2 result =
+        bls12_377_g2_mul_by_cofactor_h2_0 * (*this) +
+        bls12_377_g2_mul_by_cofactor_h2_1 * t_psi_mins_psi_2;
+    return result;
+#endif
 }
 
 bool bls12_377_G2::is_well_formed() const
@@ -416,7 +477,16 @@ bool bls12_377_G2::is_well_formed() const
 
 bool bls12_377_G2::is_in_safe_subgroup() const
 {
+#if 0
     return zero() == scalar_field::mod * (*this);
+#else
+    // Compute [h1.r]P = P + [t](\psi(P) - P) - \psi^2(P)
+    const bls12_377_G2 psi_p = untwist_frobenius_twist();
+    const bls12_377_G2 psi_2_p = psi_p.untwist_frobenius_twist();
+    const bls12_377_G2 psi_p_minus_p = psi_p - *this;
+    const bls12_377_G2 h1_r_p = *this + bls12_377_trace_of_frobenius * psi_p_minus_p - psi_2_p;
+    return zero() == h1_r_p;
+#endif
 }
 
 bls12_377_G2 bls12_377_G2::zero()

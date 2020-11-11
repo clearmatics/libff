@@ -70,6 +70,10 @@ public:
     // proper subgroup membership test.
     bls12_377_G1 mul_by_cofactor() const;
 
+    // Endomorphism (x, y) -> (\beta * x, y) for \beta and element of Fq with
+    // order 3.
+    bls12_377_G1 sigma() const;
+
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
 

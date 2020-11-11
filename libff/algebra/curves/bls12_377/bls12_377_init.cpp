@@ -13,12 +13,28 @@ bigint<bls12_377_r_limbs> bls12_377_modulus_r;
 // bigint<bls12_377_q_limbs> bls12_377_modulus_q;
 
 bls12_377_Fq bls12_377_coeff_b;
+bigint<bls12_377_r_limbs> bls12_377_trace_of_frobenius;
 bls12_377_Fq2 bls12_377_twist;
 bls12_377_Fq2 bls12_377_twist_coeff_b;
 bls12_377_Fq bls12_377_twist_mul_by_b_c0;
 bls12_377_Fq bls12_377_twist_mul_by_b_c1;
 bls12_377_Fq2 bls12_377_twist_mul_by_q_X;
 bls12_377_Fq2 bls12_377_twist_mul_by_q_Y;
+
+// See bls12_377_G1::is_in_safe_subgroup
+bls12_377_Fq bls12_377_g1_endomorphism_beta;
+bigint<bls12_377_r_limbs> bls12_377_g1_safe_subgroup_check_c1;
+
+// Coefficients for G2 untwist-frobenius-twist
+bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_w;
+bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_v;
+bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_w_3;
+bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_v_inverse;
+bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_w_3_inverse;
+
+// Coefficients used in bls12_377_G2::mul_by_cofactor
+bigint<bls12_377_r_limbs> bls12_377_g2_mul_by_cofactor_h2_0;
+bigint<bls12_377_r_limbs> bls12_377_g2_mul_by_cofactor_h2_1;
 
 bigint<bls12_377_q_limbs> bls12_377_ate_loop_count;
 bool bls12_377_ate_is_loop_count_neg;
@@ -156,13 +172,20 @@ void init_bls12_377_params()
     // Identities
     bls12_377_G1::G1_zero = bls12_377_G1(bls12_377_Fq::zero(), bls12_377_Fq::one(), bls12_377_Fq::zero());
     bls12_377_G1::G1_one = bls12_377_G1(bls12_377_Fq("81937999373150964239938255573465948239988671502647976594219695644855304257327692006745978603320413799295628339695"), bls12_377_Fq("241266749859715473739788878240585681733927191168601896383759122102112907357779751001206799952863815012735208165030"), bls12_377_Fq::one());
-    
+
     // Curve coeffs
     bls12_377_G1::coeff_a = bls12_377_Fq::zero();
     bls12_377_G1::coeff_b = bls12_377_coeff_b;
 
+    // Trace of Frobenius
+    bls12_377_trace_of_frobenius = bigint_r("9586122913090633730");
+
     // Cofactor
     bls12_377_G1::h = bigint<bls12_377_G1::h_limbs>("30631250834960419227450344600217059328");
+
+    // G1 fast subgroup check:  0 == [c0]P + [c1]sigma(P)
+    bls12_377_g1_endomorphism_beta = bls12_377_Fq("80949648264912719408558363140637477264845294720710499478137287262712535938301461879813459410945");
+    bls12_377_g1_safe_subgroup_check_c1 = bigint_r("91893752504881257701523279626832445441");
 
     // WNAF
     //
@@ -230,13 +253,24 @@ void init_bls12_377_params()
     // Identities
     bls12_377_G2::G2_zero = bls12_377_G2(bls12_377_Fq2::zero(), bls12_377_Fq2::one(), bls12_377_Fq2::zero());
     bls12_377_G2::G2_one = bls12_377_G2(bls12_377_Fq2(bls12_377_Fq("111583945774695116443911226257823823434468740249883042837745151039122196680777376765707574547389190084887628324746"), bls12_377_Fq("129066980656703085518157301154335215886082112524378686555873161080604845924984124025594590925548060469686767592854")), bls12_377_Fq2(bls12_377_Fq("168863299724668977183029941347596462608978380503965103341003918678547611204475537878680436662916294540335494194722"), bls12_377_Fq("233892497287475762251335351893618429603672921469864392767514552093535653615809913098097380147379993375817193725968")), bls12_377_Fq2::one());
-    
+
     // Curve twist coeffs
     bls12_377_G2::coeff_a = bls12_377_Fq2::zero();
     bls12_377_G2::coeff_b = bls12_377_twist_coeff_b;
 
     // Cofactor
     bls12_377_G2::h = bigint<bls12_377_G2::h_limbs>("7923214915284317143930293550643874566881017850177945424769256759165301436616933228209277966774092486467289478618404761412630691835764674559376407658497");
+
+    // Untwist-Frobenius-Twist coefficients
+    bls12_377_Fq12 untwist_frobenius_twist_w = bls12_377_Fq12(bls12_377_Fq6::zero(), bls12_377_Fq6::one());
+    bls12_377_g2_untwist_frobenius_twist_v = untwist_frobenius_twist_w * untwist_frobenius_twist_w;
+    bls12_377_g2_untwist_frobenius_twist_w_3 = untwist_frobenius_twist_w * bls12_377_g2_untwist_frobenius_twist_v;
+    bls12_377_g2_untwist_frobenius_twist_v_inverse = bls12_377_g2_untwist_frobenius_twist_v.inverse();
+    bls12_377_g2_untwist_frobenius_twist_w_3_inverse = bls12_377_g2_untwist_frobenius_twist_w_3.inverse();
+
+    // Fast cofactor multiplication coefficients
+    bls12_377_g2_mul_by_cofactor_h2_0 = bigint_r("293634935485640680722085584138834120318524213360527933441");
+    bls12_377_g2_mul_by_cofactor_h2_1 = bigint_r("30631250834960419227450344600217059328");
 
     // G2 wNAF window table
     bls12_377_G2::wnaf_window_table.resize(0);

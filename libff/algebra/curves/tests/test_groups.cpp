@@ -266,6 +266,26 @@ void test_check_membership<bw6_761_pp>()
     test_group_membership_invalid_g2<bw6_761_G2>(bw6_761_Fq(0));
 }
 
+void
+test_bls12_377()
+{
+    const bls12_377_G1 g1 = bls12_377_G1::random_element();
+
+    // Ensure sigma endomorphism results in multiplication by expected lambda.
+    const bls12_377_G1 sigma_g1 = g1.sigma();
+    assert(
+        (bls12_377_Fr("91893752504881257701523279626832445440") * g1) ==
+        sigma_g1);
+
+    // Ensure untwist-frobenius-twist operation \psi satisfies:
+    //   \psi^2(P) - [t] \psi(P) + [q]P = zero
+    const bls12_377_G2 a = bls12_377_G2::random_element();
+    const bls12_377_G2 uft = a.untwist_frobenius_twist();
+    const bls12_377_G2 uft_2 = uft.untwist_frobenius_twist();
+    const bls12_377_G2 z = uft_2 - (bls12_377_trace_of_frobenius * uft) + (bls12_377_modulus_q * a);
+    assert(z == bls12_377_G2::zero());
+}
+
 int main(void)
 {
     std::cout << "edwards_pp\n";
@@ -312,6 +332,7 @@ int main(void)
     // Make sure that added curves pass the libff tests
     std::cout << "bls12_377_pp\n";
     bls12_377_pp::init_public_params();
+    test_bls12_377();
     test_group<G1<bls12_377_pp> >();
     test_output<G1<bls12_377_pp> >();
     test_group<G2<bls12_377_pp> >();
