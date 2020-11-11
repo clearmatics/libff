@@ -129,6 +129,14 @@ void test_mul_by_q()
 }
 
 template<typename GroupT>
+void test_mul_by_cofactor()
+{
+    const GroupT a = GroupT::random_element();
+    const GroupT a_h = GroupT::h*a;
+    assert(a_h == a.mul_by_cofactor());
+}
+
+template<typename GroupT>
 void test_output()
 {
     GroupT g = GroupT::zero();
@@ -229,6 +237,7 @@ void test_check_membership<bw6_761_pp>()
 
 int main(void)
 {
+    std::cout << "edwards_pp\n";
     edwards_pp::init_public_params();
     test_group<G1<edwards_pp> >();
     test_output<G1<edwards_pp> >();
@@ -236,6 +245,7 @@ int main(void)
     test_output<G2<edwards_pp> >();
     test_mul_by_q<G2<edwards_pp> >();
 
+    std::cout << "mnt4_pp\n";
     mnt4_pp::init_public_params();
     test_group<G1<mnt4_pp> >();
     test_output<G1<mnt4_pp> >();
@@ -243,7 +253,10 @@ int main(void)
     test_output<G2<mnt4_pp> >();
     test_mul_by_q<G2<mnt4_pp> >();
     test_check_membership<mnt4_pp>();
+    test_mul_by_cofactor<G1<mnt4_pp>>();
+    test_mul_by_cofactor<G2<mnt4_pp>>();
 
+    std::cout << "mnt6_pp\n";
     mnt6_pp::init_public_params();
     test_group<G1<mnt6_pp> >();
     test_output<G1<mnt6_pp> >();
@@ -251,7 +264,10 @@ int main(void)
     test_output<G2<mnt6_pp> >();
     test_mul_by_q<G2<mnt6_pp> >();
     test_check_membership<mnt6_pp>();
+    test_mul_by_cofactor<G1<mnt6_pp>>();
+    test_mul_by_cofactor<G2<mnt6_pp>>();
 
+    std::cout << "alt_bn128_pp\n";
     alt_bn128_pp::init_public_params();
     test_group<G1<alt_bn128_pp> >();
     test_output<G1<alt_bn128_pp> >();
@@ -259,8 +275,11 @@ int main(void)
     test_output<G2<alt_bn128_pp> >();
     test_mul_by_q<G2<alt_bn128_pp> >();
     test_check_membership<alt_bn128_pp>();
+    test_mul_by_cofactor<G1<alt_bn128_pp>>();
+    test_mul_by_cofactor<G2<alt_bn128_pp>>();
 
     // Make sure that added curves pass the libff tests
+    std::cout << "bls12_377_pp\n";
     bls12_377_pp::init_public_params();
     test_group<G1<bls12_377_pp> >();
     test_output<G1<bls12_377_pp> >();
@@ -268,7 +287,10 @@ int main(void)
     test_output<G2<bls12_377_pp> >();
     test_mul_by_q<G2<bls12_377_pp> >();
     test_check_membership<bls12_377_pp>();
+    test_mul_by_cofactor<G1<bls12_377_pp>>();
+    test_mul_by_cofactor<G2<bls12_377_pp>>();
 
+    std::cout << "bw6_761_pp\n";
     bw6_761_pp::init_public_params();
     test_group<G1<bw6_761_pp> >();
     test_output<G1<bw6_761_pp> >();
@@ -276,14 +298,19 @@ int main(void)
     test_output<G2<bw6_761_pp> >();
     test_mul_by_q<G2<bw6_761_pp> >();
     test_check_membership<bw6_761_pp>();
+    test_mul_by_cofactor<G1<bw6_761_pp>>();
+    test_mul_by_cofactor<G2<bw6_761_pp>>();
 
 // BN128 has fancy dependencies so it may be disabled
 #ifdef CURVE_BN128
+    std::cout << "bn128_pp\n";
     bn128_pp::init_public_params();
     test_group<G1<bn128_pp> >();
     test_output<G1<bn128_pp> >();
     test_group<G2<bn128_pp> >();
     test_output<G2<bn128_pp> >();
     test_check_membership<bn128_pp>();
+    test_mul_by_cofactor<G1<bn128_pp>>();
+    test_mul_by_cofactor<G2<bn128_pp>>();
 #endif
 }
