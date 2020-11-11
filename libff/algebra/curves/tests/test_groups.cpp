@@ -129,6 +129,20 @@ void test_mul_by_q()
 }
 
 template<typename GroupT>
+void test_untwist_frobenius_twist()
+{
+    const GroupT a = GroupT::random_element() + GroupT::random_element();
+    const GroupT uft = a.untwist_frobenius_twist();
+    const GroupT uft_2 = uft.untwist_frobenius_twist();
+
+    // \pi^2(P) - [t] \pi(P) + P = zero
+    const typename GroupT::scalar_field trace_frob("9586122913090633730");
+
+    const GroupT z = uft_2 - (trace_frob * uft) + (GroupT::base_field::mod * a);
+    assert(z == GroupT::zero());
+}
+
+template<typename GroupT>
 void test_mul_by_cofactor()
 {
     const GroupT a = GroupT::random_element();
@@ -235,6 +249,18 @@ void test_check_membership<bw6_761_pp>()
     test_group_membership_invalid_g2<bw6_761_G2>(bw6_761_Fq(0));
 }
 
+void
+test_bls12_377()
+{
+    const bls12_377_G1 g1 = bls12_377_G1::random_element();
+
+    // Ensure sigma endomorphism results in multiplication by expected lambda.
+    const bls12_377_G1 sigma_g1 = g1.sigma();
+    assert(
+        (bls12_377_Fr("91893752504881257701523279626832445440") * g1) ==
+        sigma_g1);
+}
+
 int main(void)
 {
     std::cout << "edwards_pp\n";
@@ -281,12 +307,14 @@ int main(void)
     // Make sure that added curves pass the libff tests
     std::cout << "bls12_377_pp\n";
     bls12_377_pp::init_public_params();
+    test_bls12_377();
     test_group<G1<bls12_377_pp> >();
     test_output<G1<bls12_377_pp> >();
     test_group<G2<bls12_377_pp> >();
     test_output<G2<bls12_377_pp> >();
     test_mul_by_q<G2<bls12_377_pp> >();
     test_check_membership<bls12_377_pp>();
+    test_untwist_frobenius_twist<G2<bls12_377_pp>>();
     test_mul_by_cofactor<G1<bls12_377_pp>>();
     test_mul_by_cofactor<G2<bls12_377_pp>>();
 
