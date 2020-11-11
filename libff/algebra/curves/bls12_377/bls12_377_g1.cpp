@@ -377,6 +377,14 @@ bls12_377_G1 bls12_377_G1::mul_by_cofactor() const
     return bls12_377_G1::h * (*this);
 }
 
+bls12_377_G1 bls12_377_G1::sigma() const
+{
+    bls12_377_G1 result = *this;
+    result.to_affine_coordinates();
+    result.X = bls12_377_g1_endomorphism_beta * result.X;
+    return result;
+}
+
 bool bls12_377_G1::is_well_formed() const
 {
     if (this->is_zero())
@@ -400,7 +408,14 @@ bool bls12_377_G1::is_well_formed() const
 
 bool bls12_377_G1::is_in_safe_subgroup() const
 {
-    return zero() == scalar_field::mod * (*this);
+    // Check that [c0]P + [c1]\sigma(P) == 0 (see bls12_377.sage), where:
+    //   c0: 1
+    //   c1: 91893752504881257701523279626832445441
+    //         (0x452217cc900000010a11800000000001)
+    const bls12_377_G1 sigma_g = sigma();
+    const bls12_377_G1 r_times_g =
+        bls12_377_g1_safe_subgroup_check_c1 * sigma_g + *this;
+    return zero() == r_times_g;
 }
 
 bls12_377_G1 bls12_377_G1::zero()
