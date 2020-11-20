@@ -174,6 +174,35 @@ void test_group_membership_valid()
 }
 
 template<typename GroupT>
+bool profile_group_membership()
+{
+    static const size_t NUM_ELEMENTS = 1000;
+
+    // Measure the time taken to check membership of 1000 elements. (Note all
+    // elements are in fact members of the group - we are not testing
+    // correctness here).
+
+    std::vector<GroupT> elements;
+    elements.reserve(NUM_ELEMENTS);
+    for (size_t i = 0 ; i < NUM_ELEMENTS ; ++i)
+    {
+        elements.push_back(GroupT::random_element());
+    }
+
+    enter_block("group membership profiling");
+    for (const GroupT &el : elements)
+    {
+        if (!el.is_in_safe_subgroup())
+        {
+            return false;
+        }
+    }
+    leave_block("group membership profiling");
+
+    return true;
+}
+
+template<typename GroupT>
 void test_group_membership_invalid_g1(const typename GroupT::base_field &x)
 {
     const typename GroupT::base_field x_squared = x * x;
@@ -226,6 +255,8 @@ void test_check_membership<bls12_377_pp>()
     test_group_membership_invalid_g1<bls12_377_G1>(bls12_377_Fq(3));
     test_group_membership_invalid_g2<bls12_377_G2>(
         bls12_377_Fq(3) * bls12_377_Fq2::one());
+    assert(profile_group_membership<bls12_377_G1>());
+    assert(profile_group_membership<bls12_377_G2>());
 }
 
 template<>
