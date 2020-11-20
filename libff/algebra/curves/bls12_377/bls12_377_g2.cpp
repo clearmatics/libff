@@ -488,12 +488,16 @@ bool bls12_377_G2::is_well_formed() const
 
 bool bls12_377_G2::is_in_safe_subgroup() const
 {
+#if 0
+    return zero() == scalar_field::mod * (*this);
+#else
     // Compute [h1.r]P = P + [t](\psi(P) - P) - \psi^2(P)
     const bls12_377_G2 psi_p = untwist_frobenius_twist();
     const bls12_377_G2 psi_2_p = psi_p.untwist_frobenius_twist();
     const bls12_377_G2 psi_p_minus_p = psi_p - *this;
     const bls12_377_G2 h1_r_p = *this + bls12_377_trace_of_frobenius * psi_p_minus_p - psi_2_p;
     return zero() == h1_r_p;
+#endif
 }
 
 bls12_377_G2 bls12_377_G2::zero()
