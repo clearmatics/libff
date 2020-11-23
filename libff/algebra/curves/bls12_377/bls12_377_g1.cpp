@@ -381,7 +381,7 @@ bls12_377_G1 bls12_377_G1::sigma() const
 {
     bls12_377_G1 result = *this;
     result.to_affine_coordinates();
-    result.X = bls12_377_Fq("80949648264912719408558363140637477264845294720710499478137287262712535938301461879813459410945") * result.X;
+    result.X = bls12_377_g1_endomorphism_beta * result.X;
     return result;
 }
 

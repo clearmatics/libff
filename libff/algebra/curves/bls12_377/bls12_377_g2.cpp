@@ -393,39 +393,28 @@ bls12_377_G2 bls12_377_G2::untwist_frobenius_twist() const
     bls12_377_G2 g = *this;
     g.to_affine_coordinates();
 
-    // TODO: Precompute these
-    const bls12_377_Fq12 w = bls12_377_Fq12(bls12_377_Fq6::zero(), bls12_377_Fq6::one());
-    const bls12_377_Fq12 v = w * w;
-    const bls12_377_Fq12 w_3 = w * w * w;
-    const bls12_377_Fq12 v_inverse = v.inverse();
-    const bls12_377_Fq12 w_3_inverse = w_3.inverse();
-
     // Untwist
-    // TODO: Compute x in Fp6?
-    const bls12_377_Fq12 x_fp12 = bls12_377_Fq12(
-        bls12_377_Fq6(g.X, bls12_377_Fq2::zero(), bls12_377_Fq2::zero()),
-        bls12_377_Fq6::zero());
-    const bls12_377_Fq12 y_fp12 = bls12_377_Fq12(
+    const bls12_377_Fq6 x_fq6(g.X, bls12_377_Fq2::zero(), bls12_377_Fq2::zero());
+    const bls12_377_Fq12 y_fq12 = bls12_377_Fq12(
         bls12_377_Fq6(g.Y, bls12_377_Fq2::zero(), bls12_377_Fq2::zero()),
         bls12_377_Fq6::zero());
-    const bls12_377_Fq12 untwist_x = x_fp12 * v;
-    const bls12_377_Fq12 untwist_y = y_fp12 * w_3;
+    const bls12_377_Fq6 untwist_x = x_fq6 * bls12_377_g2_untwist_frobenius_twist_v.coeffs[0];
+    const bls12_377_Fq12 untwist_y = y_fq12 * bls12_377_g2_untwist_frobenius_twist_w_3;
     // Frobenius
-    const bls12_377_Fq12 frob_untwist_x = untwist_x.Frobenius_map(1);
+    const bls12_377_Fq6 frob_untwist_x = untwist_x.Frobenius_map(1);
     const bls12_377_Fq12 frob_untwist_y = untwist_y.Frobenius_map(1);
     // Twist
-    const bls12_377_Fq12 twist_frob_untwist_x = frob_untwist_x * v_inverse;
-    const bls12_377_Fq12 twist_frob_untwist_y = frob_untwist_y * w_3_inverse;
+    const bls12_377_Fq6 twist_frob_untwist_x = frob_untwist_x * bls12_377_g2_untwist_frobenius_twist_v_inverse.coeffs[0];
+    const bls12_377_Fq12 twist_frob_untwist_y = frob_untwist_y * bls12_377_g2_untwist_frobenius_twist_w_3_inverse;
 
-    assert(twist_frob_untwist_x.coeffs[1] == bls12_377_Fq6::zero());
-    assert(twist_frob_untwist_x.coeffs[0].coeffs[2] == bls12_377_Fq2::zero());
-    assert(twist_frob_untwist_x.coeffs[0].coeffs[1] == bls12_377_Fq2::zero());
+    assert(twist_frob_untwist_x.coeffs[2] == bls12_377_Fq2::zero());
+    assert(twist_frob_untwist_x.coeffs[1] == bls12_377_Fq2::zero());
     assert(twist_frob_untwist_y.coeffs[1] == bls12_377_Fq6::zero());
     assert(twist_frob_untwist_y.coeffs[0].coeffs[2] == bls12_377_Fq2::zero());
     assert(twist_frob_untwist_y.coeffs[0].coeffs[1] == bls12_377_Fq2::zero());
 
     return bls12_377_G2(
-        twist_frob_untwist_x.coeffs[0].coeffs[0],
+        twist_frob_untwist_x.coeffs[0],
         twist_frob_untwist_y.coeffs[0].coeffs[0],
         bls12_377_Fq2::one());
 }

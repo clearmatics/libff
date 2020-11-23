@@ -59,7 +59,15 @@ extern bls12_377_Fq bls12_377_twist_mul_by_b_c1;
 extern bls12_377_Fq2 bls12_377_twist_mul_by_q_X;
 extern bls12_377_Fq2 bls12_377_twist_mul_by_q_Y;
 
+// Coefficient \beta in endomorphism (x, y) -> (\beta * x, y)
+extern bls12_377_Fq bls12_377_g1_endomorphism_beta;
 extern bigint<bls12_377_r_limbs> bls12_377_g1_safe_subgroup_check_c1;
+
+// Coefficients for G2 untwist-frobenius-twist
+extern bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_v;
+extern bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_w_3;
+extern bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_v_inverse;
+extern bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_w_3_inverse;
 
 // Coefficients used in bls12_377_G2::mul_by_cofactor
 extern bigint<bls12_377_r_limbs> bls12_377_g2_mul_by_cofactor_h2_0;
