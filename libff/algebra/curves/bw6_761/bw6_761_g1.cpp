@@ -379,6 +379,14 @@ bw6_761_G1 bw6_761_G1::mul_by_cofactor() const
     return bw6_761_G1::h * (*this);
 }
 
+bw6_761_G1 bw6_761_G1::sigma() const
+{
+    bw6_761_G1 result = *this;
+    result.to_affine_coordinates();
+    result.X = bw6_761_g1_endomorphism_beta * result.X;
+    return result;
+}
+
 bool bw6_761_G1::is_well_formed() const
 {
     if (this->is_zero())
@@ -402,7 +410,18 @@ bool bw6_761_G1::is_well_formed() const
 
 bool bw6_761_G1::is_in_safe_subgroup() const
 {
+#if 0
     return zero() == scalar_field::mod * (*this);
+#else
+    // See Section 3.1: https://eprint.iacr.org/2020/351.pdf
+    // Check that:
+    //   [u]P+P+\sigma([u_3]P−[u_2]P+P) == 0
+    const bw6_761_G1 u_times_P = bw6_761_u * (*this);
+    const bw6_761_G1 u_2_times_P = bw6_761_g1_safe_subgroup_check_u_2 * (*this);
+    const bw6_761_G1 u_3_times_P = bw6_761_g1_safe_subgroup_check_u_3 * (*this);
+    const bw6_761_G1 sigma_result = (u_3_times_P - u_2_times_P + (*this)).sigma();
+    return (u_times_P + (*this) + sigma_result) == bw6_761_G1::zero();
+#endif
 }
 
 bw6_761_G1 bw6_761_G1::zero()

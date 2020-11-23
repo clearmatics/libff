@@ -264,6 +264,8 @@ void test_check_membership<bw6_761_pp>()
     test_group_membership_valid<bw6_761_G2>();
     test_group_membership_invalid_g1<bw6_761_G1>(bw6_761_Fq(6));
     test_group_membership_invalid_g2<bw6_761_G2>(bw6_761_Fq(0));
+    assert(profile_group_membership<bw6_761_G1>());
+    assert(profile_group_membership<bw6_761_G2>());
 }
 
 void
