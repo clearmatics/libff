@@ -417,8 +417,8 @@ bool bw6_761_G1::is_in_safe_subgroup() const
     // Check that:
     //   [u]P+P+\sigma([u_3]P−[u_2]P+P) == 0
     const bw6_761_G1 u_times_P = bw6_761_u * (*this);
-    const bw6_761_G1 u_2_times_P = bw6_761_g1_safe_subgroup_check_u_2 * (*this);
-    const bw6_761_G1 u_3_times_P = bw6_761_g1_safe_subgroup_check_u_3 * (*this);
+    const bw6_761_G1 u_2_times_P = bw6_761_u * u_times_P;
+    const bw6_761_G1 u_3_times_P = bw6_761_u * u_2_times_P;
     const bw6_761_G1 sigma_result = (u_3_times_P - u_2_times_P + (*this)).sigma();
     return (u_times_P + (*this) + sigma_result) == bw6_761_G1::zero();
 #endif

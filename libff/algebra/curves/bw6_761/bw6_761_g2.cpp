@@ -390,6 +390,14 @@ bw6_761_G2 bw6_761_G2::mul_by_cofactor() const
     return bw6_761_G2::h * (*this);
 }
 
+bw6_761_G2 bw6_761_G2::sigma() const
+{
+    bw6_761_G2 result = *this;
+    result.to_affine_coordinates();
+    result.X = bw6_761_g1_endomorphism_beta * result.X;
+    return result;
+}
+
 bool bw6_761_G2::is_well_formed() const
 {
     if (this->is_zero())
@@ -407,13 +415,23 @@ bool bw6_761_G2::is_well_formed() const
     const bw6_761_Fq X2 = this->X.squared();
     const bw6_761_Fq Y2 = this->Y.squared();
     const bw6_761_Fq Z2 = this->Z.squared();
-
     return (this->Z * (Y2 - bw6_761_twist_coeff_b * Z2) == this->X * X2);
 }
 
 bool bw6_761_G2::is_in_safe_subgroup() const
 {
+#if 0
     return zero() == scalar_field::mod * (*this);
+#else
+    // See Section 3.2: https://eprint.iacr.org/2020/351.pdf
+    // Check that:
+    //   -[u]P - P +\sigma([u_3]P − [u_2]P - [u]P) == 0
+    const bw6_761_G2 u_times_P = bw6_761_u * (*this);
+    const bw6_761_G2 u_2_times_P = bw6_761_u * u_times_P; // bw6_761_g1_safe_subgroup_check_u_2 * (*this);
+    const bw6_761_G2 u_3_times_P = bw6_761_u * u_2_times_P; // g1_safe_subgroup_check_u_3 * (*this);
+    const bw6_761_G2 sigma_result = (u_3_times_P - u_2_times_P - u_times_P).sigma();
+    return (sigma_result - u_times_P - (*this)) == bw6_761_G2::zero();
+#endif
 }
 
 bw6_761_G2 bw6_761_G2::zero()

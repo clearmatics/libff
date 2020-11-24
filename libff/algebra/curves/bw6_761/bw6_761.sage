@@ -62,17 +62,31 @@ prime_q = q(u)
 #params_generator.generate_libff_Fp_model_params(prime_q)
 Fq = GF(prime_q)
 
+
 # G1 cofactor
 def g1_h(x):
     return ((103*x^6) - (173*x^5) - (96*x^4) + (293*x^3) + (21*x^2) + (52*x) + 172) // 3
 
-def g1_beta(x):
+
+def compute_endomorphism_coefficients():
     """
-    G1 \beta (element order 3 in Fq) for endomorphism \sigma(x, y) = (\beta * x, y).
-    See Section 3.1: https://eprint.iacr.org/2020/351.pdf
+    Return elements \beta of order 3 in Fq, for use in the endomorphism
+    \sigma(x, y) = (\beta * x, y).
+
+    See Section 3.1 and 3.2: https://eprint.iacr.org/2020/351.pdf
     """
-    x = Fq(x)
-    return (((103*x^(11)) - (482*x^(10)) + (732*x^9) + (62*x^8) - (1249*x^7) + (1041*x^6) + (214*x^5) - (761*x^4) + (576*x^3) + (11*x^2) - (265*x) + 66) // 21)
+    Fqx.<x> = PolynomialRing(Fq)
+    beta_eqn = x^2 + x + 1
+    roots = [root[0] for root in beta_eqn.roots()]
+
+    # Check that \beta_2 corresponds to the "\omega_1" formula from Section 3.1
+    v = Fq(u)
+    beta_2 = roots[1]
+    assert beta_2 == (((103*v^(11)) - (482*v^(10)) + (732*v^9) + (62*v^8) - (1249*v^7) + (1041*v^6) + (214*v^5) - (761*v^4) + (576*v^3) + (11*v^2) - (265*v) + 66) // 21)
+
+    # Return the G1 coefficient "\omega_1" first.
+    return roots[1], roots[0]
+
 
 def g1_fast_subgroup_check_coefficients(x):
     """
@@ -81,19 +95,34 @@ def g1_fast_subgroup_check_coefficients(x):
     x_2 = x*x
     return x_2, x_2*x
 
+
 # G2 cofactor
 def g2_h(x):
     return ((103*x^6) - (173*x^5) - (96*x^4) + (293*x^3) + (21*x^2) + (52*x) + 151) // 3
 
-h1 = g1_h(u)
-print('h1 = {}'.format(h1))
-h2 = g2_h(u)
-print('h2 = {}'.format(h2))
+print(f"q = {prime_q}")
+print(f"r = {prime_r}")
 
+curve = EllipticCurve(Fq, [0, -1])
+curve_order = curve.order()
+print(f"curve_order = {curve_order}")
+
+m_twist = EllipticCurve(Fq, [0, 4])
+twist_order = m_twist.order()
+print(f"twist_order = {twist_order}")
+
+h1 = g1_h(u)
+print("h1 = {}".format(h1))
+h2 = g2_h(u)
+print("h2 = {}".format(h2))
+print(f"u = {u}")
+
+beta_1, beta_2 = compute_endomorphism_coefficients()
+print(f"  \\beta_1 = {beta_1}")
 print(f"g1 fast subgroup check:")
-beta = g1_beta(u)
-print("  [\sigma(x,y)=(\beta * x, y)]")
-print(f"  beta = {beta} ")
-u_2, u_3 = g1_fast_subgroup_check_coefficients(u)
-print("  [check [u]P+P+\sigma([u_3]P−[u_2]P+P) == 0]")
-print(f"  u={u},u_2={u_2},u_3={u_3}")
+print("  [\\sigma_1(x,y)=(\\beta_1 * x, y) on G1]")
+print("  [check [u]P+P+\\sigma_1([u_3]P−[u_2]P+P) == 0]")
+print(f"g2 fast subgroup check:")
+print("  [\\sigma_2(x,y)=(\\beta_1 * x, y) on G2]")
+# print(f"  beta_2 = {beta_2}")
+print("  [check -[u]P-P+\\sigma_2([u_3]P−[u_2]P-[u]P) == 0]")

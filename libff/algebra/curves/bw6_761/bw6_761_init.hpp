@@ -23,16 +23,14 @@ typedef Fp3_model<bw6_761_q_limbs, bw6_761_modulus_q> bw6_761_Fq3;
 typedef Fp6_2over3_model<bw6_761_q_limbs, bw6_761_modulus_q> bw6_761_Fq6;
 typedef bw6_761_Fq6 bw6_761_GT;
 
-extern Fp_model<bw6_761_q_limbs, bw6_761_modulus_q> bw6_761_g1_endomorphism_beta;
-extern bigint<bw6_761_r_limbs> bw6_761_u;
-extern bigint<bw6_761_r_limbs> bw6_761_g1_safe_subgroup_check_u_2;
-extern bigint<bw6_761_r_limbs> bw6_761_g1_safe_subgroup_check_u_3;
-
 // Parameters for the curve E/Fq : y^2 = x^3 + b
 extern bw6_761_Fq bw6_761_coeff_b;
 // Parameters for the twist E'/Fq: y^2 = x^3 + b * xi
 extern bw6_761_Fq bw6_761_twist;
 extern bw6_761_Fq bw6_761_twist_coeff_b;
+
+extern Fp_model<bw6_761_q_limbs, bw6_761_modulus_q> bw6_761_g1_endomorphism_beta;
+extern bigint<bw6_761_r_limbs> bw6_761_u;
 
 // parameters for pairing
 extern bigint<bw6_761_q_limbs> bw6_761_ate_loop_count1;

@@ -202,16 +202,33 @@ bool profile_group_membership()
     return true;
 }
 
+template<typename GroupT, typename FieldT>
+GroupT curve_point_at_x(const FieldT &x)
+{
+    const FieldT x_squared = x * x;
+    const FieldT x_cubed = x_squared * x;
+    const FieldT y_squared =
+        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
+    const FieldT y = y_squared.sqrt();
+    return GroupT(x, y, FieldT::one());
+}
+
+template<typename GroupT>
+GroupT g1_curve_point_at_x(const typename GroupT::base_field &x)
+{
+    return curve_point_at_x<GroupT, typename GroupT::base_field>(x);
+}
+
+template<typename GroupT>
+GroupT g2_curve_point_at_x(const typename GroupT::twist_field &x)
+{
+    return curve_point_at_x<GroupT, typename GroupT::twist_field>(x);
+}
+
 template<typename GroupT>
 void test_group_membership_invalid_g1(const typename GroupT::base_field &x)
 {
-    const typename  GroupT::base_field x_squared = x * x;
-    const typename  GroupT::base_field x_cubed = x_squared * x;
-    const typename  GroupT::base_field y_squared =
-        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
-    const typename GroupT::base_field y = y_squared.sqrt();
-    const GroupT g1_invalid(x, y, GroupT::base_field::one());
-
+    const GroupT g1_invalid = g1_curve_point_at_x<GroupT>(x);
     assert(g1_invalid.is_well_formed());
     assert(!g1_invalid.is_in_safe_subgroup());
 }
@@ -219,14 +236,9 @@ void test_group_membership_invalid_g1(const typename GroupT::base_field &x)
 template<typename GroupT>
 void test_group_membership_invalid_g2(const typename GroupT::twist_field &x)
 {
-    const typename GroupT::twist_field x_squared = x * x;
-    const typename GroupT::twist_field x_cubed = x_squared * x;
-    const typename GroupT::twist_field y_squared =
-        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
-    const typename GroupT::twist_field y = y_squared.sqrt();
-    const GroupT g2_invalid(x, y, GroupT::twist_field::one());
-
+    const GroupT g2_invalid = g2_curve_point_at_x<GroupT>(x);
     assert(g2_invalid.is_well_formed());
+    assert(GroupT::base_field::mod * g2_invalid != GroupT::zero());
     assert(!g2_invalid.is_in_safe_subgroup());
 }
 
@@ -288,6 +300,27 @@ test_bls12_377()
     assert(z == bls12_377_G2::zero());
 }
 
+void
+test_bw6_761()
+{
+    // Check the \sigma endomorphism in G1:
+    const bw6_761_G1 a1 = bw6_761_G1::random_element();
+    const bw6_761_G1 sigma1 = a1.sigma();
+    assert(sigma1 == bw6_761_Fr("80949648264912719408558363140637477264845294720710499478137287262712535938301461879813459410945") * a1);
+
+    // Check the \sigma endomorphism in G2:
+    const bw6_761_G2 a2 = bw6_761_G2::random_element();
+    const bw6_761_G2 sigma2 = a2.sigma();
+    assert(sigma2 == bw6_761_Fr("258664426012969093929703085429980814127835149614277183275038967946009968870203535512256352201271898244626862047231") * a2);
+
+    // G2 has an element of order 3, breaking the equation in Section 3.2:
+    // https://eprint.iacr.org/2020/351.pdf
+    const bw6_761_G2 b = g2_curve_point_at_x<bw6_761_G2>(0);
+    assert(b.is_well_formed());
+    assert(b+b+b == bw6_761_G2::zero());
+    assert(bw6_761_r * b != bw6_761_G2::zero());
+}
+
 int main(void)
 {
     std::cout << "edwards_pp\n";
@@ -346,6 +379,7 @@ int main(void)
 
     std::cout << "bw6_761_pp\n";
     bw6_761_pp::init_public_params();
+    test_bw6_761();
     test_group<G1<bw6_761_pp> >();
     test_output<G1<bw6_761_pp> >();
     test_group<G2<bw6_761_pp> >();

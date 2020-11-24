@@ -64,6 +64,10 @@ public:
     bw6_761_G2 mul_by_q() const;
     bw6_761_G2 mul_by_cofactor() const;
 
+    // Endomorphism (x, y) -> (\beta * x, y) for \beta and element of Fq with
+    // order 3.
+    bw6_761_G2 sigma() const;
+
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
 
