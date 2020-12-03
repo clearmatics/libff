@@ -130,6 +130,31 @@ def g1_fast_subgroup_check_coefficients(g1_order, q, r):
     return r1_0, r1_1
 
 
+def g1_subgroup_proof_coefficients(curve, r, h1):
+    """
+    We can prove that some P belongs to G1 by providing some P' in E(Fq) s.t. P
+    = [h1] P'. This requires extra computation upfront, but can be verifed with
+    a single scalar multiplication by h1.
+    """
+    print(" P' = [w]P + Y => [h1] P' = P")
+    print("     where Y \in E(Fq)\G, w s.t. w*h = 1 mod r and Y s.t. [h1]Y = 0")
+
+    # 1 = a*r + b+h1 => b * h1 = 1 mod r
+    g, a, b = xgcd(int(r), int(h1))
+    assert(g == 1)
+
+    # Compute Y
+    fq = curve.base_field()
+    Yy_squared = fq(3^3 + 1)
+    Yy = sqrt(Yy_squared)
+    Y = r * curve([3, Yy])
+    # Y not in G1, but [h1]Y == 0
+    assert(r * Y != 0)
+    assert(h1 * Y == 0)
+
+    return b, Y
+
+
 def fuentes_g2_fast_cofactor_coefficients(x):
     """
     See Section 4.1: https://eprint.iacr.org/2017/419.pdf
@@ -307,6 +332,12 @@ def main():
     r1_0, r1_1 = g1_fast_subgroup_check_coefficients(curve_order, prime_q, prime_r)
     print(f" r1_0: {r1_0}")
     print(f" r1_1: {r1_1} ({hex(r1_1)})")
+
+    # G1 subgroup proof coefficients
+    print("G1 subgroup proof coefficients:")
+    w1, Y = g1_subgroup_proof_coefficients(curve, prime_r, h1)
+    print(f"  w = {w1}")
+    print(f"  Y = {Y}")
 
     # G2 fast cofactor multiplication coefficients
     print(f"G2 fast mul_by_cofactor coefficients:")

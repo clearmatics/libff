@@ -26,6 +26,22 @@
 
 using namespace libff;
 
+// Utility function to compute a point on the curve E(Fq) with the given x
+// coordinate.
+template<typename GroupT>
+GroupT curve_point_at_x(const typename GroupT::base_field &x)
+{
+    const typename GroupT::base_field x_squared = x * x;
+    const typename GroupT::base_field x_cubed = x_squared * x;
+    const typename GroupT::base_field y_squared =
+        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
+    // Assert that y_squared is in a quadatic residue (ensuring that sqrt()
+    // terminates).
+    assert((y_squared^GroupT::base_field::euler) == GroupT::base_field::one());
+    const typename GroupT::base_field y = y_squared.sqrt();
+    return GroupT(x, y, GroupT::base_field::one());
+}
+
 template<typename GroupT>
 void test_mixed_add()
 {
@@ -174,6 +190,17 @@ void test_group_membership_valid()
 }
 
 template<typename GroupT>
+void test_group_membership_proof_valid()
+{
+    for (size_t i = 0 ; i < 1000 ; ++i)
+    {
+        const GroupT g = GroupT::random_element();
+        const GroupT membership_proof = g.proof_of_safe_subgroup();
+        assert(membership_proof.mul_by_cofactor() == g);
+    }
+}
+
+template<typename GroupT>
 bool profile_group_membership()
 {
     static const size_t NUM_ELEMENTS = 1000;
@@ -205,15 +232,17 @@ bool profile_group_membership()
 template<typename GroupT>
 void test_group_membership_invalid_g1(const typename GroupT::base_field &x)
 {
-    const typename GroupT::base_field x_squared = x * x;
-    const typename GroupT::base_field x_cubed = x_squared * x;
-    const typename GroupT::base_field y_squared =
-        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
-    const typename GroupT::base_field y = y_squared.sqrt();
-    const GroupT g1_invalid(x, y, GroupT::base_field::one());
-
+    const GroupT g1_invalid = curve_point_at_x<GroupT>(x);
     assert(g1_invalid.is_well_formed());
     assert(!g1_invalid.is_in_safe_subgroup());
+}
+
+template<typename GroupT>
+void test_group_membership_proof_invalid_g1(const typename GroupT::base_field &x)
+{
+    const GroupT g1_invalid = curve_point_at_x<GroupT>(x);
+    const GroupT proof_of_membership = g1_invalid.proof_of_safe_subgroup();
+    assert(proof_of_membership.mul_by_cofactor() != g1_invalid);
 }
 
 template<typename GroupT>
@@ -255,8 +284,12 @@ void test_check_membership<bls12_377_pp>()
     test_group_membership_invalid_g1<bls12_377_G1>(bls12_377_Fq(3));
     test_group_membership_invalid_g2<bls12_377_G2>(
         bls12_377_Fq(3) * bls12_377_Fq2::one());
+
     assert(profile_group_membership<bls12_377_G1>());
     assert(profile_group_membership<bls12_377_G2>());
+
+    test_group_membership_proof_valid<bls12_377_G1>();
+    test_group_membership_proof_invalid_g1<bls12_377_G1>(bls12_377_Fq(3));
 }
 
 template<>

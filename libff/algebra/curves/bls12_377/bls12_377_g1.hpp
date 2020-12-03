@@ -75,6 +75,13 @@ public:
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
 
+    // For P (this), return a point P' on the curve such that
+    // P'.mul_by_cofactor() == P. In some contexts, this is useful to show that
+    // P is in the safe subgroup G1, requiring only a small scalar
+    // multiplication by the verifier. Note that (in spite of the type) the
+    // point returned here is OUTSIDE of G1.
+    bls12_377_G1 proof_of_safe_subgroup() const;
+
     static bls12_377_G1 zero();
     static bls12_377_G1 one();
     static bls12_377_G1 random_element();

@@ -24,6 +24,9 @@ bls12_377_Fq2 bls12_377_twist_mul_by_q_Y;
 // See bls12_377_G1::is_in_safe_subgroup
 bls12_377_Fq bls12_377_g1_endomorphism_beta;
 bigint<bls12_377_r_limbs> bls12_377_g1_safe_subgroup_check_c1;
+bigint<bls12_377_r_limbs> bls12_377_g1_proof_of_safe_subgroup_w;
+bls12_377_Fq bls12_377_g1_proof_of_safe_subgroup_non_member_x;
+bls12_377_Fq bls12_377_g1_proof_of_safe_subgroup_non_member_y;
 
 // Coefficients for G2 untwist-frobenius-twist
 bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_w;
@@ -186,6 +189,13 @@ void init_bls12_377_params()
     // G1 fast subgroup check:  0 == [c0]P + [c1]sigma(P)
     bls12_377_g1_endomorphism_beta = bls12_377_Fq("80949648264912719408558363140637477264845294720710499478137287262712535938301461879813459410945");
     bls12_377_g1_safe_subgroup_check_c1 = bigint_r("91893752504881257701523279626832445441");
+
+    // G1 proof of subgroup: values used to generate x' s.t. [r]x' = x.
+    bls12_377_g1_proof_of_safe_subgroup_w = bigint_r("5285428838741532253824584287042945485047145357130994810877");
+    bls12_377_g1_proof_of_safe_subgroup_non_member_x = bls12_377_Fq(
+        "55791352246783872404788467909907092509364010229903880203689696498787615734938123558571181995209025075818229621722");
+    bls12_377_g1_proof_of_safe_subgroup_non_member_y = bls12_377_Fq(
+        "174363855833520138229666723484835348689236585013460554444609730120603741818916846216286948728983932214174344518655");
 
     // WNAF
     //

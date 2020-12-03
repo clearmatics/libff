@@ -418,6 +418,18 @@ bool bls12_377_G1::is_in_safe_subgroup() const
     return zero() == r_times_g;
 }
 
+bls12_377_G1 bls12_377_G1::proof_of_safe_subgroup() const
+{
+    // See bls12_377.sage.
+    //   w = 5285428838741532253824584287042945485047145357130994810877
+
+    return bls12_377_g1_proof_of_safe_subgroup_w * (*this) +
+        bls12_377_G1(
+            bls12_377_g1_proof_of_safe_subgroup_non_member_x,
+            bls12_377_g1_proof_of_safe_subgroup_non_member_y,
+            bls12_377_Fq::one());
+}
+
 bls12_377_G1 bls12_377_G1::zero()
 {
     return G1_zero;
