@@ -163,7 +163,8 @@ bool group_element_read(GroupT &g, const void *buffer, size_t buffer_size)
                 } else {
                     g.Z = g.Z.one();
                 }
-                return true;
+
+                return g.is_well_formed() && g.is_in_safe_subgroup();
             }
         }
     }
