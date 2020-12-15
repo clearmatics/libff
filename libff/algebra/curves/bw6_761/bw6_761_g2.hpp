@@ -22,6 +22,8 @@ public:
     static std::vector<size_t> fixed_base_exp_window_table;
     static bw6_761_G2 G2_zero;
     static bw6_761_G2 G2_one;
+    static bw6_761_Fq coeff_a;
+    static bw6_761_Fq coeff_b;
 
     typedef bw6_761_Fq base_field;
     typedef bw6_761_Fq twist_field;
@@ -63,6 +65,7 @@ public:
     bw6_761_G2 mul_by_cofactor() const;
 
     bool is_well_formed() const;
+    bool is_in_safe_subgroup() const;
 
     static bw6_761_G2 zero();
     static bw6_761_G2 one();
@@ -76,9 +79,6 @@ public:
     void write_compressed(std::ostream &) const;
     static void read_uncompressed(std::istream &, bw6_761_G2 &);
     static void read_compressed(std::istream &, bw6_761_G2 &);
-
-    friend std::ostream& operator<<(std::ostream &out, const bw6_761_G2 &g);
-    friend std::istream& operator>>(std::istream &in, bw6_761_G2 &g);
 
     static void batch_to_special_all_non_zeros(std::vector<bw6_761_G2> &vec);
 };

@@ -28,6 +28,8 @@ public:
     static std::vector<size_t> fixed_base_exp_window_table;
     static alt_bn128_G1 G1_zero;
     static alt_bn128_G1 G1_one;
+    static alt_bn128_Fq coeff_a;
+    static alt_bn128_Fq coeff_b;
 
     typedef alt_bn128_Fq base_field;
     typedef alt_bn128_Fr scalar_field;
@@ -65,6 +67,7 @@ public:
     alt_bn128_G1 mul_by_cofactor() const;
 
     bool is_well_formed() const;
+    bool is_in_safe_subgroup() const;
 
     static alt_bn128_G1 zero();
     static alt_bn128_G1 one();

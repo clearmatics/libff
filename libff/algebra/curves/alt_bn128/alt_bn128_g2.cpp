@@ -21,6 +21,8 @@ std::vector<size_t> alt_bn128_G2::wnaf_window_table;
 std::vector<size_t> alt_bn128_G2::fixed_base_exp_window_table;
 alt_bn128_G2 alt_bn128_G2::G2_zero;
 alt_bn128_G2 alt_bn128_G2::G2_one;
+alt_bn128_Fq2 alt_bn128_G2::coeff_a;
+alt_bn128_Fq2 alt_bn128_G2::coeff_b;
 bigint<alt_bn128_G2::h_limbs> alt_bn128_G2::h;
 
 alt_bn128_G2::alt_bn128_G2()
@@ -407,6 +409,11 @@ bool alt_bn128_G2::is_well_formed() const
 
         return (Y2 == X3 + alt_bn128_twist_coeff_b * Z6);
     }
+}
+
+bool alt_bn128_G2::is_in_safe_subgroup() const
+{
+    return zero() == scalar_field::mod * (*this);
 }
 
 alt_bn128_G2 alt_bn128_G2::zero()

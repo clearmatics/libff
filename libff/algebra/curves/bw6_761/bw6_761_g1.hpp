@@ -21,6 +21,8 @@ public:
     static std::vector<size_t> fixed_base_exp_window_table;
     static bw6_761_G1 G1_zero;
     static bw6_761_G1 G1_one;
+    static bw6_761_Fq coeff_a;
+    static bw6_761_Fq coeff_b;
 
     typedef bw6_761_Fq base_field;
     typedef bw6_761_Fr scalar_field;
@@ -58,6 +60,7 @@ public:
     bw6_761_G1 mul_by_cofactor() const;
 
     bool is_well_formed() const;
+    bool is_in_safe_subgroup() const;
 
     static bw6_761_G1 zero();
     static bw6_761_G1 one();

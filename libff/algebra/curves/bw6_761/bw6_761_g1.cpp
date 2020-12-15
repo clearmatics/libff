@@ -11,6 +11,8 @@ std::vector<size_t> bw6_761_G1::wnaf_window_table;
 std::vector<size_t> bw6_761_G1::fixed_base_exp_window_table;
 bw6_761_G1 bw6_761_G1::G1_zero;
 bw6_761_G1 bw6_761_G1::G1_one;
+bw6_761_Fq bw6_761_G1::coeff_a;
+bw6_761_Fq bw6_761_G1::coeff_b;
 bigint<bw6_761_G1::h_limbs> bw6_761_G1::h;
 
 bw6_761_G1::bw6_761_G1()
@@ -396,6 +398,11 @@ bool bw6_761_G1::is_well_formed() const
     const bw6_761_Fq Z2 = this->Z.squared();
 
     return (this->Z * (Y2 - bw6_761_coeff_b * Z2) == this->X * X2);
+}
+
+bool bw6_761_G1::is_in_safe_subgroup() const
+{
+    return zero() == scalar_field::mod * (*this);
 }
 
 bw6_761_G1 bw6_761_G1::zero()

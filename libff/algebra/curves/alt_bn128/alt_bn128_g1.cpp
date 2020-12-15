@@ -21,6 +21,8 @@ std::vector<size_t> alt_bn128_G1::wnaf_window_table;
 std::vector<size_t> alt_bn128_G1::fixed_base_exp_window_table;
 alt_bn128_G1 alt_bn128_G1::G1_zero;
 alt_bn128_G1 alt_bn128_G1::G1_one;
+alt_bn128_Fq alt_bn128_G1::coeff_a;
+alt_bn128_Fq alt_bn128_G1::coeff_b;
 bigint<alt_bn128_G1::h_limbs> alt_bn128_G1::h;
 
 alt_bn128_G1::alt_bn128_G1()
@@ -394,6 +396,12 @@ bool alt_bn128_G1::is_well_formed() const
 
         return (Y2 == X3 + alt_bn128_coeff_b * Z6);
     }
+}
+
+bool alt_bn128_G1::is_in_safe_subgroup() const
+{
+    // G1 is the entire group E(Fq), and so there is nothing to check here.
+    return true;
 }
 
 alt_bn128_G1 alt_bn128_G1::zero()

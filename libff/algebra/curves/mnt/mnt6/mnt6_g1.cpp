@@ -378,6 +378,11 @@ bool mnt6_G1::is_well_formed() const
     }
 }
 
+bool mnt6_G1::is_in_safe_subgroup() const
+{
+    return true;
+}
+
 mnt6_G1 mnt6_G1::zero()
 {
     return G1_zero;
