@@ -34,17 +34,6 @@ def g1_order(curve_order):
     assert(biggest_factor[1] == 1)
     return biggest_factor[0]
 
-def base_decomposition(x, b):
-    """
-    Computes the vector of coefficients from the decomposition of x in base b.
-    """
-    if x == 0:
-        return [0]
-    coeffs = []
-    while n:
-        coeffs.append(int(x % b))
-        x //= b
-    return coeffs[::-1]
 
 # TODO: Generalize the following functions (and rename appropriately) to use
 # for GLV scalar multiplication.
