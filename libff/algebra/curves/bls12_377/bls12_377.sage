@@ -208,8 +208,7 @@ def g2_fast_cofactor_coefficients(curve_order, q, h2):
     # For P in E'(Fq2),
     #   [q]P = [t]ψ(P) - ψ^2(P)
     # where t is the trace of Frobenius, which Hasse tells us is s.t.
-    # for E(Fq), we have #E(Fq) = q + 1 - t, where \abs{t} \leq 2\sqrt{q} and
-    # for E'(F_{q^2}), we have #E'(F_{q^2}) = q^2+ 1 - (t^2 - 2q))
+    # for E(Fq), we have #E(Fq) = q + 1 - t, where \abs{t} \leq 2\sqrt{q}
     # We seek
     #   h2_0 and h2_1 s.t. h2 = h2_0 + h2_1 * q
     # which gives
