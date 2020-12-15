@@ -65,9 +65,7 @@ public:
     bls12_377_G1 mixed_add(const bls12_377_G1 &other) const;
     bls12_377_G1 dbl() const;
 
-    // Multiply point by h, the cofactor, to eliminate the h-torsion components
-    // Note: Doing so isn't a silver bullet and may need to be be replaced by a
-    // proper subgroup membership test.
+    // Multiply point by h, the cofactor, to eliminate the h-torsion components.
     bls12_377_G1 mul_by_cofactor() const;
 
     bool is_well_formed() const;
