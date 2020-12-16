@@ -70,7 +70,7 @@ def g1_fast_subgroup_check_coefficients(g1_order, q, r):
         lambdas = _find_lambda_n(Fn)
         for l in lambdas:
             if 0 == Fn(c0 + c1 * l):
-                raise Exception(f"elements order {n} may be mapped to 0")
+                raise Exception(f"elements of order {n} may be mapped to 0")
 
     def _check_lambdas_not_root_in_subgroups(group_order, q, r, c0, c1):
         """
@@ -78,34 +78,14 @@ def g1_fast_subgroup_check_coefficients(g1_order, q, r):
         [c0]P + [c1]sigma(P) does not kill the n-torsion.
         """
 
-        def _no_element_order_4():
-            """
-            E(Fq) contains no elements of order 4 (and hence of order 2^m, m > 1).
-              E: y^2 - x^3 - 1
-              Any order 2 element has dE/dy == 0, i.e. y == 0.
-              Any order 4 element P must thereby have:
-                (P + P) = R
-                Ry == 0
-              By group laws:
-                21 * Px^6 - 5 * Px^3 + 2 == 0
-            """
-            Fq = GF(q)
-            Fqp.<x> = PolynomialRing(Fq)
-            f = 21 * x^6 - 5 * x^3 + 2
-            if len(f.roots()):
-                raise Exception(f"E(Fq) may contain elements of order 4")
-        _no_element_order_4()
-
-        # For other prime power factors n, show that no lambda_n cannot be a root of:
-        #   c0 + c1*x mod n
+        # For each n = prime^power factors of group_order, show that no
+        # lambda_n is a root of:
+        #   c0 + c1*x (mod n)
         for (prime, power) in factor(group_order):
             # print(f"  group_order has factor (p={prime}, pow={power})")
             if prime == r:
                 # print("   skipping")
                 continue
-            if prime == 2:
-                # No need to check powers greater than 1
-                power = 1
 
             for p in range(1, power+1):
                 n = prime^p
