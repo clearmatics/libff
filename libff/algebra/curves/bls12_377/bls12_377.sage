@@ -41,14 +41,10 @@ def g1_fast_subgroup_check_coefficients(curve_order, q, r):
     """
     We have E_{BLS12_377}(Fq): y^2 = x^3 + b, where b = 1, q prime s.t.
     q congruent 1 mod 3.
-    We know that such curves have complex multiplication by ZZ[beta]
-    where beta is a primitive cube root of unity in Fq. As such, since we know
-    that End(E_{BLS12_377}) is bigger than ZZ, we can find an endomorphism that
-    differs from "multiplication by m, m in ZZ". In the context of curves of
-    the form E: y^2 = x^3 + b defined over Fq, q coprime with 3, one such
-    endomorphism is given by:
-        sigma(x, y) -> (beta * x, y)
-    which, when applied to points P of prime order n, acts as a multiplication map
+    Such curve has an endomorphism, differing from "multiplication by m, m in ZZ", which is given by:
+        sigma(x, y) -> (beta * x, y),
+    where beta is a primitive cube root of unity in Fq.
+    This endomorphism, when applied to points P of prime order n, acts as a multiplication map
     [lambda_n], where lambda_n is a root of x^2 + x + 1 in Fn.
 
     To carry out a fast scalar multiplication using the GLV method one needs to
@@ -148,10 +144,10 @@ def g1_subgroup_proof_coefficients(curve, r, h1):
     a single scalar multiplication by h1.
 
     This is particularly useful to prove subgroup membership in an R1CS program
-    via a multiplication gate.
+    via multiplication gates.
     """
     print(" P' = [w]P + Y => [h1] P' = P")
-    print("     where Y \in E(Fq) \ \{G1\}, w s.t. w*h1 = 1 mod r and Y s.t. [h1]Y = 0")
+    print("     where Y \in E(Fq)\G1, w s.t. w*h1 = 1 mod r and Y s.t. [h1]Y = 0")
 
     # Find w s.t. w*h1 = 1 mod r
     # If r and h1 are coprime, w is one of the Bezout coefficients
@@ -196,8 +192,8 @@ def g2_fast_cofactor_coefficients(curve_order, q, h2):
 
     # For P in E'(Fq2),
     #   [q]P = [t]ψ(P) - ψ^2(P)
-    # where t is the trace of Frobenius, which Hasse tells us is s.t.
-    # for E(Fq), we have #E(Fq) = q + 1 - t, where \abs{t} \leq 2\sqrt{q}
+    # where t is the trace of Frobenius (which is such that (Hasse) for E(Fq),
+    # we have #E(Fq) = q + 1 - t, where \abs{t} \leq 2\sqrt{q})
     # We seek
     #   h2_0 and h2_1 s.t. h2 = h2_0 + h2_1 * q
     # which gives
