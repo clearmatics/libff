@@ -35,32 +35,45 @@ def g1_order(curve_order):
     return biggest_factor[0]
 
 
-def g1_fast_subgroup_check_coefficients(g1_order, q, r):
+# TODO: Generalize the following functions (and rename appropriately) to use
+# for GLV scalar multiplication.
+def g1_fast_subgroup_check_coefficients(curve_order, q, r):
     """
-    Find \beta Fq with multiplicative order 3. For each element (x,y) in G1
-    with n = order or (x, y), the endomorphism \sigma(x, y) -> (\beta x, y) is
-    equivalent to [\lambda_n], where \lambda_n is a root of x^2 + x + 1 in Fn.
+    We have E_{BLS12_377}(Fq): y^2 = x^3 + b, where b = 1, q prime s.t.
+    q congruent 1 mod 3.
+    Such curve has an endomorphism, differing from "multiplication by m, m in ZZ", which is given by:
+        sigma(x, y) -> (beta * x, y),
+    where beta is a primitive cube root of unity in Fq.
+    This endomorphism, when applied to points P of prime order n, acts as a multiplication map
+    [lambda_n], where lambda_n is a root of x^2 + x + 1 in Fn.
 
-    Find c0 and c1 s.t. c0 + c1 * \lambda_r = r
-    (i.e. [c0]P + [c1]\sigma(P) = [r]P for P in r-torsion)
+    To carry out a fast scalar multiplication using the GLV method one needs to
+    decompose the scalar in the base \lambda_n. To do so, find c0 and c1 s.t.
+        r = c0 + c1 * \lambda_n
+    which gives
+        [r]P = [c0]P + [c1 * lambda_n]P
+    which translates into the following multi-exponentiation
+        [r]P = [c0]P + [c1]Q, where Q = sigma(P)
+    for all points P in the n-torsion (since we know that sigma(P) acts as a
+    multiplication map [lambda_n] when applied to points of prime order n).
 
     Ensure that c0 + c1 * x has no roots mod any other subgroup order
-    (i.e. [c0]P + [c1]\sigma(P) does not kill members of any other torsion).
+    (i.e. [c0]P + [c1]sigma(P) does not kill members of any other torsion).
 
-    In this case, [c0]P + [c1]\sigma(P) == 0 is a fast r-torsion membership
+    In this case, [c0]P + [c1]sigma(P) == 0 is a fast r-torsion membership
     check for elements of E(Fq).
     """
 
-    print(f" [r1_0]P + [r2_1]\sigma(P) == 0")
+    print(f" [r1_0]P + [r1_1]sigma(P) == 0")
 
     def _find_lambda_n(Fn):
         """
-        Return solutions of \lambda^2 + \lambda + 1 = 0 mod n
+        Return solutions of lambda_n^2 + lambda_n + 1 = 0 mod n
         """
         Fny.<y> = PolynomialRing(Fn)
-        lambda_r_poly = y^2 + y + 1
-        lambda_r_poly_roots = lambda_r_poly.roots()
-        return [root[0] for root in lambda_r_poly_roots]
+        lambda_n_poly = y^2 + y + 1
+        lambda_n_poly_roots = lambda_n_poly.roots()
+        return [root[0] for root in lambda_n_poly_roots]
 
     def _check_lambdas_not_root_in_subgroup_size(n, c0, c1):
         """
@@ -92,20 +105,34 @@ def g1_fast_subgroup_check_coefficients(g1_order, q, r):
                 # print(f"   p={p}, n={n}")
                 _check_lambdas_not_root_in_subgroup_size(n, c0, c1)
 
-    # Find an element of Fq with multiplicative order 3
+    # Find beta, a primitive cubic root of unity (in Fq\{1}).
+    # Since x^3-1 = (x-1)(x^2+x+1), we find beta by taking the smallest root
+    # of x^2+x+1 mod q returned by `_find_lambda_n` (over the field Fq)
+    # Equivalent to:
+    # [Sage excerpt]
+    # beta = min(root for root in GF(q)(1).nth_root(3, all=True) if root != 1)
     beta = min(_find_lambda_n(GF(q)))
     print(f" beta: {beta}  [in sigma(x,y) = (beta * x, y)]")
+    assert(GF(q)(beta^2) != 1)
+    assert(GF(q)(beta^3) == 1)
 
     # lambda for the r-torsion
-    lambda_r_poly_roots = _find_lambda_n(GF(r));
-    # print(f" lambda_r_poly_roots: {lambda_r_poly_roots}")
-    lambda_r = min(lambda_r_poly_roots) # [root[0] for root in lambda_r_poly_roots])
+    # where r is the scalar field (prime) characteristic,
+    # i.e. the order of the subgroup G1
+    lambda_r = min(_find_lambda_n(GF(r)))
     print(f" (lambda_r: {lambda_r})")
+
+    # TODO: Below replace r by an extra argument `scalar` to represent an arbitrary
+    # scalar in the basis \lambda to use GLV for "generic" scalar mult.
+    # TODO: Implement the GLV scalar decomposition, and benchmark the cost of
+    # computing the endomorphism (GLV truly is of interest when the endomorphism is
+    # efficient as it splits a "big" scalar multiplication into a "small" multi-exponentiation
+    # when Q = sigma(P) is cheap to obtain)
 
     # Find r1_0, r1_1 s.t. r = r1_0 + r1_1*lambda_r
     r1_1 = int(int(r) // int(lambda_r))
     r1_0 = int(r % r1_1)
-    _check_lambdas_not_root_in_subgroups(g1_order, q, r, r1_0, r1_1)
+    _check_lambdas_not_root_in_subgroups(curve_order, q, r, r1_0, r1_1)
 
     return r1_0, r1_1
 
@@ -113,26 +140,31 @@ def g1_fast_subgroup_check_coefficients(g1_order, q, r):
 def g1_subgroup_proof_coefficients(curve, r, h1):
     """
     We can prove that some P belongs to G1 by providing some P' in E(Fq) s.t. P
-    = [h1] P'. This requires extra computation upfront, but can be verifed with
+    = [h1] P'. This requires extra computation upfront, but can be verified with
     a single scalar multiplication by h1.
+
+    This is particularly useful to prove subgroup membership in an R1CS program
+    via multiplication gates.
     """
     print(" P' = [w]P + Y => [h1] P' = P")
-    print("     where Y \in E(Fq)\G, w s.t. w*h = 1 mod r and Y s.t. [h1]Y = 0")
+    print("     where Y \in E(Fq)\G1, w s.t. w*h1 = 1 mod r and Y s.t. [h1]Y = 0")
 
-    # 1 = a*r + b+h1 => b * h1 = 1 mod r
-    g, a, b = xgcd(int(r), int(h1))
+    # Find w s.t. w*h1 = 1 mod r
+    # If r and h1 are coprime, w is one of the Bezout coefficients
+    # i.e. 1 = a*r + w*h1
+    g, a, w = xgcd(int(r), int(h1))
     assert(g == 1)
 
     # Compute Y
     fq = curve.base_field()
-    Yy_squared = fq(3^3 + 1)
-    Yy = sqrt(Yy_squared)
-    Y = r * curve([3, Yy])
+    Yx = 3
+    Yy = sqrt(fq(Yx^3 + 1))
+    Y = r * curve([Yx, Yy])
     # Y not in G1, but [h1]Y == 0
     assert(r * Y != 0)
     assert(h1 * Y == 0)
 
-    return b, Y
+    return w, Y
 
 
 def fuentes_g2_fast_cofactor_coefficients(x):
@@ -140,12 +172,12 @@ def fuentes_g2_fast_cofactor_coefficients(x):
     See Section 4.1: https://eprint.iacr.org/2017/419.pdf
       [m * h2]P = [x^2 - x - 1]P + [x - 1]ψ(P) + ψ^2(2P)
     where:
-      m = 3x^3 - 3
+      m = 3x^2 - 3
     """
     x_2 = x * x
     c0 = x_2 - x - 1
     c1 = x - 1
-    print(f" m = {3*(x_2*x - 1)}")
+    print(f" m = {3*(x_2 - 1)}")
     return c0, c1
 
 
@@ -155,15 +187,18 @@ def g2_fast_cofactor_coefficients(curve_order, q, h2):
     See Section 3.1: https://eprint.iacr.org/2017/419.pdf
 
     Multiplication by 3*h2 of P in E'/F_{q^2} can be reduced to:
-      [x^3−x^2−x+4]P+ [x^3−x^2−x+1]ψ(P) + [−x^2+2x−1]ψ^2(P)
+      [x^3-x^2-x+4]P + [x^3-x^2-x+1]ψ(P) + [-x^2+2x-1]ψ^2(P)
     """
 
     # For P in E'(Fq2),
     #   [q]P = [t]ψ(P) - ψ^2(P)
+    # where t is the trace of Frobenius (which is such that (Hasse) for E(Fq),
+    # we have #E(Fq) = q + 1 - t, where \abs{t} \leq 2\sqrt{q})
     # We seek
-    #   h2_0 and h2_1 s.t. h2 = h2_0 + h2_1 * q mod #E'(Fp2)
-    # so that:
-    #   [h]P = [h_0]P + [h_1]([t]ψ(P) - ψ^2(P))
+    #   h2_0 and h2_1 s.t. h2 = h2_0 + h2_1 * q
+    # which gives
+    #   [h2]P = [h2_0]P + [h2_1 * q]P
+    #   [h2]P = [h2_0]P + [h2_1]([t]ψ(P) - ψ^2(P))
     print(f" [h]P = [h2_0]P + [h2_1]([t]ψ(P) - ψ^2(P))")
 
     # Section 3.1: https://eprint.iacr.org/2017/419.pdf:
@@ -171,7 +206,7 @@ def g2_fast_cofactor_coefficients(curve_order, q, h2):
     #   x_3 = x * x_2
     #   c0 = x_3 - x_2 - x + 4
     #   c1 = x_3 - x_2 - x + 1
-    #   c2 = 2*x - x_2 - 1
+    #   c2 = -x_2 + 2*x - 1
     #   return c0, c1, c2
     # This trivial calculation reveals the same coefficients / 3 (resulting
     # in slightly fewer operations)
@@ -189,14 +224,15 @@ def g2_fast_subgroup_check_coefficients(g2_order, q, r, t1, h2):
     """
     # For P in E'(Fq2), ψ satisfies:
     #   [q1]P = [t1]ψ(P) - ψ^2(P)
-    # where ψ is the untwist-frobenius-twist endomorphism
+    # where ψ is the untwist-frobenius-twist endomorphism defined on
+    # E'(Fq2) (i.e. the twist used to build a compact representation of G2)
 
     # Trivial solution:
-    #   h1.r = n1 = q1 - t1 + 1
-    #   [h1.r] P = [t1]ψ(P) - ψ^2(P) - [t]P + P
-    #            = P + [t](ψ(P) - P) - ψ^2(P)
+    #   #E(Fq) = h1*r = q1 + 1 - t1
+    #   [h1*r]P = [t1]ψ(P) - ψ^2(P) - [t]P + P
+    #           = P + [t](ψ(P) - P) - ψ^2(P)
     print(f" 0 == [r2_0]P + [r2_1](ψ(P) - P) + [r2_2]ψ^2(P)")
-    g1_order = q - t1 + 1
+    g1_order = q + 1 - t1
     h1 = g1_order / r
 
     # Assert that [r] will only kill the G2 component.
