@@ -65,13 +65,22 @@ public:
     bls12_377_G1 mixed_add(const bls12_377_G1 &other) const;
     bls12_377_G1 dbl() const;
 
-    // Multiply point by h, the cofactor, to eliminate the h-torsion components
-    // Note: Doing so isn't a silver bullet and may need to be be replaced by a
-    // proper subgroup membership test.
+    // Multiply point by h, the cofactor, to eliminate the h-torsion components.
     bls12_377_G1 mul_by_cofactor() const;
+
+    // Endomorphism (x, y) -> (\beta * x, y) for \beta an element of Fq with
+    // order 3.
+    bls12_377_G1 sigma() const;
 
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
+
+    // For P (this), return a point P' on the curve such that
+    // P'.mul_by_cofactor() == P. In some contexts, this is useful to show that
+    // P is in the safe subgroup G1, requiring only a small scalar
+    // multiplication by the verifier. Note that (in spite of the type) the
+    // point returned here is OUTSIDE of G1.
+    bls12_377_G1 proof_of_safe_subgroup() const;
 
     static bls12_377_G1 zero();
     static bls12_377_G1 one();

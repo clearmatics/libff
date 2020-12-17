@@ -50,6 +50,7 @@ typedef bls12_377_Fq12 bls12_377_GT;
 
 // Parameters for Barreto-Lynn-Scott curve E/Fq : y^2 = x^3 + b
 extern bls12_377_Fq bls12_377_coeff_b;
+extern bigint<bls12_377_r_limbs> bls12_377_trace_of_frobenius;
 // Parameters for twisted Barreto-Lynn-Scott curve E'/Fq2 : y^2 = x^3 + b/xi
 extern bls12_377_Fq2 bls12_377_twist;
 extern bls12_377_Fq2 bls12_377_twist_coeff_b;
@@ -57,6 +58,23 @@ extern bls12_377_Fq bls12_377_twist_mul_by_b_c0;
 extern bls12_377_Fq bls12_377_twist_mul_by_b_c1;
 extern bls12_377_Fq2 bls12_377_twist_mul_by_q_X;
 extern bls12_377_Fq2 bls12_377_twist_mul_by_q_Y;
+
+// Coefficient \beta in endomorphism (x, y) -> (\beta * x, y)
+extern bls12_377_Fq bls12_377_g1_endomorphism_beta;
+extern bigint<bls12_377_r_limbs> bls12_377_g1_safe_subgroup_check_c1;
+extern bigint<bls12_377_r_limbs> bls12_377_g1_proof_of_safe_subgroup_w;
+extern bls12_377_Fq bls12_377_g1_proof_of_safe_subgroup_non_member_x;
+extern bls12_377_Fq bls12_377_g1_proof_of_safe_subgroup_non_member_y;
+
+// Coefficients for G2 untwist-frobenius-twist
+extern bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_v;
+extern bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_w_3;
+extern bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_v_inverse;
+extern bls12_377_Fq12 bls12_377_g2_untwist_frobenius_twist_w_3_inverse;
+
+// Coefficients used in bls12_377_G2::mul_by_cofactor
+extern bigint<bls12_377_r_limbs> bls12_377_g2_mul_by_cofactor_h2_0;
+extern bigint<bls12_377_r_limbs> bls12_377_g2_mul_by_cofactor_h2_1;
 
 // Parameters for pairing
 extern bigint<bls12_377_q_limbs> bls12_377_ate_loop_count;

@@ -388,9 +388,60 @@ bls12_377_G2 bls12_377_G2::mul_by_q() const
                       (this->Z).Frobenius_map(1));
 }
 
+bls12_377_G2 bls12_377_G2::untwist_frobenius_twist() const
+{
+    bls12_377_G2 g = *this;
+    g.to_affine_coordinates();
+
+    // Note, the algebra works out such that the first component of the
+    // untwisted point only ever occupies Fq6, and so we use this type to avoid
+    // the extra multiplications involved in Fq12 operations.
+
+    // TODO: There are further optimizations we can make here, because we know
+    // that many components will be zero and unused. For now, we use generic
+    // Fp6 and Fp12 operations for conveneience.
+
+    // Untwist
+    const bls12_377_Fq6 x_fq6(g.X, bls12_377_Fq2::zero(), bls12_377_Fq2::zero());
+    const bls12_377_Fq12 y_fq12(
+        bls12_377_Fq6(g.Y, bls12_377_Fq2::zero(), bls12_377_Fq2::zero()),
+        bls12_377_Fq6::zero());
+    const bls12_377_Fq6 untwist_x = x_fq6 * bls12_377_g2_untwist_frobenius_twist_v.coeffs[0];
+    const bls12_377_Fq12 untwist_y = y_fq12 * bls12_377_g2_untwist_frobenius_twist_w_3;
+    // Frobenius
+    const bls12_377_Fq6 frob_untwist_x = untwist_x.Frobenius_map(1);
+    const bls12_377_Fq12 frob_untwist_y = untwist_y.Frobenius_map(1);
+    // Twist
+    const bls12_377_Fq6 twist_frob_untwist_x = frob_untwist_x * bls12_377_g2_untwist_frobenius_twist_v_inverse.coeffs[0];
+    const bls12_377_Fq12 twist_frob_untwist_y = frob_untwist_y * bls12_377_g2_untwist_frobenius_twist_w_3_inverse;
+
+    assert(twist_frob_untwist_x.coeffs[2] == bls12_377_Fq2::zero());
+    assert(twist_frob_untwist_x.coeffs[1] == bls12_377_Fq2::zero());
+    assert(twist_frob_untwist_y.coeffs[1] == bls12_377_Fq6::zero());
+    assert(twist_frob_untwist_y.coeffs[0].coeffs[2] == bls12_377_Fq2::zero());
+    assert(twist_frob_untwist_y.coeffs[0].coeffs[1] == bls12_377_Fq2::zero());
+
+    return bls12_377_G2(
+        twist_frob_untwist_x.coeffs[0],
+        twist_frob_untwist_y.coeffs[0].coeffs[0],
+        bls12_377_Fq2::one());
+}
+
 bls12_377_G2 bls12_377_G2::mul_by_cofactor() const
 {
-    return bls12_377_G2::h * (*this);
+    // See bls12_377.sage.
+    // [h2]P = [h2_0]P + [h2_1]([t] psi_p - psi_2_p)
+    // where:
+    //   h2_0 = 293634935485640680722085584138834120318524213360527933441
+    //   h2_1 = 30631250834960419227450344600217059328
+    //   t = 9586122913090633730
+    const bls12_377_G2 psi_p = untwist_frobenius_twist();
+    const bls12_377_G2 psi_2_p = psi_p.untwist_frobenius_twist();
+    const bls12_377_G2 t_psi_mins_psi_2 = bls12_377_trace_of_frobenius * psi_p - psi_2_p;
+    const bls12_377_G2 result =
+        bls12_377_g2_mul_by_cofactor_h2_0 * (*this) +
+        bls12_377_g2_mul_by_cofactor_h2_1 * t_psi_mins_psi_2;
+    return result;
 }
 
 bool bls12_377_G2::is_well_formed() const
@@ -416,7 +467,15 @@ bool bls12_377_G2::is_well_formed() const
 
 bool bls12_377_G2::is_in_safe_subgroup() const
 {
-    return zero() == scalar_field::mod * (*this);
+    // Check that [h1.r]P == 0, where
+    //   [h1.r]P as P + [t](\psi(P) - P) - \psi^2(P)
+    // (See bls12_377.sage).
+
+    const bls12_377_G2 psi_p = untwist_frobenius_twist();
+    const bls12_377_G2 psi_2_p = psi_p.untwist_frobenius_twist();
+    const bls12_377_G2 psi_p_minus_p = psi_p - *this;
+    const bls12_377_G2 h1_r_p = *this + bls12_377_trace_of_frobenius * psi_p_minus_p - psi_2_p;
+    return zero() == h1_r_p;
 }
 
 bls12_377_G2 bls12_377_G2::zero()
