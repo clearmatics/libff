@@ -20,26 +20,11 @@
 #include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
+#include <libff/algebra/curves/curve_utils.hpp>
 
 #include <sstream>
 
 using namespace libff;
-
-// Utility function to compute a point on the curve E(Fq) with the given x
-// coordinate.
-template<typename GroupT>
-GroupT curve_point_at_x(const typename GroupT::base_field &x)
-{
-    const typename GroupT::base_field x_squared = x * x;
-    const typename GroupT::base_field x_cubed = x_squared * x;
-    const typename GroupT::base_field y_squared =
-        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
-    // Assert that y_squared is in a quadatic residue (ensuring that sqrt()
-    // terminates).
-    assert((y_squared^GroupT::base_field::euler) == GroupT::base_field::one());
-    const typename GroupT::base_field y = y_squared.sqrt();
-    return GroupT(x, y, GroupT::base_field::one());
-}
 
 template<typename GroupT>
 void test_mixed_add()
@@ -202,7 +187,7 @@ void test_group_membership_proof_valid()
 template<typename GroupT>
 void test_group_membership_invalid_g1(const typename GroupT::base_field &x)
 {
-    const GroupT g1_invalid = curve_point_at_x<GroupT>(x);
+    const GroupT g1_invalid = g1_curve_point_at_x<GroupT>(x);
     assert(g1_invalid.is_well_formed());
     assert(!g1_invalid.is_in_safe_subgroup());
 }
@@ -210,7 +195,7 @@ void test_group_membership_invalid_g1(const typename GroupT::base_field &x)
 template<typename GroupT>
 void test_group_membership_proof_invalid_g1(const typename GroupT::base_field &x)
 {
-    const GroupT g1_invalid = curve_point_at_x<GroupT>(x);
+    const GroupT g1_invalid = g1_curve_point_at_x<GroupT>(x);
     const GroupT proof_of_membership = g1_invalid.proof_of_safe_subgroup();
     assert(proof_of_membership.mul_by_cofactor() != g1_invalid);
 }
@@ -218,13 +203,7 @@ void test_group_membership_proof_invalid_g1(const typename GroupT::base_field &x
 template<typename GroupT>
 void test_group_membership_invalid_g2(const typename GroupT::twist_field &x)
 {
-    const typename GroupT::twist_field x_squared = x * x;
-    const typename GroupT::twist_field x_cubed = x_squared * x;
-    const typename GroupT::twist_field y_squared =
-        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
-    const typename GroupT::twist_field y = y_squared.sqrt();
-    const GroupT g2_invalid(x, y, GroupT::twist_field::one());
-
+    const GroupT g2_invalid = g2_curve_point_at_x<GroupT>(x);
     assert(g2_invalid.is_well_formed());
     assert(!g2_invalid.is_in_safe_subgroup());
 }

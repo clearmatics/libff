@@ -33,5 +33,35 @@ GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar)
     return result;
 }
 
+template<typename GroupT>
+GroupT g1_curve_point_at_x(const typename GroupT::base_field &x)
+{
+    const typename GroupT::base_field x_squared = x * x;
+    const typename GroupT::base_field x_cubed = x_squared * x;
+    const typename GroupT::base_field y_squared =
+        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
+    // Check that y_squared is a quadratic residue (ensuring that sqrt()
+    // terminates).
+    if ((y_squared^GroupT::base_field::euler) != GroupT::base_field::one())
+    {
+        throw std::runtime_error("curve eqn has no solution at x");
+    }
+
+    const typename GroupT::base_field y = y_squared.sqrt();
+    return GroupT(x, y, GroupT::base_field::one());
+}
+
+template<typename GroupT>
+GroupT g2_curve_point_at_x(const typename GroupT::twist_field &x)
+{
+    const typename GroupT::twist_field x_squared = x * x;
+    const typename GroupT::twist_field x_cubed = x_squared * x;
+    const typename GroupT::twist_field y_squared =
+        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
+    // TODO: Generic check (over all fields) that y_squared.sqrt() terminates.
+    const typename GroupT::twist_field y = y_squared.sqrt();
+    return GroupT(x, y, GroupT::twist_field::one());
+}
+
 } // libff
 #endif // CURVE_UTILS_TCC_

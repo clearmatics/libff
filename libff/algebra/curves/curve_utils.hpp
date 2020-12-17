@@ -17,6 +17,17 @@ namespace libff {
 template<typename GroupT, mp_size_t m>
 GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar);
 
+// Utility function to compute a point on the curve E(Fq) with the given x
+// coordinate. If the curve has no solution, this function throws an
+// exception.
+template<typename GroupT>
+GroupT g1_curve_point_at_x(const typename GroupT::base_field &x);
+
+// Utility function to compute a point on the twisted curve E'(Fqe) with the
+// given x coordinate.
+template<typename GroupT>
+GroupT g2_curve_point_at_x(const typename GroupT::twist_field &x);
+
 } // libff
 #include <libff/algebra/curves/curve_utils.tcc>
 
