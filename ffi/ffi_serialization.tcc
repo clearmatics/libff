@@ -4,14 +4,11 @@
 #include <libff/algebra/fields/fp.hpp>
 #include "ffi_serialization.hpp"
 
-namespace libff
-{
+namespace libff {
 
-namespace ffi
-{
+namespace ffi {
 
-namespace internal
-{
+namespace internal {
 
 // Generic big-endian field_serializer for multi-component field
 // elements.

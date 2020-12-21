@@ -3,11 +3,9 @@
 
 #include <libff/algebra/curves/public_params.hpp>
 
-namespace libff
-{
+namespace libff {
 
-namespace ffi
-{
+namespace ffi {
 
 // FFI buffers are expected to be big-endian formatted, and padded on the left
 // to be the same size as the in-memory bigint representations. Coefficients of
