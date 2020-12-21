@@ -3,11 +3,9 @@
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
 
-namespace libff
-{
+namespace libff {
 
-namespace ffi
-{
+namespace ffi {
 
 // Generic functions to be used by the entry points
 
@@ -23,7 +21,8 @@ bool g1_add(
     libff::G1<ppT> a;
     libff::G1<ppT> b;
     if (group_element_read(a, a_g1, a_g1_size) &&
-        group_element_read(b, b_g1, b_g1_size)) {
+        group_element_read(b, b_g1, b_g1_size))
+    {
         const libff::G1<ppT> output = a + b;
         return group_element_write(output, out_g1, out_g1_size);
     }
@@ -117,13 +116,13 @@ bool pairing(
 
 // BLS12-377 entry points
 
-bool bls12_377_init()
+extern "C" bool bls12_377_init()
 {
     libff::bls12_377_pp::init_public_params();
     return true;
 }
 
-bool bls12_377_g1_add(
+extern "C" bool bls12_377_g1_add(
     const void *a_g1,
     size_t a_g1_size,
     const void *b_g1,
@@ -187,13 +186,13 @@ extern "C" bool bls12_377_pairing(
 
 // BW6-761 entry points
 
-bool bw6_761_init()
+extern "C" bool bw6_761_init()
 {
     libff::bw6_761_pp::init_public_params();
     return true;
 }
 
-bool bw6_761_g1_add(
+extern "C" bool bw6_761_g1_add(
     const void *a_g1,
     size_t a_g1_size,
     const void *b_g1,

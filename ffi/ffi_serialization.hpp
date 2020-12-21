@@ -9,12 +9,11 @@ namespace libff
 namespace ffi
 {
 
-// FFI buffers are expected to be big-endian formatted, and padded on
-// the left to be the same size as the in-memory bigint
-// representations.  Coefficients of field elements and, and
-// coordinates of curve points are placed consecutively in memory
-// (where coefficients appear highest-order first, and coordinates
-// appear X followed by Y).
+// FFI buffers are expected to be big-endian formatted, and padded on the left
+// to be the same size as the in-memory bigint representations. Coefficients of
+// field elements, and affine coordinates of curve points are placed
+// consecutively in memory (where coefficients appear highest-order first, and
+// coordinates appear X followed by Y).
 
 // TODO: Since use the in-memory object sizes (and enforce that the
 // passed-in buffer sizes match exactly), the required sizes could
@@ -45,13 +44,13 @@ bool field_element_read(FieldT &f, const void *buffer, size_t buffer_size);
 template<typename FieldT>
 bool field_element_write(const FieldT &f, void *buffer, size_t buffer_size);
 
-/// Read a group element, checking that the buffer size is as
-/// expected.  Returns true on success.
+/// Read a group element (in affine form), checking that the buffer size is as
+/// expected. Returns true on success.
 template<typename GroupT>
 bool group_element_read(GroupT &g, const void *buffer, size_t buffer_size);
 
-/// Write a group element to a buffer, checking that the size is as
-/// expected.  Returns true on success.
+/// Write a group element to a buffer (in affine form), checking that the size
+/// is as expected. Returns true on success.
 template<typename GroupT>
 bool group_element_write(const GroupT &g, const void *buffer, size_t buffer_size);
 

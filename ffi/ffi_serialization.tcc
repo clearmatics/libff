@@ -26,7 +26,8 @@ public:
         size_t i = FieldT::extension_degree() - 1;
         do {
             if (buffer_size < component_size ||
-                !field_element_read(f.coeffs[i], buffer, component_size)) {
+                !field_element_read(f.coeffs[i], buffer, component_size))
+            {
                 return false;
             }
             buffer = ((const char *)buffer) + component_size;
@@ -43,7 +44,8 @@ public:
         size_t i = FieldT::extension_degree() - 1;
         do {
             if (buffer_size < component_size ||
-                !field_element_write(f.coeffs[i], buffer, component_size)) {
+                !field_element_write(f.coeffs[i], buffer, component_size))
+            {
                 return false;
             }
             buffer = ((char *)buffer) + component_size;
@@ -67,7 +69,8 @@ public:
     {
         libff::bigint<n> bigint;
         if (object_read_from_buffer(bigint, buffer, buffer_size) &&
-            mpn_cmp(modulus.data, bigint.data, n) > 0) {
+            mpn_cmp(modulus.data, bigint.data, n) > 0)
+        {
             f = libff::Fp_model<n, modulus>(bigint);
             return true;
         }
@@ -101,14 +104,16 @@ template<typename T>
 bool object_read_from_buffer(T &object, const void *buffer, size_t buffer_size)
 {
     constexpr size_t object_size = sizeof(T);
-    if (buffer_size != object_size) {
+    if (buffer_size != object_size)
+    {
         return false;
     }
 
     char *dest = (char *)&object;
     const char *src = ((const char *)buffer) + buffer_size;
     const char *end = src - object_size;
-    while (src > end) {
+    while (src > end)
+    {
         *(dest++) = *(--src);
     }
 
@@ -121,14 +126,16 @@ template<typename T>
 bool object_write_to_buffer(const T &object, void *buffer, size_t buffer_size)
 {
     constexpr size_t object_size = sizeof(T);
-    if (buffer_size != object_size) {
+    if (buffer_size != object_size)
+    {
         return false;
     }
 
     char *dest = (char *)buffer;
     const char *const end = ((const char *)&object);
     const char *src = end + object_size;
-    while (src > end) {
+    while (src > end)
+    {
         *(dest++) = *(--src);
     }
 
@@ -153,14 +160,20 @@ template<typename GroupT>
 bool group_element_read(GroupT &g, const void *buffer, size_t buffer_size)
 {
     constexpr size_t coordinate_size = sizeof(g.X);
-    if (buffer_size == 2 * coordinate_size) {
-        if (field_element_read(g.X, buffer, coordinate_size)) {
+    if (buffer_size == 2 * coordinate_size)
+    {
+        if (field_element_read(g.X, buffer, coordinate_size))
+        {
             buffer = ((const char *)buffer) + coordinate_size;
-            if (field_element_read(g.Y, buffer, coordinate_size)) {
+            if (field_element_read(g.Y, buffer, coordinate_size))
+            {
                 if (internal::field_element_equals_zero(g.X) &&
-                    internal::field_element_equals_one(g.Y)) {
+                    internal::field_element_equals_one(g.Y))
+                {
                     g.Z = g.Z.zero();
-                } else {
+                }
+                else
+                {
                     g.Z = g.Z.one();
                 }
 
@@ -176,10 +189,12 @@ template<typename GroupT>
 bool group_element_write(const GroupT &g, void *buffer, size_t buffer_size)
 {
     constexpr size_t coordinate_size = sizeof(g.X);
-    if (buffer_size == 2 * coordinate_size) {
+    if (buffer_size == 2 * coordinate_size)
+    {
         GroupT affine_p = g;
         affine_p.to_affine_coordinates();
-        if (field_element_write(affine_p.X, buffer, coordinate_size)) {
+        if (field_element_write(affine_p.X, buffer, coordinate_size))
+        {
             buffer = ((char *)buffer) + coordinate_size;
             return field_element_write(affine_p.Y, buffer, coordinate_size);
         }
