@@ -1,5 +1,6 @@
 <h1 align="center">libff</h1>
 <h4 align="center">C++ library for Finite Fields and Elliptic Curves</h4>
+<h4 align="center">(forked from https://github.com/scipr-lab/libff)</h4>
 
 ___libff___ is a C++ library for finite fields and elliptic curves. The library is developed by [SCIPR Lab] and contributors (see [AUTHORS] file) and is released under the MIT License (see [LICENSE] file).
 
