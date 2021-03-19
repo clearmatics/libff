@@ -210,6 +210,8 @@ T multi_exp_inner(
 
         for (size_t i = 0; i < length; i++)
         {
+            // id = k-th "digit" of bn_exponents[i], radix 2^c
+            //    = (bn_exponents[i] >> (c*k)) & (2^c - 1)
             size_t id = 0;
             for (size_t j = 0; j < c; j++)
             {
@@ -219,11 +221,13 @@ T multi_exp_inner(
                 }
             }
 
+            // Skip 0 digits.
             if (id == 0)
             {
                 continue;
             }
 
+            // Add (or write) the group element into the appropriate bucket.
             if (bucket_nonzero[id])
             {
 #ifdef USE_MIXED_ADDITION
