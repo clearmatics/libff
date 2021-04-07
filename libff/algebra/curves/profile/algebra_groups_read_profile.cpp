@@ -1,3 +1,9 @@
+#include "libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp"
+#include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
+#include "libff/algebra/curves/curve_serialization.hpp"
+#include "libff/common/profiling.hpp"
+
+#include <aio.h>
 #include <exception>
 #include <fcntl.h>
 #include <fstream>
@@ -20,7 +26,10 @@ std::string get_filename(const std::string &identifier)
 }
 
 /// Returns true if the file was already present.
-template<typename GroupT>
+template<
+    typename GroupT,
+    form_t Form = form_montgomery,
+    compression_t Comp = compression_off>
 bool ensure_group_elements_file_uncompressed(const std::string &identifier)
 {
     const std::string filename = get_filename(identifier);
@@ -43,7 +52,8 @@ bool ensure_group_elements_file_uncompressed(const std::string &identifier)
         std::ofstream out_s(
             filename.c_str(), std::ios_base::out | std::ios_base::binary);
         for (size_t i = 0; i < NUM_ELEMENTS_IN_FILE; ++i) {
-            elements[i % NUM_DIFFERENT_ELEMENTS].write_uncompressed(out_s);
+            group_write<encoding_binary, Form, Comp>(
+                elements[i % NUM_DIFFERENT_ELEMENTS], out_s);
         }
         out_s.close();
 
@@ -54,7 +64,10 @@ bool ensure_group_elements_file_uncompressed(const std::string &identifier)
     return true;
 }
 
-template<typename GroupT>
+template<
+    typename GroupT,
+    form_t Form = form_montgomery,
+    compression_t Comp = compression_off>
 bool profile_group_read_sequential_uncompressed(const std::string &identifier)
 {
     const std::string filename = get_filename(identifier);
@@ -75,8 +88,8 @@ bool profile_group_read_sequential_uncompressed(const std::string &identifier)
         {
             enter_block("Read group elements profiling");
             for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
-                GroupT::read_uncompressed(
-                    in_s, elements[i % NUM_DIFFERENT_ELEMENTS]);
+                group_read<encoding_binary, Form, Comp>(
+                    elements[i % NUM_DIFFERENT_ELEMENTS], in_s);
             }
             leave_block("Read group elements profiling");
         }
@@ -85,6 +98,245 @@ bool profile_group_read_sequential_uncompressed(const std::string &identifier)
     }
 
     return true;
+}
+
+template<
+    typename GroupT,
+    form_t Form = form_montgomery,
+    compression_t Comp = compression_off>
+void profile_group_read_random_seek_uncompressed(const std::string &identifier)
+{
+    const std::string filename = get_filename(identifier);
+
+    // Create a set of random indices. The i-th index to read from will be:
+    //   (i + indices[i % NUM_DIFFERENT_ELEMENTS]) % NUM_ELEMENTS_IN_FILE
+    std::vector<size_t> indices;
+    indices.reserve(NUM_DIFFERENT_ELEMENTS);
+    for (size_t i = 0; i < NUM_DIFFERENT_ELEMENTS; ++i) {
+        indices.push_back(rand() % NUM_ELEMENTS_IN_FILE);
+    }
+
+    // Measure time taken to read the file
+    std::cout << "  Random Access Read '" << filename.c_str() << "' ("
+              << std::to_string(NUM_ELEMENTS_TO_READ) << " of "
+              << std::to_string(NUM_ELEMENTS_IN_FILE) << " elements ...\n";
+    {
+        std::vector<GroupT> elements;
+        elements.resize(NUM_DIFFERENT_ELEMENTS);
+
+        std::ifstream in_s(
+            filename.c_str(), std::ios_base::in | std::ios_base::binary);
+        in_s.exceptions(
+            std::ios_base::eofbit | std::ios_base::badbit |
+            std::ios_base::failbit);
+
+        const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
+        {
+            enter_block("Read group elements profiling");
+            for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
+                const size_t different_element_idx = i % NUM_DIFFERENT_ELEMENTS;
+                const size_t idx =
+                    (indices[different_element_idx] + i) % NUM_ELEMENTS_IN_FILE;
+                const size_t offset = idx * element_size_on_disk;
+                group_read<encoding_binary, Form, Comp>(
+                    elements[different_element_idx], in_s.seekg(offset));
+            }
+            leave_block("Read group elements profiling");
+        }
+
+        in_s.close();
+    }
+}
+
+template<
+    typename GroupT,
+    form_t Form = form_montgomery,
+    compression_t Comp = compression_off>
+void profile_group_read_random_seek_ordered_uncompressed(
+    const std::string &identifier)
+{
+    const std::string filename = get_filename(identifier);
+
+    // Measure time taken to read the file
+    std::cout << "  Random Access Seeks (Ordered) '" << filename.c_str()
+              << "' (" << std::to_string(NUM_ELEMENTS_TO_READ) << " of "
+              << std::to_string(NUM_ELEMENTS_IN_FILE) << " elements ...\n";
+    {
+        std::vector<GroupT> elements;
+        elements.resize(NUM_DIFFERENT_ELEMENTS);
+
+        std::ifstream in_s(
+            filename.c_str(), std::ios_base::in | std::ios_base::binary);
+        in_s.exceptions(
+            std::ios_base::eofbit | std::ios_base::badbit |
+            std::ios_base::failbit);
+
+        const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
+        const size_t element_interval_bytes =
+            element_size_on_disk * NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ;
+        {
+            enter_block("Read group elements profiling");
+            for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
+                const size_t different_element_idx = i % NUM_DIFFERENT_ELEMENTS;
+                const size_t offset = i * element_interval_bytes;
+                group_read<encoding_binary, Form, Comp>(
+                    elements[different_element_idx], in_s.seekg(offset));
+            }
+            leave_block("Read group elements profiling");
+        }
+
+        in_s.close();
+    }
+}
+
+template<typename GroupT>
+void profile_group_read_random_seek_fd_uncompressed(
+    const std::string &identifier)
+{
+    const std::string filename = get_filename(identifier);
+
+    // Create a set of random indices. The i-th index to read from will be:
+    //   (i + indices[i % NUM_DIFFERENT_ELEMENTS]) % NUM_ELEMENTS_IN_FILE
+    std::vector<size_t> indices;
+    indices.reserve(NUM_DIFFERENT_ELEMENTS);
+    for (size_t i = 0; i < NUM_DIFFERENT_ELEMENTS; ++i) {
+        indices.push_back(rand() % NUM_ELEMENTS_IN_FILE);
+    }
+
+    // Measure time taken to read the file
+    std::cout << "  Random Access Read '" << filename.c_str() << "' ("
+              << std::to_string(NUM_ELEMENTS_TO_READ) << " of "
+              << std::to_string(NUM_ELEMENTS_IN_FILE) << " elements ...\n";
+    {
+        std::vector<GroupT> elements;
+        elements.resize(NUM_DIFFERENT_ELEMENTS);
+
+        int f = open(filename.c_str(), O_RDONLY);
+        if (f < 0) {
+            throw std::runtime_error("failed to open " + filename);
+        }
+
+        const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
+        {
+            enter_block("Read group elements profiling");
+            for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
+                const size_t different_element_idx = i % NUM_DIFFERENT_ELEMENTS;
+                const size_t idx =
+                    (indices[different_element_idx] + i) % NUM_ELEMENTS_IN_FILE;
+                const size_t offset = idx * element_size_on_disk;
+                GroupT &dest_element = elements[different_element_idx];
+
+                lseek(f, offset, SEEK_SET);
+                read(f, &dest_element, element_size_on_disk);
+            }
+            leave_block("Read group elements profiling");
+        }
+
+        close(f);
+    }
+}
+
+template<typename GroupT>
+void profile_group_read_random_seek_fd_ordered_uncompressed(
+    const std::string &identifier)
+{
+    const std::string filename = get_filename(identifier);
+
+    // Measure time taken to read the file
+    std::cout << "  Random Access Read '" << filename.c_str() << "' ("
+              << std::to_string(NUM_ELEMENTS_TO_READ) << " of "
+              << std::to_string(NUM_ELEMENTS_IN_FILE) << " elements ...\n";
+    {
+        std::vector<GroupT> elements;
+        elements.resize(NUM_DIFFERENT_ELEMENTS);
+
+        int f = open(filename.c_str(), O_RDONLY);
+        if (f < 0) {
+            throw std::runtime_error("failed to open " + filename);
+        }
+
+        const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
+        const size_t element_interval_bytes =
+            element_size_on_disk * NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ;
+        {
+            enter_block("Read group elements profiling");
+            for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
+                const size_t different_element_idx = i % NUM_DIFFERENT_ELEMENTS;
+                const size_t offset = i * element_interval_bytes;
+                GroupT &dest_element = elements[different_element_idx];
+
+                lseek(f, offset, SEEK_SET);
+                read(f, &dest_element, element_size_on_disk);
+            }
+            leave_block("Read group elements profiling");
+        }
+
+        close(f);
+    }
+}
+
+template<typename GroupT>
+void profile_group_read_random_seek_mmap_ordered_uncompressed(
+    const std::string &identifier)
+{
+    const std::string filename = get_filename(identifier);
+
+    // Read sparse elements from a mem-mapped file, ensuring we always proceed
+    // forwards.
+
+    // Measure time taken to read the file
+    std::cout << "  Random Access MMap (Ordered) '" << filename.c_str() << "' ("
+              << std::to_string(NUM_ELEMENTS_TO_READ) << " of "
+              << std::to_string(NUM_ELEMENTS_IN_FILE) << " elements ...\n";
+    {
+        std::vector<GroupT> elements;
+        elements.resize(NUM_DIFFERENT_ELEMENTS);
+
+        const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
+        const size_t file_size = NUM_ELEMENTS_IN_FILE * element_size_on_disk;
+
+        int fd = open(filename.c_str(), O_RDONLY);
+        if (fd < 0) {
+            throw std::runtime_error("failed to open " + filename);
+        }
+
+        const void *file_base = mmap(
+            nullptr,
+            file_size,
+            PROT_READ,
+            MAP_PRIVATE /* | MAP_NOCACHE */,
+            fd,
+            0);
+        if (MAP_FAILED == file_base) {
+            throw std::runtime_error(
+                std::string("mmap failed: ") + strerror(errno));
+        }
+
+        const size_t element_interval_bytes =
+            element_size_on_disk * NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ;
+        // const size_t element_interval_bytes = element_size_on_disk * 2;
+        {
+            enter_block("Read group elements profiling");
+            for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
+                const size_t different_element_idx = i % NUM_DIFFERENT_ELEMENTS;
+                // const size_t idx = (indices[different_element_idx] + i) %
+                // NUM_ELEMENTS_IN_FILE;
+                const size_t offset = i * element_interval_bytes;
+                GroupT &dest_element = elements[different_element_idx];
+                const GroupT *src =
+                    (const GroupT *)(const void *)((size_t)file_base + offset);
+
+                dest_element.X = src->X;
+                dest_element.Y = src->Y;
+            }
+            leave_block("Read group elements profiling");
+        }
+
+        if (0 != munmap((void *)file_base, file_size)) {
+            throw std::runtime_error("munmap failed");
+        }
+        close(fd);
+    }
 }
 
 template<typename GroupT> void run_profile(const std::string &identifier)
@@ -96,19 +348,27 @@ template<typename GroupT> void run_profile(const std::string &identifier)
     }
 
     profile_group_read_sequential_uncompressed<GroupT>(identifier);
+    profile_group_read_random_seek_uncompressed<GroupT>(identifier);
+    profile_group_read_random_seek_ordered_uncompressed<GroupT>(identifier);
+    profile_group_read_random_seek_fd_uncompressed<GroupT>(identifier);
+    profile_group_read_random_seek_fd_ordered_uncompressed<GroupT>(identifier);
+    profile_group_read_random_seek_mmap_ordered_uncompressed<GroupT>(
+        identifier);
 }
 
 int main(void)
 {
+    // Some configurations are disabled for now.
+
     std::cout << "alt_bn128_pp\n";
     alt_bn128_pp::init_public_params();
     run_profile<alt_bn128_G1>("alt_bn128_G1");
-    run_profile<alt_bn128_G2>("alt_bn128_G2");
+    // run_profile<alt_bn128_G2>("alt_bn128_G2");
 
-    std::cout << "bls12_377_pp\n";
-    bls12_377_pp::init_public_params();
-    run_profile<bls12_377_G1>("bls12_377_G1");
-    run_profile<bls12_377_G2>("bls12_377_G2");
+    // std::cout << "bls12_377_pp\n";
+    // bls12_377_pp::init_public_params();
+    // run_profile<bls12_377_G1>("bls12_377_G1");
+    // run_profile<bls12_377_G2>("bls12_377_G2");
 
     return 0;
 }
