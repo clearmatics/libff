@@ -20,6 +20,33 @@
 namespace libff {
 
 template<mp_size_t n, const bigint<n>& modulus>
+bool Fp_model<n,modulus>::s_initialized = false;
+
+template<mp_size_t n, const bigint<n>& modulus>
+Fp_model<n, modulus> Fp_model<n,modulus>::s_zero;
+
+template<mp_size_t n, const bigint<n>& modulus>
+Fp_model<n, modulus> Fp_model<n,modulus>::s_one;
+
+template<mp_size_t n, const bigint<n>& modulus>
+void Fp_model<n,modulus>::static_init()
+{
+    // This function may be entered several times, in particular where an
+    // individual field is shread between curves.
+    if (s_initialized)
+    {
+        return;
+    }
+    // Initialize s_zero and s_one
+    s_zero.mont_repr.clear();
+
+    s_one.mont_repr.data[0] = 1;
+    s_one.mul_reduce(Rsquared);
+
+    s_initialized = true;
+}
+
+template<mp_size_t n, const bigint<n>& modulus>
 void Fp_model<n,modulus>::mul_reduce(const bigint<n> &other)
 {
     /* stupid pre-processor tricks; beware */
@@ -274,20 +301,17 @@ void Fp_model<n,modulus>::print() const
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
-Fp_model<n,modulus> Fp_model<n,modulus>::zero()
+const Fp_model<n,modulus> &Fp_model<n,modulus>::zero()
 {
-    Fp_model<n,modulus> res;
-    res.mont_repr.clear();
-    return res;
+    assert(s_initialized);
+    return s_zero;
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
-Fp_model<n,modulus> Fp_model<n,modulus>::one()
+const Fp_model<n,modulus> &Fp_model<n,modulus>::one()
 {
-    Fp_model<n,modulus> res;
-    res.mont_repr.data[0] = 1;
-    res.mul_reduce(Rsquared);
-    return res;
+    assert(s_initialized);
+    return s_one;
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
