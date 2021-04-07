@@ -87,12 +87,12 @@ void print_performance_csv(
         run_result_t<GroupT> result_bos_coster =
             profile_multiexp<GroupT, FieldT, multi_exp_method_bos_coster>(
                 group_elements, scalars);
-        printf("\t%lld", result_bos_coster.first); fflush(stdout);
+        printf("\t%20lld", result_bos_coster.first); fflush(stdout);
 
         run_result_t<GroupT> result_djb =
             profile_multiexp<GroupT, FieldT, multi_exp_method_BDLO12>(
                 group_elements, scalars);
-        printf("\t%lld", result_djb.first); fflush(stdout);
+        printf("\t%20lld", result_djb.first); fflush(stdout);
 
         if (compare_answers && (result_bos_coster.second != result_djb.second)) {
             fprintf(stderr, "Answers NOT MATCHING (bos coster != djb)\n");
@@ -102,7 +102,7 @@ void print_performance_csv(
             run_result_t<GroupT> result_naive =
                 profile_multiexp<GroupT, FieldT, multi_exp_method_naive>(
                     group_elements, scalars);
-            printf("\t%lld", result_naive.first); fflush(stdout);
+            printf("\t%20lld", result_naive.first); fflush(stdout);
 
             if (compare_answers && (result_bos_coster.second != result_naive.second)) {
                 fprintf(stderr, "Answers NOT MATCHING (bos coster != naive)\n");
