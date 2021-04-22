@@ -46,6 +46,11 @@ void test_field()
     assert(a != zero);
     assert(a != one);
 
+    assert(a * zero == zero);
+    assert(a + zero == a);
+    assert(a * one == a);
+
+    assert(a * a == a.squared());
     assert(a * a == a.squared());
     assert((a + b).squared() == a.squared() + a*b + b*a + b.squared());
     assert((a + b)*(c + d) == a*c + a*d + b*c + b*d);

@@ -41,6 +41,8 @@ class Fp_model {
 public:
     bigint<n> mont_repr;
 public:
+    static void static_init();
+
     static const mp_size_t num_limbs = n;
     static const constexpr bigint<n>& mod = modulus;
 #ifdef PROFILE_OP_COUNTS
@@ -117,14 +119,20 @@ public:
 
     static size_t size_in_bits() { return num_bits; }
     static size_t capacity() { return num_bits - 1; }
-    static bigint<n> field_char() { return modulus; }
+    static const bigint<n> &field_char() { return modulus; }
     static constexpr size_t extension_degree() { return 1; }
 
-    static Fp_model<n, modulus> zero();
-    static Fp_model<n, modulus> one();
+    static const Fp_model<n, modulus> &zero();
+    static const Fp_model<n, modulus> &one();
     static Fp_model<n, modulus> random_element();
     static Fp_model<n, modulus> geometric_generator(); // generator^k, for k = 1 to m, domain size m
     static Fp_model<n, modulus> arithmetic_generator();// generator++, for k = 1 to m, domain size m
+
+protected:
+
+    static bool s_initialized;
+    static Fp_model<n, modulus> s_zero;
+    static Fp_model<n, modulus> s_one;
 
     friend std::ostream& operator<< <n,modulus>(std::ostream &out, const Fp_model<n, modulus> &p);
     friend std::istream& operator>> <n,modulus>(std::istream &in, Fp_model<n, modulus> &p);

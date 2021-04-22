@@ -5,12 +5,53 @@
  * @copyright  MIT license (see LICENSE file)
  *****************************************************************************/
 
+#include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
 #include <libff/common/profiling.hpp>
 
 #include <exception>
 
 using namespace libff;
+
+template<typename GroupT>
+bool profile_group_add()
+{
+    static const size_t NUM_DIFFERENT_ELEMENTS = 1024;
+    static const size_t NUM_ELEMENTS = 1024*1024;
+
+    std::vector<GroupT> elements;
+    {
+        elements.reserve(NUM_ELEMENTS);
+        size_t i = 0;
+        for ( ; i < NUM_DIFFERENT_ELEMENTS ; ++i)
+        {
+            elements.push_back(GroupT::random_element());
+        }
+        for ( ; i < NUM_ELEMENTS ; ++i)
+        {
+            elements.push_back(elements[i % NUM_DIFFERENT_ELEMENTS]);
+        }
+    }
+
+    std::cout << "    num elements: " << std::to_string(NUM_ELEMENTS) << "\n";
+
+    size_t num_elements = 0;
+    GroupT accum = GroupT::zero();
+    enter_block("group add operation profiling");
+    for (const GroupT &el : elements)
+    {
+        accum = accum + el;
+        num_elements++;
+    }
+    leave_block("group add operation profiling");
+
+    if (num_elements != NUM_ELEMENTS)
+    {
+        throw std::runtime_error("invalid number of elements seen");
+    }
+
+    return true;
+}
 
 template<typename GroupT>
 bool profile_group_membership()
@@ -43,16 +84,47 @@ bool profile_group_membership()
 
 int main(void)
 {
+    std::cout << "alt_bn128_pp\n";
+    alt_bn128_pp::init_public_params();
+
+    std::cout << "  profile_group_add<alt_bn128_G1>:\n";
+    if (!profile_group_add<alt_bn128_G1>())
+    {
+        throw std::runtime_error("failed");
+    }
+
+    std::cout << "  profile_group_add<alt_bn128_G2>:\n";
+    if (!profile_group_add<alt_bn128_G2>())
+    {
+        throw std::runtime_error("failed");
+    }
+
     std::cout << "bls12_377_pp\n";
     bls12_377_pp::init_public_params();
 
-    std::cout << "profile_group_membership<bls12_377_G1>:\n";
-    if (!profile_group_membership<bls12_377_G1>()) {
+    std::cout << "  profile_group_add<bls12_377_G1>:\n";
+    if (!profile_group_add<bls12_377_G1>())
+    {
         throw std::runtime_error("failed");
     }
 
-    std::cout << "profile_group_membership<bls12_377_G2>:\n";
-    if (!profile_group_membership<bls12_377_G2>()) {
+    std::cout << "  profile_group_add<bls12_377_G2>:\n";
+    if (!profile_group_add<bls12_377_G2>())
+    {
         throw std::runtime_error("failed");
     }
+
+    std::cout << "  profile_group_membership<bls12_377_G1>:\n";
+    if (!profile_group_membership<bls12_377_G1>())
+    {
+        throw std::runtime_error("failed");
+    }
+
+    std::cout << "  profile_group_membership<bls12_377_G2>:\n";
+    if (!profile_group_membership<bls12_377_G2>())
+    {
+        throw std::runtime_error("failed");
+    }
+
+    return 0;
 }

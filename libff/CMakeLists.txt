@@ -145,10 +145,19 @@ if ("${IS_LIBFF_PARENT}")
   )
   target_link_libraries(algebra_groups_profile ff)
 
+  add_executable(
+    algebra_groups_read_profile
+    EXCLUDE_FROM_ALL
+
+    algebra/curves/profile/algebra_groups_read_profile.cpp
+  )
+  target_link_libraries(algebra_groups_read_profile ff)
+
   add_dependencies(
     profile
 
     multiexp_profile
     algebra_groups_profile
+    algebra_groups_read_profile
   )
 endif()
