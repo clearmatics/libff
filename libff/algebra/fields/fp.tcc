@@ -293,11 +293,13 @@ bool Fp_model<n,modulus>::is_zero() const
 template<mp_size_t n, const bigint<n>& modulus>
 void Fp_model<n,modulus>::print() const
 {
-    Fp_model<n,modulus> tmp;
-    tmp.mont_repr.data[0] = 1;
-    tmp.mul_reduce(this->mont_repr);
+    as_bigint().print();
+}
 
-    tmp.mont_repr.print();
+template<mp_size_t n, const bigint<n>& modulus>
+void Fp_model<n,modulus>::write_decimal(std::ostream &out) const
+{
+    as_bigint().write_decimal(out);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>

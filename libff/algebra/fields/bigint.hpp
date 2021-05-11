@@ -41,6 +41,8 @@ public:
 
     void print() const;
     void print_hex() const;
+    void write_decimal(std::ostream &out) const;
+
     bool operator==(const bigint<n>& other) const;
     bool operator!=(const bigint<n>& other) const;
     void clear();

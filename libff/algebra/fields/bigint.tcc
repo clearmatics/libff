@@ -70,6 +70,16 @@ void bigint<n>::print_hex() const
 }
 
 template<mp_size_t n>
+void bigint<n>::write_decimal(std::ostream &out) const
+{
+    mpz_t t;
+    mpz_init(t);
+    to_mpz(t);
+    out << t;
+    mpz_clear(t);
+}
+
+template<mp_size_t n>
 bool bigint<n>::operator==(const bigint<n>& other) const
 {
     return (mpn_cmp(this->data, other.data, n) == 0);
@@ -179,20 +189,13 @@ bigint<n>& bigint<n>::randomize()
     return (*this);
 }
 
-
 template<mp_size_t n>
 std::ostream& operator<<(std::ostream &out, const bigint<n> &b)
 {
 #ifdef BINARY_OUTPUT
     out.write((char*)b.data, sizeof(b.data[0]) * n);
 #else
-    mpz_t t;
-    mpz_init(t);
-    b.to_mpz(t);
-
-    out << t;
-
-    mpz_clear(t);
+    b.write_decimal(out);
 #endif
     return out;
 }

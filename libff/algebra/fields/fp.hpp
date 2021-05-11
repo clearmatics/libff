@@ -95,6 +95,7 @@ public:
     bool is_zero() const;
 
     void print() const;
+    void write_decimal(std::ostream &out) const;
 
     Fp_model& operator+=(const Fp_model& other);
     Fp_model& operator-=(const Fp_model& other);
