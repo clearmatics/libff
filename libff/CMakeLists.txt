@@ -87,6 +87,7 @@ if ("${IS_LIBFF_PARENT}")
     algebra_bilinearity_test
 
     ff
+    gtest_main
   )
 
   add_executable(
@@ -99,6 +100,7 @@ if ("${IS_LIBFF_PARENT}")
     algebra_groups_test
 
     ff
+    gtest_main
   )
 
   add_executable(
