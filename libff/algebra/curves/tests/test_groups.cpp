@@ -5,11 +5,7 @@
  * @copyright  MIT license (see LICENSE file)
  *****************************************************************************/
 
-// If NDEBUG is defined, assert turns into nothing. No checks are made and a
-// lot of warnings are generated.
-#ifdef NDEBUG
-# undef NDEBUG
-#endif
+#include <gtest/gtest.h>
 
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
@@ -35,31 +31,31 @@ void test_mixed_add()
     el = GroupT::zero();
     el.to_special();
     result = base.mixed_add(el);
-    assert(result == base + el);
+    ASSERT_EQ(GroupT::zero(), result);
 
     base = GroupT::zero();
     el = GroupT::random_element();
     el.to_special();
     result = base.mixed_add(el);
-    assert(result == base + el);
+    ASSERT_EQ(el, result);
 
     base = GroupT::random_element();
     el = GroupT::zero();
     el.to_special();
     result = base.mixed_add(el);
-    assert(result == base + el);
+    ASSERT_EQ(base, result);
 
     base = GroupT::random_element();
     el = GroupT::random_element();
     el.to_special();
     result = base.mixed_add(el);
-    assert(result == base + el);
+    ASSERT_EQ(base + el, result);
 
     base = GroupT::random_element();
     el = base;
     el.to_special();
     result = base.mixed_add(el);
-    assert(result == base.dbl());
+    ASSERT_EQ(base.dbl(), result);
 }
 
 template<typename GroupT>
@@ -70,53 +66,53 @@ void test_group()
     bigint<1> randsum = bigint<1>("121160274");
 
     GroupT zero = GroupT::zero();
-    assert(zero == zero);
+    ASSERT_EQ(zero, zero);
     GroupT one = GroupT::one();
-    assert(one == one);
+    ASSERT_EQ(one, one);
     GroupT two = bigint<1>(2l) * GroupT::one();
-    assert(two == two);
+    ASSERT_EQ(two, two);
     GroupT five = bigint<1>(5l) * GroupT::one();
 
     GroupT three = bigint<1>(3l) * GroupT::one();
     GroupT four = bigint<1>(4l) * GroupT::one();
 
-    assert(two+five == three+four);
+    ASSERT_EQ(three+four, two+five);
 
     GroupT a = GroupT::random_element();
     GroupT b = GroupT::random_element();
 
-    assert(one != zero);
-    assert(a != zero);
-    assert(a != one);
+    ASSERT_NE(one, zero);
+    ASSERT_NE(a, zero);
+    ASSERT_NE(a, one);
 
-    assert(b != zero);
-    assert(b != one);
+    ASSERT_NE(b, zero);
+    ASSERT_NE(b, one);
 
-    assert(a.dbl() == a + a);
-    assert(b.dbl() == b + b);
-    assert(one.add(two) == three);
-    assert(two.add(one) == three);
-    assert(a + b == b + a);
-    assert(a - a == zero);
-    assert(a - b == a + (-b));
-    assert(a - b == (-b) + a);
+    ASSERT_EQ(a + a, a.dbl());
+    ASSERT_EQ(b + b, b.dbl());
+    ASSERT_EQ(three, one.add(two));
+    ASSERT_EQ(three, two.add(one));
+    ASSERT_EQ(b + a, a + b);
+    ASSERT_EQ(zero, a - a);
+    ASSERT_EQ(a + (-b), a - b);
+    ASSERT_EQ((-b) + a, a - b);
 
     // handle special cases
-    assert(zero + (-a) == -a);
-    assert(zero - a == -a);
-    assert(a - zero == a);
-    assert(a + zero == a);
-    assert(zero + a == a);
+    ASSERT_EQ(-a, zero + (-a));
+    ASSERT_EQ(-a, zero - a);
+    ASSERT_EQ(a, a - zero);
+    ASSERT_EQ(a, a + zero);
+    ASSERT_EQ(a, zero + a);
 
-    assert((a + b).dbl() == (a + b) + (b + a));
-    assert(bigint<1>("2") * (a + b) == (a + b) + (b + a));
+    ASSERT_EQ((a + b) + (b + a), (a + b).dbl());
+    ASSERT_EQ((a + b) + (b + a), bigint<1>("2") * (a + b));
 
-    assert((rand1 * a) + (rand2 * a) == (randsum * a));
+    ASSERT_EQ((randsum * a), (rand1 * a) + (rand2 * a));
 
-    assert(GroupT::order() * a == zero);
-    assert(GroupT::order() * one == zero);
-    assert((GroupT::order() * a) - a != zero);
-    assert((GroupT::order() * one) - one != zero);
+    ASSERT_EQ(zero, GroupT::order() * a);
+    ASSERT_EQ(zero, GroupT::order() * one);
+    ASSERT_NE((GroupT::order() * a) - a, zero);
+    ASSERT_NE((GroupT::order() * one) - one, zero);
 
     test_mixed_add<GroupT>();
 }
@@ -125,7 +121,7 @@ template<typename GroupT>
 void test_mul_by_q()
 {
     GroupT a = GroupT::random_element();
-    assert((GroupT::base_field_char()*a) == a.mul_by_q());
+    ASSERT_EQ(a.mul_by_q(), (GroupT::base_field_char()*a));
 }
 
 template<typename GroupT>
@@ -133,7 +129,7 @@ void test_mul_by_cofactor()
 {
     const GroupT a = GroupT::random_element();
     const GroupT a_h = GroupT::h*a;
-    assert(a_h == a.mul_by_cofactor());
+    ASSERT_EQ(a_h, a.mul_by_cofactor());
 }
 
 template<typename GroupT>
@@ -155,9 +151,9 @@ void test_output()
         GroupT::read_compressed(ss, gg_comp);
         GroupT::read_uncompressed(ss, gg_uncomp);
 
-        assert(g == gg);
-        assert(g == gg_comp);
-        assert(g == gg_uncomp);
+        ASSERT_EQ(g, gg);
+        ASSERT_EQ(g, gg_comp);
+        ASSERT_EQ(g, gg_uncomp);
         /* use a random point in next iteration */
         g = GroupT::random_element();
     }
@@ -169,7 +165,7 @@ void test_group_membership_valid()
     for (size_t i = 0 ; i < 1000 ; ++i)
     {
         GroupT g = GroupT::random_element();
-        assert(g.is_in_safe_subgroup());
+        ASSERT_TRUE(g.is_in_safe_subgroup());
     }
 }
 
@@ -180,7 +176,7 @@ void test_group_membership_proof_valid()
     {
         const GroupT g = GroupT::random_element();
         const GroupT membership_proof = g.proof_of_safe_subgroup();
-        assert(membership_proof.mul_by_cofactor() == g);
+        ASSERT_EQ(g, membership_proof.mul_by_cofactor());
     }
 }
 
@@ -188,8 +184,8 @@ template<typename GroupT>
 void test_group_membership_invalid_g1(const typename GroupT::base_field &x)
 {
     const GroupT g1_invalid = g1_curve_point_at_x<GroupT>(x);
-    assert(g1_invalid.is_well_formed());
-    assert(!g1_invalid.is_in_safe_subgroup());
+    ASSERT_TRUE(g1_invalid.is_well_formed());
+    ASSERT_FALSE(g1_invalid.is_in_safe_subgroup());
 }
 
 template<typename GroupT>
@@ -197,15 +193,15 @@ void test_group_membership_proof_invalid_g1(const typename GroupT::base_field &x
 {
     const GroupT g1_invalid = g1_curve_point_at_x<GroupT>(x);
     const GroupT proof_of_membership = g1_invalid.proof_of_safe_subgroup();
-    assert(proof_of_membership.mul_by_cofactor() != g1_invalid);
+    ASSERT_NE(g1_invalid, proof_of_membership.mul_by_cofactor());
 }
 
 template<typename GroupT>
 void test_group_membership_invalid_g2(const typename GroupT::twist_field &x)
 {
     const GroupT g2_invalid = g2_curve_point_at_x<GroupT>(x);
-    assert(g2_invalid.is_well_formed());
-    assert(!g2_invalid.is_in_safe_subgroup());
+    ASSERT_TRUE(g2_invalid.is_well_formed());
+    ASSERT_FALSE(g2_invalid.is_in_safe_subgroup());
 }
 
 template<typename ppT>
@@ -253,8 +249,8 @@ void test_bls12_377()
 
     // Ensure sigma endomorphism results in multiplication by expected lambda.
     const bls12_377_G1 sigma_g1 = g1.sigma();
-    assert(
-        (bls12_377_Fr("91893752504881257701523279626832445440") * g1) ==
+    ASSERT_EQ(
+        (bls12_377_Fr("91893752504881257701523279626832445440") * g1),
         sigma_g1);
 
     // Ensure untwist-frobenius-twist operation \psi satisfies:
@@ -263,12 +259,11 @@ void test_bls12_377()
     const bls12_377_G2 uft = a.untwist_frobenius_twist();
     const bls12_377_G2 uft_2 = uft.untwist_frobenius_twist();
     const bls12_377_G2 z = uft_2 - (bls12_377_trace_of_frobenius * uft) + (bls12_377_modulus_q * a);
-    assert(z == bls12_377_G2::zero());
+    ASSERT_EQ(bls12_377_G2::zero(), z);
 }
 
-int main(void)
+TEST(TestGroups, Edwards)
 {
-    std::cout << "edwards_pp\n";
     edwards_pp::init_public_params();
     test_group<G1<edwards_pp> >();
     test_output<G1<edwards_pp> >();
@@ -276,7 +271,10 @@ int main(void)
     test_output<G2<edwards_pp> >();
     test_mul_by_q<G2<edwards_pp> >();
 
-    std::cout << "mnt4_pp\n";
+}
+
+TEST(TestGroups, Mnt4)
+{
     mnt4_pp::init_public_params();
     test_group<G1<mnt4_pp> >();
     test_output<G1<mnt4_pp> >();
@@ -286,8 +284,10 @@ int main(void)
     test_check_membership<mnt4_pp>();
     test_mul_by_cofactor<G1<mnt4_pp>>();
     test_mul_by_cofactor<G2<mnt4_pp>>();
+}
 
-    std::cout << "mnt6_pp\n";
+TEST(TestGroups, Mnt6)
+{
     mnt6_pp::init_public_params();
     test_group<G1<mnt6_pp> >();
     test_output<G1<mnt6_pp> >();
@@ -297,8 +297,10 @@ int main(void)
     test_check_membership<mnt6_pp>();
     test_mul_by_cofactor<G1<mnt6_pp>>();
     test_mul_by_cofactor<G2<mnt6_pp>>();
+}
 
-    std::cout << "alt_bn128_pp\n";
+TEST(TestGroups, Alt_BN128)
+{
     alt_bn128_pp::init_public_params();
     test_group<G1<alt_bn128_pp> >();
     test_output<G1<alt_bn128_pp> >();
@@ -308,9 +310,11 @@ int main(void)
     test_check_membership<alt_bn128_pp>();
     test_mul_by_cofactor<G1<alt_bn128_pp>>();
     test_mul_by_cofactor<G2<alt_bn128_pp>>();
+}
 
+TEST(TestGroups, BLS12_377)
+{
     // Make sure that added curves pass the libff tests
-    std::cout << "bls12_377_pp\n";
     bls12_377_pp::init_public_params();
     test_bls12_377();
     test_group<G1<bls12_377_pp> >();
@@ -321,8 +325,10 @@ int main(void)
     test_check_membership<bls12_377_pp>();
     test_mul_by_cofactor<G1<bls12_377_pp>>();
     test_mul_by_cofactor<G2<bls12_377_pp>>();
+}
 
-    std::cout << "bw6_761_pp\n";
+TEST(TestGroups, BW6_761)
+{
     bw6_761_pp::init_public_params();
     test_group<G1<bw6_761_pp> >();
     test_output<G1<bw6_761_pp> >();
@@ -332,10 +338,12 @@ int main(void)
     test_check_membership<bw6_761_pp>();
     test_mul_by_cofactor<G1<bw6_761_pp>>();
     test_mul_by_cofactor<G2<bw6_761_pp>>();
+}
 
 // BN128 has fancy dependencies so it may be disabled
 #ifdef CURVE_BN128
-    std::cout << "bn128_pp\n";
+TEST(TestGroups, BN128)
+{
     bn128_pp::init_public_params();
     test_group<G1<bn128_pp> >();
     test_output<G1<bn128_pp> >();
@@ -344,5 +352,5 @@ int main(void)
     test_check_membership<bn128_pp>();
     test_mul_by_cofactor<G1<bn128_pp>>();
     test_mul_by_cofactor<G2<bn128_pp>>();
-#endif
 }
+#endif
