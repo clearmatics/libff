@@ -13,39 +13,79 @@
 
 using namespace libff;
 
+static const size_t ADD_NUM_DIFFERENT_ELEMENTS = 1024;
+static const size_t ADD_NUM_ELEMENTS = 1024*1024;
+
+
 template<typename GroupT>
 bool profile_group_add()
 {
-    static const size_t NUM_DIFFERENT_ELEMENTS = 1024;
-    static const size_t NUM_ELEMENTS = 1024*1024;
-
     std::vector<GroupT> elements;
     {
-        elements.reserve(NUM_ELEMENTS);
+        elements.reserve(ADD_NUM_ELEMENTS);
         size_t i = 0;
-        for ( ; i < NUM_DIFFERENT_ELEMENTS ; ++i)
+        for ( ; i < ADD_NUM_DIFFERENT_ELEMENTS ; ++i)
         {
             elements.push_back(GroupT::random_element());
         }
-        for ( ; i < NUM_ELEMENTS ; ++i)
+        for ( ; i < ADD_NUM_ELEMENTS ; ++i)
         {
-            elements.push_back(elements[i % NUM_DIFFERENT_ELEMENTS]);
+            elements.push_back(elements[i % ADD_NUM_DIFFERENT_ELEMENTS]);
         }
     }
 
-    std::cout << "    num elements: " << std::to_string(NUM_ELEMENTS) << "\n";
+    std::cout << "    num elements: " << std::to_string(ADD_NUM_ELEMENTS) << "\n";
 
     size_t num_elements = 0;
     GroupT accum = GroupT::zero();
     enter_block("group add operation profiling");
     for (const GroupT &el : elements)
     {
-        accum = accum + el;
+        accum = accum.add(el);
         num_elements++;
     }
     leave_block("group add operation profiling");
 
-    if (num_elements != NUM_ELEMENTS)
+    if (num_elements != ADD_NUM_ELEMENTS)
+    {
+        throw std::runtime_error("invalid number of elements seen");
+    }
+
+    return true;
+}
+
+template<typename GroupT>
+bool profile_group_mixed_add()
+{
+    std::vector<GroupT> elements;
+    {
+        elements.reserve(ADD_NUM_ELEMENTS);
+        size_t i = 0;
+        for ( ; i < ADD_NUM_DIFFERENT_ELEMENTS ; ++i)
+        {
+            GroupT e = GroupT::random_element();
+            e.to_affine_coordinates();
+            elements.push_back(e);
+        }
+        for ( ; i < ADD_NUM_ELEMENTS ; ++i)
+        {
+            elements.push_back(elements[i % ADD_NUM_DIFFERENT_ELEMENTS]);
+        }
+    }
+
+    std::cout << "    num elements: " << std::to_string(ADD_NUM_ELEMENTS) << "\n";
+
+    size_t num_elements = 0;
+    GroupT accum = GroupT::one();
+    enter_block("group mixed add operation profiling");
+    for (const GroupT &el : elements)
+    {
+        accum = accum.mixed_add(el);
+        num_elements++;
+    }
+    leave_block("group mixed add operation profiling");
+
+    if (num_elements != ADD_NUM_ELEMENTS)
     {
         throw std::runtime_error("invalid number of elements seen");
     }
@@ -93,8 +133,20 @@ int main(void)
         throw std::runtime_error("failed");
     }
 
+    std::cout << "  profile_group_mixed_add<alt_bn128_G1>:\n";
+    if (!profile_group_mixed_add<alt_bn128_G1>())
+    {
+        throw std::runtime_error("failed");
+    }
+
     std::cout << "  profile_group_add<alt_bn128_G2>:\n";
     if (!profile_group_add<alt_bn128_G2>())
+    {
+        throw std::runtime_error("failed");
+    }
+
+    std::cout << "  profile_group_mixed_add<alt_bn128_G2>:\n";
+    if (!profile_group_mixed_add<alt_bn128_G2>())
     {
         throw std::runtime_error("failed");
     }
@@ -104,6 +156,12 @@ int main(void)
 
     std::cout << "  profile_group_add<bls12_377_G1>:\n";
     if (!profile_group_add<bls12_377_G1>())
+    {
+        throw std::runtime_error("failed");
+    }
+
+    std::cout << "  profile_group_mixed_add<bls12_377_G1>:\n";
+    if (!profile_group_mixed_add<bls12_377_G1>())
     {
         throw std::runtime_error("failed");
     }
