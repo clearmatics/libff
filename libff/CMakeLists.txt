@@ -113,6 +113,7 @@ if ("${IS_LIBFF_PARENT}")
     algebra_fields_test
 
     ff
+    gtest_main
   )
 
   include(CTest)
