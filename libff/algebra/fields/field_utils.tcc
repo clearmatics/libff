@@ -13,10 +13,80 @@
 #include <complex>
 #include <stdexcept>
 
+#include <libff/algebra/fields/bigint.hpp>
 #include <libff/common/double.hpp>
 #include <libff/common/utils.hpp>
 
 namespace libff {
+
+template<mp_size_t n>
+size_t field_get_digit(const bigint<n> &v, const size_t c, const size_t i)
+{
+    constexpr size_t limb_size_bits = 8 * sizeof(v.data[0]);
+    const size_t start_bit = c * i;
+    const size_t end_bit = start_bit + c;
+    const size_t low_limb = start_bit / limb_size_bits;
+    const size_t high_limb = end_bit / limb_size_bits;
+
+    // use_high_limb = (high_limb < n) && (high_limb != low_limb)
+    //               = (1 - (n - 1 - high_limb) >> limb_size_bits) &&
+    //                   (high_limb - low_limb)
+    const size_t use_high_limb =
+        (1 - ((n - 1 - high_limb) >> (limb_size_bits - 1))) &
+        (high_limb - low_limb);
+    assert(use_high_limb == ((high_limb < n) && (high_limb != low_limb)));
+    const size_t low_limb_shift = start_bit - low_limb * limb_size_bits;
+
+    // if use_high_limb == 0, then high_limb_shift = c, which causes any high
+    // limb data to be shifted outside of the mask.
+    const size_t high_limb_bits =
+        use_high_limb * (end_bit - high_limb * limb_size_bits);
+    const size_t high_limb_shift = c - high_limb_bits;
+
+    const size_t mask = (1ull << c) - 1;
+
+    return mask & (
+        (v.data[use_high_limb * high_limb] << high_limb_shift) |
+        (v.data[low_limb] >> low_limb_shift)
+    );
+}
+
+template<mp_size_t n>
+ssize_t fixed_wnaf_digit(
+    const bigint<n> &v, const size_t digit_size, const size_t digit_index)
+{
+    //  digit            x x x x
+    //  carry_mask       1 0 0 0
+    //  overflow_mask  1 0 0 0 0
+    const size_t carry_mask = 1ull << (digit_size - 1);
+    const ssize_t overflow_mask = 1ll << digit_size;
+    size_t carry = 0;
+    ssize_t overflow = 0;
+    size_t digit;
+    size_t i = 0;
+
+    // For each digit:
+    //   if overflow, then digit = 0, carry = 1
+    //   if carry, digit = digit - overflow_mask,
+    //     (because overflow_mask is also the value added when carrying into
+    //      in the next digit)
+    //   else digit = digit
+
+    do
+    {
+        // This is done at the start of the loop, rather than the end, since
+        // the individual values (before this OR) are required to compute the
+        // final value when this loop terminates.
+        carry = overflow | carry;
+
+        digit = field_get_digit(v, digit_size, i) + carry;
+        overflow = (digit & overflow_mask) >> digit_size; // 1/0
+        carry = (digit & carry_mask) >> (digit_size - 1); // 1/0
+        ++i;
+    } while(i <= digit_index);
+
+    return (1 - overflow) * (digit - (carry * overflow_mask));
+}
 
 template<typename FieldT>
 FieldT coset_shift()
