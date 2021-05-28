@@ -27,6 +27,246 @@
 
 namespace libff {
 
+size_t pippenger_optimal_c(const size_t num_elements)
+{
+    // empirically, this seems to be a decent estimate of the optimal value of c
+    const size_t log2_num_elements = log2(num_elements);
+    return log2_num_elements - (log2_num_elements / 3 - 2);
+}
+
+/// Compute:
+///   \sum_{i=1}^{num_buckets} [i] B_i
+/// where
+///   B_i is the i-th bucket value (stored in buckets[i - 1])
+///
+/// Caller must ensure that at least one bucket is not empty (i.e.
+/// bucket_hit[i] == true for at least one i).
+template<typename GroupT>
+GroupT multiexp_accumulate_buckets(
+    std::vector<GroupT> &buckets,
+    std::vector<bool> &bucket_hit,
+    const size_t num_buckets)
+{
+    // Find first set bucket and initialize the accumulator. For each remaining
+    // buckets (set or unset), add the bucket value to the accumulator (if
+    // set), and add the accumulator to the sum. In this way, the i-th bucket
+    // will be added to sum exactly i times.
+
+    size_t i = num_buckets - 1;
+    while (!bucket_hit[i])
+    {
+        --i;
+
+        // Ensure that at least one bucket is initialized.
+        assert(i < num_buckets);
+    }
+
+    GroupT sum;
+    GroupT accumulator;
+    sum = accumulator = buckets[i];
+    while (i > 0)
+    {
+        --i;
+        if (bucket_hit[i])
+        {
+            accumulator = accumulator + buckets[i];
+        }
+        sum = sum + accumulator;
+    }
+
+    return sum;
+}
+
+/// buckets and bucket_hit should have at least 2^{c-1] entries.
+template<typename GroupT, typename BigIntT, bool MixedAddition>
+GroupT multiexp_signed_digits_round(
+    typename std::vector<GroupT>::const_iterator bases,
+    typename std::vector<GroupT>::const_iterator bases_end,
+    typename std::vector<BigIntT>::const_iterator exponents,
+    std::vector<GroupT> &buckets,
+    std::vector<bool> &bucket_hit,
+    const size_t num_entries,
+    const size_t num_buckets,
+    const size_t c,
+    const size_t digit_idx)
+{
+    UNUSED(bases_end);
+
+    assert(buckets.size() >= num_buckets);
+    assert(bucket_hit.size() >= num_buckets);
+
+    // Zero bucket_hit array.
+    bucket_hit.assign(num_buckets, false);
+
+    // For each scalar, element pair
+    size_t num_buckets_initialized = 0;
+    for (size_t i = 0 ; i < num_entries ; ++i)
+    {
+        const ssize_t digit = fixed_wnaf_digit(exponents[i], c, digit_idx);
+        if (digit == 0)
+        {
+            continue;
+        }
+
+        // Unroll each branch, to avoid copying the group elements.
+        if (digit < 0)
+        {
+            const size_t bucket_idx = (-digit) - 1;
+            assert(bucket_idx < num_buckets);
+            if (bucket_hit[bucket_idx])
+            {
+                if (MixedAddition)
+                {
+                    buckets[bucket_idx] = buckets[bucket_idx].mixed_add(- bases[i]);
+                }
+                else
+                {
+                    buckets[bucket_idx] = buckets[bucket_idx].add(- bases[i]);
+                }
+            }
+            else
+            {
+                buckets[bucket_idx] = - bases[i];
+                bucket_hit[bucket_idx] = true;
+                ++num_buckets_initialized;
+            }
+        }
+        else
+        {
+            const size_t bucket_idx = digit - 1;
+            assert(bucket_idx < num_buckets);
+            if (bucket_hit[bucket_idx])
+            {
+                if (MixedAddition)
+                {
+                    buckets[bucket_idx] = buckets[bucket_idx].mixed_add(bases[i]);
+                }
+                else
+                {
+                    buckets[bucket_idx] = buckets[bucket_idx].add(bases[i]);
+                }
+            }
+            else
+            {
+                buckets[bucket_idx] = bases[i];
+                bucket_hit[bucket_idx] = true;
+                ++num_buckets_initialized;
+            }
+
+        }
+    }
+
+    // Check up-front for the edge-case where no buckets have been touched.
+    if (num_buckets_initialized == 0)
+    {
+        return GroupT::zero();
+    }
+
+    return multiexp_accumulate_buckets(buckets, bucket_hit, num_buckets);
+}
+
+template<typename GroupT, typename FieldT, bool MixedAddition>
+GroupT multiexp_signed_digits(
+    typename std::vector<GroupT>::const_iterator bases,
+    typename std::vector<GroupT>::const_iterator bases_end,
+    typename std::vector<FieldT>::const_iterator exponents,
+    typename std::vector<FieldT>::const_iterator exponents_end)
+{
+    UNUSED(exponents_end);
+
+    const size_t num_entries = bases_end - bases;
+    assert(exponents_end - exponents == (ssize_t)num_entries);
+    const size_t c = pippenger_optimal_c(num_entries) + 1;
+    assert(c > 0);
+    using bigint_t =
+        typename std::decay<decltype(((FieldT*)nullptr)->mont_repr)>::type;
+
+    // Pre-compute the bigint values
+    size_t num_bits = 0;
+    std::vector<bigint_t> bi_exponents(num_entries);
+    for (size_t i = 0 ; i < num_entries ; ++i)
+    {
+        bi_exponents[i] = exponents[i].as_bigint();
+        num_bits = std::max(num_bits, bi_exponents[i].num_bits());
+    }
+
+    const size_t num_rounds = (num_bits + c - 1) / c;
+
+    // Digits have values v -2^{c-1} \leq v \lt 2^{c-1}, i.e. 0 \leq |v| \leq
+    // 2^{c-1}. Since the 0 digit is ignored, we require only 2^{c-1} buckets
+    const size_t num_buckets = 1 << (c - 1);
+
+    // Allocate the round state once, and reuse it.
+    std::vector<GroupT> buckets(num_buckets);
+    std::vector<bool> bucket_hit(num_buckets);
+    assert(buckets.size() == num_buckets);
+    assert(bucket_hit.size() == num_buckets);
+
+    // Compute from highest-order to lowest-order digits, accumulating at the same time.
+    GroupT result = multiexp_signed_digits_round<GroupT, bigint_t, MixedAddition>(
+        bases,
+        bases_end,
+        bi_exponents.begin(),
+        buckets,
+        bucket_hit,
+        num_entries,
+        num_buckets,
+        c,
+        num_rounds - 1);
+    for (size_t round_idx = 1 ; round_idx < num_rounds ; ++round_idx)
+    {
+        const size_t digit_idx = num_rounds - 1 - round_idx;
+        for (size_t i = 0 ; i < c ; ++i)
+        {
+            result = result.dbl();
+        }
+
+        const GroupT round_result = multiexp_signed_digits_round<GroupT, bigint_t, MixedAddition>(
+            bases,
+            bases_end,
+            bi_exponents.begin(),
+            buckets,
+            bucket_hit,
+            num_entries,
+            num_buckets,
+            c,
+            digit_idx);
+        result = result + round_result;
+    }
+
+    return result;
+}
+
+template<
+    typename GroupT,
+    typename FieldT,
+    multi_exp_method Method,
+    typename std::enable_if<(Method == multi_exp_method_BDLO12_signed), int>::type = 0>
+GroupT multi_exp_inner(
+    typename std::vector<GroupT>::const_iterator bases,
+    typename std::vector<GroupT>::const_iterator bases_end,
+    typename std::vector<FieldT>::const_iterator exponents,
+    typename std::vector<FieldT>::const_iterator exponents_end)
+{
+    return multiexp_signed_digits<GroupT, FieldT, false>(
+        bases, bases_end, exponents, exponents_end);
+}
+
+template<
+    typename GroupT,
+    typename FieldT,
+    multi_exp_method Method,
+    typename std::enable_if<(Method == multi_exp_method_BDLO12_signed_mixed), int>::type = 0>
+GroupT multi_exp_inner(
+    typename std::vector<GroupT>::const_iterator bases,
+    typename std::vector<GroupT>::const_iterator bases_end,
+    typename std::vector<FieldT>::const_iterator exponents,
+    typename std::vector<FieldT>::const_iterator exponents_end)
+{
+    return multiexp_signed_digits<GroupT, FieldT, true>(
+        bases, bases_end, exponents, exponents_end);
+}
+
 template<mp_size_t n>
 class ordered_exponent {
 // to use std::push_heap and friends later
@@ -173,11 +413,8 @@ T multi_exp_inner(
     typename std::vector<FieldT>::const_iterator exponents_end)
 {
     UNUSED(exponents_end);
-    size_t length = bases_end - bases;
-
-    // empirically, this seems to be a decent estimate of the optimal value of c
-    size_t log2_length = log2(length);
-    size_t c = log2_length - (log2_length / 3 - 2);
+    const size_t length = bases_end - bases;
+    const size_t c = pippenger_optimal_c(length);
 
     const mp_size_t exp_num_limbs =
         std::remove_reference<decltype(*exponents)>::type::num_limbs;
@@ -190,7 +427,7 @@ T multi_exp_inner(
         num_bits = std::max(num_bits, bn_exponents[i].num_bits());
     }
 
-    size_t num_groups = (num_bits + c - 1) / c;
+    const size_t num_groups = (num_bits + c - 1) / c;
 
     T result;
     bool result_nonzero = false;

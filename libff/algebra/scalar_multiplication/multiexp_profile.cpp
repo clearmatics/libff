@@ -76,6 +76,7 @@ void print_performance_csv(
     size_t expn_end_naive,
     bool compare_answers)
 {
+    printf("\t%16s\t%16s\t%16s\t%16s\t%16s\n", "bos-coster", "djb", "djb_signed", "djb_signed_mixed", "naive");
     for (size_t expn = expn_start; expn <= expn_end_fast; expn++) {
         printf("%ld", expn); fflush(stdout);
 
@@ -87,22 +88,40 @@ void print_performance_csv(
         run_result_t<GroupT> result_bos_coster =
             profile_multiexp<GroupT, FieldT, multi_exp_method_bos_coster>(
                 group_elements, scalars);
-        printf("\t%20lld", result_bos_coster.first); fflush(stdout);
+        printf("\t%16lld", result_bos_coster.first); fflush(stdout);
 
         run_result_t<GroupT> result_djb =
             profile_multiexp<GroupT, FieldT, multi_exp_method_BDLO12>(
                 group_elements, scalars);
-        printf("\t%20lld", result_djb.first); fflush(stdout);
+        printf("\t%16lld", result_djb.first); fflush(stdout);
 
         if (compare_answers && (result_bos_coster.second != result_djb.second)) {
             fprintf(stderr, "Answers NOT MATCHING (bos coster != djb)\n");
+        }
+
+        run_result_t<GroupT> result_djb_signed =
+            profile_multiexp<GroupT, FieldT, multi_exp_method_BDLO12_signed>(
+                group_elements, scalars);
+        printf("\t%16lld", result_djb_signed.first); fflush(stdout);
+
+        if (compare_answers && (result_djb.second != result_djb_signed.second)) {
+            fprintf(stderr, "Answers NOT MATCHING (djb != djb_signed)\n");
+        }
+
+        run_result_t<GroupT> result_djb_signed_mixed =
+            profile_multiexp<GroupT, FieldT, multi_exp_method_BDLO12_signed_mixed>(
+                group_elements, scalars);
+        printf("\t%16lld", result_djb_signed_mixed.first); fflush(stdout);
+
+        if (compare_answers && (result_djb_signed.second != result_djb_signed_mixed.second)) {
+            fprintf(stderr, "Answers NOT MATCHING (djb_signed != djb_signed_mixed)\n");
         }
 
         if (expn <= expn_end_naive) {
             run_result_t<GroupT> result_naive =
                 profile_multiexp<GroupT, FieldT, multi_exp_method_naive>(
                     group_elements, scalars);
-            printf("\t%20lld", result_naive.first); fflush(stdout);
+            printf("\t%16lld", result_naive.first); fflush(stdout);
 
             if (compare_answers && (result_bos_coster.second != result_naive.second)) {
                 fprintf(stderr, "Answers NOT MATCHING (bos coster != naive)\n");
