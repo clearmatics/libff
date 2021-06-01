@@ -73,9 +73,9 @@ void alt_bn128_G1::to_affine_coordinates()
     }
     else
     {
-        alt_bn128_Fq Z_inv = Z.inverse();
-        alt_bn128_Fq Z2_inv = Z_inv.squared();
-        alt_bn128_Fq Z3_inv = Z2_inv * Z_inv;
+        const alt_bn128_Fq Z_inv = Z.inverse();
+        const alt_bn128_Fq Z2_inv = Z_inv.squared();
+        const alt_bn128_Fq Z3_inv = Z2_inv * Z_inv;
         this->X = this->X * Z2_inv;
         this->Y = this->Y * Z3_inv;
         this->Z = alt_bn128_Fq::one();
@@ -118,16 +118,16 @@ bool alt_bn128_G1::operator==(const alt_bn128_G1 &other) const
     // iff
     // X1 * Z2^2 == X2 * Z1^2 and Y1 * Z2^3 == Y2 * Z1^3
 
-    alt_bn128_Fq Z1_squared = (this->Z).squared();
-    alt_bn128_Fq Z2_squared = (other.Z).squared();
+    const alt_bn128_Fq Z1_squared = (this->Z).squared();
+    const alt_bn128_Fq Z2_squared = (other.Z).squared();
 
     if ((this->X * Z2_squared) != (other.X * Z1_squared))
     {
         return false;
     }
 
-    alt_bn128_Fq Z1_cubed = (this->Z) * Z1_squared;
-    alt_bn128_Fq Z2_cubed = (other.Z) * Z2_squared;
+    const alt_bn128_Fq Z1_cubed = (this->Z) * Z1_squared;
+    const alt_bn128_Fq Z2_cubed = (other.Z) * Z2_squared;
 
     if ((this->Y * Z2_cubed) != (other.Y * Z1_cubed))
     {
@@ -187,22 +187,22 @@ alt_bn128_G1 alt_bn128_G1::add(const alt_bn128_G1 &other) const
     // NOTE: does not handle O and pts of order 2,4
     // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#addition-add-2007-bl
 
-    alt_bn128_Fq Z1Z1 = (this->Z).squared();             // Z1Z1 = Z1^2
-    alt_bn128_Fq Z2Z2 = (other.Z).squared();             // Z2Z2 = Z2^2
-    alt_bn128_Fq U1 = (this->X) * Z2Z2;                  // U1 = X1 * Z2Z2
-    alt_bn128_Fq U2 = (other.X) * Z1Z1;                  // U2 = X2 * Z1Z1
-    alt_bn128_Fq S1 = (this->Y) * (other.Z) * Z2Z2;      // S1 = Y1 * Z2 * Z2Z2
-    alt_bn128_Fq S2 = (other.Y) * (this->Z) * Z1Z1;      // S2 = Y2 * Z1 * Z1Z1
-    alt_bn128_Fq H = U2 - U1;                            // H = U2-U1
-    alt_bn128_Fq S2_minus_S1 = S2-S1;
-    alt_bn128_Fq I = (H+H).squared();                    // I = (2 * H)^2
-    alt_bn128_Fq J = H * I;                              // J = H * I
-    alt_bn128_Fq r = S2_minus_S1 + S2_minus_S1;          // r = 2 * (S2-S1)
-    alt_bn128_Fq V = U1 * I;                             // V = U1 * I
-    alt_bn128_Fq X3 = r.squared() - J - (V+V);           // X3 = r^2 - J - 2 * V
-    alt_bn128_Fq S1_J = S1 * J;
-    alt_bn128_Fq Y3 = r * (V-X3) - (S1_J+S1_J);          // Y3 = r * (V-X3)-2 S1 J
-    alt_bn128_Fq Z3 = ((this->Z+other.Z).squared()-Z1Z1-Z2Z2) * H; // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
+    const alt_bn128_Fq Z1Z1 = (this->Z).squared();             // Z1Z1 = Z1^2
+    const alt_bn128_Fq Z2Z2 = (other.Z).squared();             // Z2Z2 = Z2^2
+    const alt_bn128_Fq U1 = (this->X) * Z2Z2;                  // U1 = X1 * Z2Z2
+    const alt_bn128_Fq U2 = (other.X) * Z1Z1;                  // U2 = X2 * Z1Z1
+    const alt_bn128_Fq S1 = (this->Y) * (other.Z) * Z2Z2;      // S1 = Y1 * Z2 * Z2Z2
+    const alt_bn128_Fq S2 = (other.Y) * (this->Z) * Z1Z1;      // S2 = Y2 * Z1 * Z1Z1
+    const alt_bn128_Fq H = U2 - U1;                            // H = U2-U1
+    const alt_bn128_Fq S2_minus_S1 = S2-S1;
+    const alt_bn128_Fq I = (H+H).squared();                    // I = (2 * H)^2
+    const alt_bn128_Fq J = H * I;                              // J = H * I
+    const alt_bn128_Fq r = S2_minus_S1 + S2_minus_S1;          // r = 2 * (S2-S1)
+    const alt_bn128_Fq V = U1 * I;                             // V = U1 * I
+    const alt_bn128_Fq X3 = r.squared() - J - (V+V);           // X3 = r^2 - J - 2 * V
+    const alt_bn128_Fq S1_J = S1 * J;
+    const alt_bn128_Fq Y3 = r * (V-X3) - (S1_J+S1_J);          // Y3 = r * (V-X3)-2 S1 J
+    const alt_bn128_Fq Z3 = ((this->Z+other.Z).squared()-Z1Z1-Z2Z2) * H; // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
 
     return alt_bn128_G1(X3, Y3, Z3);
 }
@@ -260,18 +260,18 @@ alt_bn128_G1 alt_bn128_G1::mixed_add(const alt_bn128_G1 &other) const
 
     // NOTE: does not handle O and pts of order 2,4
     // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#addition-madd-2007-bl
-    alt_bn128_Fq H = U2-(this->X);                         // H = U2-X1
-    alt_bn128_Fq HH = H.squared() ;                        // HH = H&2
+    const alt_bn128_Fq H = U2-(this->X);                   // H = U2-X1
+    const alt_bn128_Fq HH = H.squared() ;                  // HH = H&2
     alt_bn128_Fq I = HH+HH;                                // I = 4*HH
     I = I + I;
-    alt_bn128_Fq J = H*I;                                  // J = H*I
+    const alt_bn128_Fq J = H*I;                            // J = H*I
     alt_bn128_Fq r = S2-(this->Y);                         // r = 2*(S2-Y1)
     r = r + r;
-    alt_bn128_Fq V = (this->X) * I ;                       // V = X1*I
-    alt_bn128_Fq X3 = r.squared()-J-V-V;                   // X3 = r^2-J-2*V
+    const alt_bn128_Fq V = (this->X) * I ;                 // V = X1*I
+    const alt_bn128_Fq X3 = r.squared()-J-V-V;             // X3 = r^2-J-2*V
     alt_bn128_Fq Y3 = (this->Y)*J;                         // Y3 = r*(V-X3)-2*Y1*J
     Y3 = r*(V-X3) - Y3 - Y3;
-    alt_bn128_Fq Z3 = ((this->Z)+H).squared() - Z1Z1 - HH; // Z3 = (Z1+H)^2-Z1Z1-HH
+    const alt_bn128_Fq Z3 = ((this->Z)+H).squared() - Z1Z1 - HH; // Z3 = (Z1+H)^2-Z1Z1-HH
 
     return alt_bn128_G1(X3, Y3, Z3);
 }
@@ -293,20 +293,20 @@ alt_bn128_G1 alt_bn128_G1::dbl() const
     // NOTE: does not handle O and pts of order 2,4
     // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#doubling-dbl-2009-l
 
-    alt_bn128_Fq A = (this->X).squared();         // A = X1^2
-    alt_bn128_Fq B = (this->Y).squared();        // B = Y1^2
-    alt_bn128_Fq C = B.squared();                // C = B^2
+    const alt_bn128_Fq A = (this->X).squared();         // A = X1^2
+    const alt_bn128_Fq B = (this->Y).squared();        // B = Y1^2
+    const alt_bn128_Fq C = B.squared();                // C = B^2
     alt_bn128_Fq D = (this->X + B).squared() - A - C;
     D = D+D;                        // D = 2 * ((X1 + B)^2 - A - C)
-    alt_bn128_Fq E = A + A + A;                  // E = 3 * A
-    alt_bn128_Fq F = E.squared();                // F = E^2
-    alt_bn128_Fq X3 = F - (D+D);                 // X3 = F - 2 D
+    const alt_bn128_Fq E = A + A + A;                  // E = 3 * A
+    const alt_bn128_Fq F = E.squared();                // F = E^2
+    const alt_bn128_Fq X3 = F - (D+D);                 // X3 = F - 2 D
     alt_bn128_Fq eightC = C+C;
     eightC = eightC + eightC;
     eightC = eightC + eightC;
-    alt_bn128_Fq Y3 = E * (D - X3) - eightC;     // Y3 = E * (D - X3) - 8 * C
-    alt_bn128_Fq Y1Z1 = (this->Y)*(this->Z);
-    alt_bn128_Fq Z3 = Y1Z1 + Y1Z1;               // Z3 = 2 * Y1 * Z1
+    const alt_bn128_Fq Y3 = E * (D - X3) - eightC;     // Y3 = E * (D - X3) - 8 * C
+    const alt_bn128_Fq Y1Z1 = (this->Y)*(this->Z);
+    const alt_bn128_Fq Z3 = Y1Z1 + Y1Z1;               // Z3 = 2 * Y1 * Z1
 
     return alt_bn128_G1(X3, Y3, Z3);
 }
@@ -334,13 +334,13 @@ bool alt_bn128_G1::is_well_formed() const
           y^2 / z^6 = x^3 / z^6 + b
           y^2 = x^3 + b z^6
         */
-        alt_bn128_Fq X2 = this->X.squared();
-        alt_bn128_Fq Y2 = this->Y.squared();
-        alt_bn128_Fq Z2 = this->Z.squared();
+        const alt_bn128_Fq X2 = this->X.squared();
+        const alt_bn128_Fq Y2 = this->Y.squared();
+        const alt_bn128_Fq Z2 = this->Z.squared();
 
-        alt_bn128_Fq X3 = this->X * X2;
-        alt_bn128_Fq Z3 = this->Z * Z2;
-        alt_bn128_Fq Z6 = Z3.squared();
+        const alt_bn128_Fq X3 = this->X * X2;
+        const alt_bn128_Fq Z3 = this->Z * Z2;
+        const alt_bn128_Fq Z6 = Z3.squared();
 
         return (Y2 == X3 + alt_bn128_coeff_b * Z6);
     }
@@ -469,8 +469,8 @@ void alt_bn128_G1::batch_to_special_all_non_zeros(std::vector<alt_bn128_G1> &vec
 
     for (size_t i = 0; i < vec.size(); ++i)
     {
-        alt_bn128_Fq Z2 = Z_vec[i].squared();
-        alt_bn128_Fq Z3 = Z_vec[i] * Z2;
+        const alt_bn128_Fq Z2 = Z_vec[i].squared();
+        const alt_bn128_Fq Z3 = Z_vec[i] * Z2;
 
         vec[i].X = vec[i].X * Z2;
         vec[i].Y = vec[i].Y * Z3;
