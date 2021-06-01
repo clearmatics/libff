@@ -1,5 +1,16 @@
 cmake_minimum_required(VERSION 2.8)
 
+# Change the compiler BEFORE the first `project()` command to avoid an infinite loop.
+# See: https://public.kitware.com/pipermail/cmake/2009-November/033133.html
+if(APPLE)
+  # If custom llvm compilers are available, use them (for openmp
+  # support), otherwise disable multicore.
+  if(EXISTS "/usr/local/opt/llvm/bin/clang")
+    set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang")
+    set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++")
+  endif()
+endif()
+
 project (libff)
 
 # Default to RelWithDebInfo configuration if no configuration is explicitly specified.
@@ -28,7 +39,7 @@ option(
 option(
   MULTICORE
   "Enable parallelized execution, using OpenMP"
-  OFF
+  ON
 )
 option(
   BINARY_OUTPUT
