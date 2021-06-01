@@ -106,6 +106,7 @@ void init_mnt4_params()
     mnt4_Fq2::nqr_to_t = mnt4_Fq2(mnt4_Fq("0"),mnt4_Fq("29402818985595053196743631544512156561638230562612542604956687802791427330205135130967658"));
     mnt4_Fq2::Frobenius_coeffs_c1[0] = mnt4_Fq("1");
     mnt4_Fq2::Frobenius_coeffs_c1[1] = mnt4_Fq("475922286169261325753349249653048451545124879242694725395555128576210262817955800483758080");
+    mnt4_Fq2::static_init();
 
     /* parameters for Fq4 */
     mnt4_Fq4::non_residue = mnt4_Fq("17");
