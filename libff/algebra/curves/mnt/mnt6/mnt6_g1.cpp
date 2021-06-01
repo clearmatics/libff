@@ -383,12 +383,12 @@ bool mnt6_G1::is_in_safe_subgroup() const
     return true;
 }
 
-mnt6_G1 mnt6_G1::zero()
+const mnt6_G1 &mnt6_G1::zero()
 {
     return G1_zero;
 }
 
-mnt6_G1 mnt6_G1::one()
+const mnt6_G1 &mnt6_G1::one()
 {
     return G1_one;
 }

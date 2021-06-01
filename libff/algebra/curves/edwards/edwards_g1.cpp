@@ -285,12 +285,12 @@ bool edwards_G1::is_well_formed() const
     }
 }
 
-edwards_G1 edwards_G1::zero()
+const edwards_G1 &edwards_G1::zero()
 {
     return G1_zero;
 }
 
-edwards_G1 edwards_G1::one()
+const edwards_G1 &edwards_G1::one()
 {
     return G1_one;
 }

@@ -80,8 +80,8 @@ public:
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
 
-    static mnt4_G2 zero();
-    static mnt4_G2 one();
+    static const mnt4_G2 &zero();
+    static const mnt4_G2 &one();
     static mnt4_G2 random_element();
 
     static size_t size_in_bits() { return mnt4_Fq2::size_in_bits() + 1; }

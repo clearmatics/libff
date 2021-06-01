@@ -375,12 +375,12 @@ bool bn128_G2::is_in_safe_subgroup() const
     return zero() == scalar_field::mod * (*this);
 }
 
-bn128_G2 bn128_G2::zero()
+const bn128_G2 &bn128_G2::zero()
 {
     return G2_zero;
 }
 
-bn128_G2 bn128_G2::one()
+const bn128_G2 &bn128_G2::one()
 {
     return G2_one;
 }

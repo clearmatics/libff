@@ -478,12 +478,12 @@ bool bls12_377_G2::is_in_safe_subgroup() const
     return zero() == h1_r_p;
 }
 
-bls12_377_G2 bls12_377_G2::zero()
+const bls12_377_G2 &bls12_377_G2::zero()
 {
     return G2_zero;
 }
 
-bls12_377_G2 bls12_377_G2::one()
+const bls12_377_G2 &bls12_377_G2::one()
 {
     return G2_one;
 }

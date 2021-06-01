@@ -317,12 +317,12 @@ bool edwards_G2::is_well_formed() const
     }
 }
 
-edwards_G2 edwards_G2::zero()
+const edwards_G2 &edwards_G2::zero()
 {
     return G2_zero;
 }
 
-edwards_G2 edwards_G2::one()
+const edwards_G2 &edwards_G2::one()
 {
     return G2_one;
 }

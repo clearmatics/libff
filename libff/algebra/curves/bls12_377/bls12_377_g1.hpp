@@ -82,8 +82,8 @@ public:
     // point returned here is OUTSIDE of G1.
     bls12_377_G1 proof_of_safe_subgroup() const;
 
-    static bls12_377_G1 zero();
-    static bls12_377_G1 one();
+    static const bls12_377_G1 &zero();
+    static const bls12_377_G1 &one();
     static bls12_377_G1 random_element();
 
     static size_t size_in_bits() { return base_field::size_in_bits() + 1; }

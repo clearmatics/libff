@@ -416,12 +416,12 @@ bool bw6_761_G2::is_in_safe_subgroup() const
     return zero() == scalar_field::mod * (*this);
 }
 
-bw6_761_G2 bw6_761_G2::zero()
+const bw6_761_G2 &bw6_761_G2::zero()
 {
     return G2_zero;
 }
 
-bw6_761_G2 bw6_761_G2::one()
+const bw6_761_G2 &bw6_761_G2::one()
 {
     return G2_one;
 }

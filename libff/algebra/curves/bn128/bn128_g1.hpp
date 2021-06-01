@@ -71,8 +71,8 @@ public:
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
 
-    static bn128_G1 zero();
-    static bn128_G1 one();
+    static const bn128_G1 &zero();
+    static const bn128_G1 &one();
     static bn128_G1 random_element();
 
     static size_t size_in_bits() { return bn128_Fq::size_in_bits() + 1; }
