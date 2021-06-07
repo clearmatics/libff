@@ -24,13 +24,20 @@ file(
   GLOB_RECURSE
   LIBFF_SOURCE
 
-  algebra/curves/alt_bn128/*.cpp
-  algebra/curves/edwards/*.cpp
-  algebra/curves/mnt/mnt4/*.cpp
-  algebra/curves/mnt/mnt46_common.cpp
-  algebra/curves/mnt/mnt6/*.cpp
-  algebra/curves/bls12_377/*.cpp
-  algebra/curves/bw6_761/*.cpp
+  algebra/curves/alt_bn128/*.?pp
+  algebra/curves/alt_bn128/*.tcc
+  algebra/curves/edwards/*.?pp
+  algebra/curves/edwards/*.tcc
+  algebra/curves/mnt/mnt4/*.?pp
+  algebra/curves/mnt/mnt4/*.tcc
+  algebra/curves/mnt/mnt46_common.?pp
+  algebra/curves/mnt/mnt46_common.tcc
+  algebra/curves/mnt/mnt6/*.?pp
+  algebra/curves/mnt/mnt6/*.tcc
+  algebra/curves/bls12_377/*.?pp
+  algebra/curves/bls12_377/*.tcc
+  algebra/curves/bw6_761/*.?pp
+  algebra/curves/bw6_761/*.tcc
   common/double.cpp
   common/profiling.cpp
   common/utils.cpp
