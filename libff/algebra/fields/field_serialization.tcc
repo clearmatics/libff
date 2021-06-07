@@ -18,9 +18,9 @@ namespace libff
 namespace internal
 {
 
-template<encoding_t Enc, typename FieldT, form_t Form=form_plain> class field_element_codec;
+template<encoding_t Enc, form_t Form, typename FieldT> class field_element_codec;
 
-template<typename FieldT, form_t Form> class field_element_codec<encoding_json, FieldT, Form>
+template<typename FieldT, form_t Form> class field_element_codec<encoding_json, Form, FieldT>
 {
 public:
     // Convert a field element to JSON
@@ -35,7 +35,7 @@ public:
         size_t i = FieldT::tower_extension_degree - 1;
         do {
             // out_s << field_element_to_json(field_el.coeffs[i]);
-            field_element_codec<encoding_json, base_field_t, Form>::write(
+            field_element_codec<encoding_json, Form, base_field_t>::write(
                 field_el.coeffs[i], out_s);
             if (i > 0) {
                 out_s << ',';
@@ -61,7 +61,7 @@ public:
 
         size_t i = FieldT::tower_extension_degree - 1;
         do {
-            field_element_codec<encoding_json, base_field_t, Form>::read(
+            field_element_codec<encoding_json, Form, base_field_t>::read(
                 field_el.coeffs[i], in_s);
             // field_element_read_json(field_el.coeffs[i], in_s);
             if (i > 0) {
@@ -82,7 +82,7 @@ public:
 // Implementation of field_element_codec<encoding_json, ...> for the base-case
 // of Fp_model types.
 template<mp_size_t n, const libff::bigint<n> &modulus, form_t Form>
-class field_element_codec<encoding_json, libff::Fp_model<n, modulus>, Form>
+class field_element_codec<encoding_json, Form, libff::Fp_model<n, modulus>>
 {
 public:
     using Field = libff::Fp_model<n, modulus>;
@@ -119,15 +119,14 @@ public:
 };
 
 // Generic reader and write for fields and field extensions.
-template<typename FieldT, form_t Form> class field_element_codec<encoding_binary, FieldT, Form>
+template<typename FieldT, form_t Form> class field_element_codec<encoding_binary, Form, FieldT>
 {
 public:
     static void write(const FieldT &field_el, std::ostream &out_s)
     {
         using base_field_t = typename std::decay<decltype(field_el.coeffs[0])>::type;
         for (size_t i = 0; i < FieldT::tower_extension_degree; ++i) {
-            // field_element_write_bytes(field_el.coeffs[i], out_s);
-            field_element_codec<encoding_binary, base_field_t, Form>::write(
+            field_element_codec<encoding_binary, Form, base_field_t>::write(
                 field_el.coeffs[i], out_s);
         }
     }
@@ -135,8 +134,7 @@ public:
     {
         using base_field_t = typename std::decay<decltype(field_el.coeffs[0])>::type;
         for (size_t i = 0; i < FieldT::tower_extension_degree; ++i) {
-            // field_element_read_bytes(field_el.coeffs[i], in_s);
-            field_element_codec<encoding_binary, base_field_t, Form>::read(
+            field_element_codec<encoding_binary, Form, base_field_t>::read(
                 field_el.coeffs[i], in_s);
         }
     }
@@ -145,7 +143,7 @@ public:
 /// Implementation of field_element_bytes for the base-case of Fp_model types.
 /// Big-endian bigint values (i.e. not in montgomery form).
 template<mp_size_t n, const libff::bigint<n> &modulus, form_t Form>
-class field_element_codec<encoding_binary, libff::Fp_model<n, modulus>, Form>
+class field_element_codec<encoding_binary, Form, libff::Fp_model<n, modulus>>
 {
 public:
     using Field = libff::Fp_model<n, modulus>;
@@ -196,13 +194,13 @@ std::string bigint_to_hex(const BigIntT &v)
 template<encoding_t Enc, form_t Form, typename FieldT>
 void field_read(FieldT &v, std::istream &in_s)
 {
-    internal::field_element_codec<Enc, FieldT>::read(v, in_s);
+    internal::field_element_codec<Enc, Form, FieldT>::read(v, in_s);
 }
 
 template<encoding_t Enc, form_t Form, typename FieldT>
 void field_write(const FieldT &v, std::ostream &out_s)
 {
-    internal::field_element_codec<Enc, FieldT>::write(v, out_s);
+    internal::field_element_codec<Enc, Form, FieldT>::write(v, out_s);
 }
 
 } // namespace libff
