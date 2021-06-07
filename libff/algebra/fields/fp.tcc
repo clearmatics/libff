@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <limits>
 
+#include <libff/algebra/fields/field_serialization.hpp>
 #include <libff/algebra/fields/field_utils.hpp>
 #include <libff/algebra/fields/fp_aux.tcc>
 
@@ -808,26 +809,14 @@ Fp_model<n,modulus> Fp_model<n,modulus>::sqrt() const
 template<mp_size_t n, const bigint<n>& modulus>
 std::ostream& operator<<(std::ostream &out, const Fp_model<n, modulus> &p)
 {
-#ifndef MONTGOMERY_OUTPUT
-    Fp_model<n,modulus> tmp;
-    tmp.mont_repr.data[0] = 1;
-    tmp.mul_reduce(p.mont_repr);
-    out << tmp.mont_repr;
-#else
-    out << p.mont_repr;
-#endif
+    field_write<DEFAULT_ENCODING, DEFAULT_FORM>(p, out);
     return out;
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &in, Fp_model<n, modulus> &p)
 {
-#ifndef MONTGOMERY_OUTPUT
-    in >> p.mont_repr;
-    p.mul_reduce(Fp_model<n, modulus>::Rsquared);
-#else
-    in >> p.mont_repr;
-#endif
+    field_read<DEFAULT_ENCODING, DEFAULT_FORM>(p, in);
     return in;
 }
 
