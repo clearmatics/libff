@@ -57,6 +57,11 @@ FieldT convert_bit_vector_to_field_element(const bit_vector &v);
 template<typename FieldT>
 void batch_invert(std::vector<FieldT> &vec);
 
+/// Rerturns a reference to the 0-th component of the element (or the element
+/// itself if FieldT is not an extension field).
+template<typename FieldT>
+const typename FieldT::my_Fp &field_get_component_0(const FieldT &v);
+
 } // libff
 #include <libff/algebra/fields/field_utils.tcc>
 
