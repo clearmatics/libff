@@ -189,14 +189,14 @@ void test_serialize_group_config(const GroupT &v)
 template<typename GroupT>
 void test_serialize_group_element(const GroupT &v)
 {
-    // Commented lines are unsupported combinations.
+    // Missing combinations are unsupported.
+
     test_serialize_group_config<encoding_binary, form_plain, compression_on>(v);
     test_serialize_group_config<encoding_binary, form_plain, compression_off>(v);
-    // test_serialize_group_config<encoding_binary, form_montgomery, compression_on>(v);
+    test_serialize_group_config<encoding_binary, form_montgomery, compression_on>(v);
     test_serialize_group_config<encoding_binary, form_montgomery, compression_off>(v);
-    // test_serialize_group_config<encoding_json, form_plain, compression_on>(v);
+
     test_serialize_group_config<encoding_json, form_plain, compression_off>(v);
-    // test_serialize_group_config<encoding_json, form_montgomery, compression_on>(v);
     test_serialize_group_config<encoding_json, form_montgomery, compression_off>(v);
 }
 
