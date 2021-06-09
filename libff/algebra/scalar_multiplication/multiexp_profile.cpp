@@ -1,49 +1,59 @@
+#include "libff/algebra/curves/bn128/bn128_pp.hpp"
+#include "libff/algebra/scalar_multiplication/multiexp.hpp"
+#include "libff/common/profiling.hpp"
+#include "libff/common/rng.hpp"
+
 #include <cstdio>
-#include <libff/algebra/curves/bn128/bn128_pp.hpp>
-#include <libff/algebra/scalar_multiplication/multiexp.hpp>
-#include <libff/common/profiling.hpp>
-#include <libff/common/rng.hpp>
 #include <vector>
+
+const size_t NUM_ITERATIONS = 10;
+const size_t NUM_DIFFERENT_ELEMENTS = 32;
 
 using namespace libff;
 
-template<typename GroupT>
-using run_result_t = std::pair<long long, std::vector<GroupT>>;
+template<typename GroupT> using run_result_t = std::pair<long long, GroupT>;
 
-template<typename T> using test_instances_t = std::vector<std::vector<T>>;
+template<typename T> using test_instances_t = std::vector<T>;
 
 template<typename GroupT>
-test_instances_t<GroupT> generate_group_elements(size_t count, size_t size)
+test_instances_t<GroupT> generate_group_elements(size_t num_elements)
 {
-    // generating a random group element is expensive,
-    // so for now we only generate a single one and repeat it
-    test_instances_t<GroupT> result(count);
+    test_instances_t<GroupT> result;
+    result.reserve(num_elements);
+    assert(result.size() == 0);
 
-    for (size_t i = 0; i < count; i++) {
+    // Generating a random group element is expensive, so for now we only
+    // generate NUM_DIFFERENT_ELEMENTS, and repeat them. Note, some methods
+    // require input to be in special form.
+
+    size_t i;
+    for (i = 0; i < NUM_DIFFERENT_ELEMENTS; ++i) {
         GroupT x = GroupT::random_element();
-        x.to_special(); // djb requires input to be in special form
-        for (size_t j = 0; j < size; j++) {
-            result[i].push_back(x);
-            // result[i].push_back(GroupT::random_element());
-        }
+        x.to_special();
+        result.push_back(x);
+    }
+    assert(result.size() == NUM_DIFFERENT_ELEMENTS);
+
+    for (; i < num_elements; ++i) {
+        assert(result.size() == i);
+        result.push_back(result[i % NUM_DIFFERENT_ELEMENTS]);
     }
 
+    assert(result.size() == num_elements);
     return result;
 }
 
 template<typename FieldT>
-test_instances_t<FieldT> generate_scalars(size_t count, size_t size)
+test_instances_t<FieldT> generate_scalars(size_t num_elements)
 {
-    // we use SHA512_rng because it is much faster than
-    // FieldT::random_element()
-    test_instances_t<FieldT> result(count);
-
-    for (size_t i = 0; i < count; i++) {
-        for (size_t j = 0; j < size; j++) {
-            result[i].push_back(SHA512_rng<FieldT>(i * size + j));
-        }
+    // Use SHA512_rng because it is much faster than FieldT::random_element()
+    test_instances_t<FieldT> result;
+    result.reserve(num_elements);
+    for (size_t i = 0; i < num_elements; i++) {
+        result.push_back(SHA512_rng<FieldT>(i));
     }
 
+    assert(result.size() == num_elements);
     return result;
 }
 
@@ -53,19 +63,19 @@ run_result_t<GroupT> profile_multiexp(
 {
     long long start_time = get_nsec_time();
 
-    std::vector<GroupT> answers;
-    for (size_t i = 0; i < group_elements.size(); i++) {
-        answers.push_back(multi_exp<GroupT, FieldT, Method>(
-            group_elements[i].cbegin(),
-            group_elements[i].cend(),
-            scalars[i].cbegin(),
-            scalars[i].cend(),
-            1));
+    GroupT answer;
+    for (size_t iter = 0; iter < NUM_ITERATIONS; ++iter) {
+        answer = multi_exp<GroupT, FieldT, Method>(
+            group_elements.cbegin(),
+            group_elements.cend(),
+            scalars.cbegin(),
+            scalars.cend(),
+            1);
     }
 
     long long time_delta = get_nsec_time() - start_time;
 
-    return run_result_t<GroupT>(time_delta, answers);
+    return run_result_t<GroupT>(time_delta, answer);
 }
 
 template<typename GroupT, typename FieldT>
@@ -87,9 +97,8 @@ void print_performance_csv(
         fflush(stdout);
 
         test_instances_t<GroupT> group_elements =
-            generate_group_elements<GroupT>(10, 1 << expn);
-        test_instances_t<FieldT> scalars =
-            generate_scalars<FieldT>(10, 1 << expn);
+            generate_group_elements<GroupT>(1 << expn);
+        test_instances_t<FieldT> scalars = generate_scalars<FieldT>(1 << expn);
 
         run_result_t<GroupT> result_bos_coster =
             profile_multiexp<GroupT, FieldT, multi_exp_method_bos_coster>(
@@ -156,10 +165,10 @@ int main(void)
 
     printf("Profiling BN128_G1\n");
     bn128_pp::init_public_params();
-    print_performance_csv<G1<bn128_pp>, Fr<bn128_pp>>(2, 20, 14, true);
+    print_performance_csv<G1<bn128_pp>, Fr<bn128_pp>>(8, 20, 14, true);
 
     printf("Profiling BN128_G2\n");
-    print_performance_csv<G2<bn128_pp>, Fr<bn128_pp>>(2, 20, 14, true);
+    print_performance_csv<G2<bn128_pp>, Fr<bn128_pp>>(8, 20, 14, true);
 
     return 0;
 }
