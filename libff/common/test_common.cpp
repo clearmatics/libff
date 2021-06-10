@@ -27,18 +27,14 @@ TEST(CommonTests, ConcurrentFifoTest)
 
     // thread to enqueue values in sequence
     auto fill_fn = [&fifo, &producer_blocks]() {
-        for (size_t i = 0 ; i < TOTAL_NUM_VALUES ; ++i)
-        {
+        for (size_t i = 0; i < TOTAL_NUM_VALUES; ++i) {
             size_t *dest = fifo.try_enqueue_begin();
-            if (!dest)
-            {
+            if (!dest) {
                 ++producer_blocks;
-                do
-                {
+                do {
                     std::this_thread::yield();
                     dest = fifo.try_enqueue_begin();
-                }
-                while (!dest);
+                } while (!dest);
             }
 
             *dest = i;
@@ -46,21 +42,16 @@ TEST(CommonTests, ConcurrentFifoTest)
         }
     };
 
-
     std::thread filler(fill_fn);
 
-    for (size_t i = 0 ; i < TOTAL_NUM_VALUES  ; ++i)
-    {
+    for (size_t i = 0; i < TOTAL_NUM_VALUES; ++i) {
         const size_t *src = fifo.try_dequeue_begin();
-        if (!src)
-        {
+        if (!src) {
             ++consumer_blocks;
-            do
-            {
+            do {
                 std::this_thread::yield();
                 src = fifo.try_dequeue_begin();
-            }
-            while (!src);
+            } while (!src);
         }
 
         ASSERT_EQ(i, *src);

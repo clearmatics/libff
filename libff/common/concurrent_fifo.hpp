@@ -20,11 +20,9 @@ namespace libff
 /// destination memory is available BEFORE he begins data production. In
 /// particular, if T = void *, say, the producer can recycle the buffer pointed
 /// to by the void * once try_enqueue_begin() succeeds.
-template<typename T>
-class concurrent_fifo_spsc
+template<typename T> class concurrent_fifo_spsc
 {
 public:
-
     concurrent_fifo_spsc() = delete;
     concurrent_fifo_spsc(const concurrent_fifo_spsc &) = delete;
     concurrent_fifo_spsc &operator=(const concurrent_fifo_spsc &) = delete;
@@ -55,10 +53,9 @@ public:
     void dequeue_end();
 
 protected:
-
     const size_t _capacity;
 
-    T * const _buffer;
+    T *const _buffer;
 
     size_t _producer_next_idx;
     std::atomic<size_t> _producer_num_produced;

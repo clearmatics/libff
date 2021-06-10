@@ -356,6 +356,10 @@ void do_test_signed_digits(const FieldT &value, const size_t digit_size)
     const size_t num_digits =
         (FieldT::num_bits + 1 + digit_size - 1) / digit_size;
 
+    // Compute all digits to a vector, for checking
+    std::vector<ssize_t> all_digits(num_digits);
+    field_get_signed_digits(all_digits, value, digit_size, num_digits);
+
     const auto v = value.as_bigint();
 
     // Compute
@@ -375,9 +379,8 @@ void do_test_signed_digits(const FieldT &value, const size_t digit_size)
         ASSERT_LE(digit_min, digit);
         ASSERT_LT(digit, digit_max);
 
-        if (digit < 0) {
-            digit = -digit;
-        }
+        // Compare to vector
+        ASSERT_EQ(all_digits[num_digits - 1 - i], digit);
     }
 
     ASSERT_EQ(v, accum.as_bigint());
@@ -485,7 +488,8 @@ TEST(FieldsTest, BLS12_377)
     test_signed_digits<bls12_377_Fr>();
 }
 
-#ifdef CURVE_BN128 // BN128 has fancy dependencies so it may be disabled
+// BN128 has fancy dependencies so it may be disabled
+#ifdef CURVE_BN128
 TEST(FieldsTest, BN128)
 {
     bn128_pp::init_public_params();
