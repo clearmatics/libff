@@ -9,10 +9,13 @@
 #include <sys/stat.h>
 #include <vector>
 
-const size_t NUM_ITERATIONS = 10;
-const size_t NUM_DIFFERENT_ELEMENTS = 32;
-
 using namespace libff;
+
+constexpr size_t NUM_ITERATIONS = 10;
+constexpr size_t NUM_DIFFERENT_ELEMENTS = 32;
+
+constexpr form_t FORM = form_montgomery;
+constexpr compression_t COMP = compression_off;
 
 template<typename GroupT> using run_result_t = std::pair<long long, GroupT>;
 
@@ -116,14 +119,7 @@ void create_base_element_files(
 {
     test_instances_t<GroupT> base_elements =
         generate_group_elements<GroupT>(num_elements);
-    // create_base_element_file_for_config<form_plain, compression_off>(
-    //     base_elements);
-    // create_base_element_file_for_config<form_plain, compression_on>(
-    //     base_elements);
-    // create_base_element_file_for_config<form_montgomery, compression_off>(
-    //     base_elements);
-    create_base_element_file_for_config<form_montgomery, compression_on>(
-        tag, base_elements);
+    create_base_element_file_for_config<FORM, COMP>(tag, base_elements);
 }
 
 template<typename GroupT>
@@ -131,8 +127,7 @@ test_instances_t<GroupT> read_group_elements(
     const std::string &tag, const size_t num_elements)
 {
     const std::string filename =
-        base_elements_filename<form_montgomery, compression_on>(
-            tag, num_elements);
+        base_elements_filename<FORM, COMP>(tag, num_elements);
 
     test_instances_t<GroupT> elements;
     elements.reserve(num_elements);
@@ -142,7 +137,7 @@ test_instances_t<GroupT> read_group_elements(
     in_s.open(filename, std::ios_base::in | std::ios_base::binary);
     for (size_t i = 0; i < num_elements; ++i) {
         GroupT v;
-        group_read<encoding_binary, form_montgomery, compression_on>(v, in_s);
+        group_read<encoding_binary, FORM, COMP>(v, in_s);
         elements.push_back(v);
     }
 
@@ -171,7 +166,7 @@ run_result_t<GroupT> profile_multiexp(
 }
 
 template<form_t Form, compression_t Comp, typename GroupT, typename FieldT>
-run_result_t<GroupT> profile_multiexp_from_disk(
+run_result_t<GroupT> profile_multiexp_stream(
     const std::string &tag, const std::vector<FieldT> &scalars)
 {
     const size_t num_elements = scalars.size();
@@ -188,7 +183,18 @@ run_result_t<GroupT> profile_multiexp_from_disk(
     in_s.exceptions(
         std::ios_base::eofbit | std::ios_base::badbit | std::ios_base::failbit);
 
-    throw std::runtime_error("TODO");
+    GroupT answer;
+
+    long long start_time = get_nsec_time();
+
+    for (size_t iter = 0; iter < NUM_ITERATIONS; ++iter) {
+        in_s.seekg(0llu);
+        answer = multi_exp_stream<Form, Comp, GroupT, FieldT>(in_s, scalars);
+    }
+
+    long long time_delta = get_nsec_time() - start_time;
+
+    return run_result_t<GroupT>(time_delta, answer);
 }
 
 template<typename GroupT, typename FieldT>
@@ -201,11 +207,12 @@ void print_performance_csv(
 {
     std::cout << "Profiling " << tag << "\n";
     printf(
-        "\t%16s\t%16s\t%16s\t%16s\t%16s\n",
+        "\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\n",
         "bos-coster",
         "djb",
         "djb_signed",
         "djb_signed_mixed",
+        "from_stream",
         "naive");
     for (size_t expn = expn_start; expn <= expn_end_fast; expn++) {
         printf("%ld", expn);
@@ -264,6 +271,17 @@ void print_performance_csv(
                 "Answers NOT MATCHING (djb_signed != djb_signed_mixed)\n");
         }
 
+        run_result_t<GroupT> result_stream =
+            profile_multiexp_stream<FORM, COMP, GroupT, FieldT>(tag, scalars);
+        printf("\t%16lld", result_stream.first);
+        fflush(stdout);
+
+        if (compare_answers &&
+            (result_djb_signed_mixed.second != result_stream.second)) {
+            fprintf(
+                stderr, "Answers NOT MATCHING (djb_signed_mixed != stream)\n");
+        }
+
         if (expn <= expn_end_naive) {
             run_result_t<GroupT> result_naive =
                 profile_multiexp<GroupT, FieldT, multi_exp_method_naive>(
@@ -286,10 +304,10 @@ int main(void)
     print_compilation_info();
 
     alt_bn128_pp::init_public_params();
+
     print_performance_csv<G1<alt_bn128_pp>, Fr<alt_bn128_pp>>(
         "alt_bn128_g1", 8, 20, 14, true);
 
-    printf("Profiling alt_bn128_G2\n");
     print_performance_csv<G2<alt_bn128_pp>, Fr<alt_bn128_pp>>(
         "alt_bn128_g2", 8, 20, 14, true);
 
