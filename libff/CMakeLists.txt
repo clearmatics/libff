@@ -82,6 +82,19 @@ install(
 # Tests
 if ("${IS_LIBFF_PARENT}")
   add_executable(
+    common_test
+    EXCLUDE_FROM_ALL
+
+    common/test_common.cpp
+  )
+  target_link_libraries(
+    common_test
+
+    ff
+    gtest_main
+  )
+
+  add_executable(
     algebra_bilinearity_test
     EXCLUDE_FROM_ALL
 
@@ -135,6 +148,10 @@ if ("${IS_LIBFF_PARENT}")
 
   include(CTest)
   add_test(
+    NAME common_test
+    COMMAND common_test
+  )
+  add_test(
     NAME algebra_bilinearity_test
     COMMAND algebra_bilinearity_test
   )
@@ -152,6 +169,7 @@ if ("${IS_LIBFF_PARENT}")
     COMMAND algebra_multiexp_test
   )
 
+  add_dependencies(check common_test)
   add_dependencies(check algebra_bilinearity_test)
   add_dependencies(check algebra_groups_test)
   add_dependencies(check algebra_fields_test)
