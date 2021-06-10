@@ -12,6 +12,8 @@
 #ifndef MULTIEXP_HPP_
 #define MULTIEXP_HPP_
 
+#include "libff/algebra/serialization.hpp"
+
 #include <cstddef>
 #include <vector>
 
@@ -146,6 +148,15 @@ std::vector<T> batch_exp_with_coeff(
     const std::vector<FieldT> &v);
 
 template<typename T> void batch_to_special(std::vector<T> &vec);
+
+/// Read base elements from a stream. More intermediate memory is used (offset
+/// by the fact that base elements are streamed and therefore not all
+/// memory-resident) to reduce the number of internal passes. Currently
+/// processing is single-threaded (although element streaming happens in a
+/// separate temporary thread).
+template<form_t Form, compression_t Comp, typename GroupT, typename FieldT>
+GroupT multi_exp_stream(
+    std::istream &base_elements_in, const std::vector<FieldT> &exponents);
 
 } // namespace libff
 
