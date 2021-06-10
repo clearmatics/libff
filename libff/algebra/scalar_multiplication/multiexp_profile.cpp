@@ -1,4 +1,4 @@
-#include "libff/algebra/curves/bn128/bn128_pp.hpp"
+#include "libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp"
 #include "libff/algebra/scalar_multiplication/multiexp.hpp"
 #include "libff/common/profiling.hpp"
 #include "libff/common/rng.hpp"
@@ -163,12 +163,12 @@ int main(void)
 {
     print_compilation_info();
 
-    printf("Profiling BN128_G1\n");
-    bn128_pp::init_public_params();
-    print_performance_csv<G1<bn128_pp>, Fr<bn128_pp>>(8, 20, 14, true);
+    alt_bn128_pp::init_public_params();
+    printf("Profiling alt_bn128_G1\n");
+    print_performance_csv<G1<alt_bn128_pp>, Fr<alt_bn128_pp> >(8, 20, 14, true);
 
-    printf("Profiling BN128_G2\n");
-    print_performance_csv<G2<bn128_pp>, Fr<bn128_pp>>(8, 20, 14, true);
+    printf("Profiling alt_bn128_G2\n");
+    print_performance_csv<G2<alt_bn128_pp>, Fr<alt_bn128_pp> >(8, 20, 14, true);
 
     return 0;
 }
