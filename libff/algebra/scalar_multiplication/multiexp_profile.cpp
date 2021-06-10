@@ -1,9 +1,12 @@
 #include "libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp"
+#include "libff/algebra/curves/curve_serialization.hpp"
 #include "libff/algebra/scalar_multiplication/multiexp.hpp"
 #include "libff/common/profiling.hpp"
 #include "libff/common/rng.hpp"
 
 #include <cstdio>
+#include <fstream>
+#include <sys/stat.h>
 #include <vector>
 
 const size_t NUM_ITERATIONS = 10;
@@ -57,6 +60,95 @@ test_instances_t<FieldT> generate_scalars(size_t num_elements)
     return result;
 }
 
+// template<typename GroupT, typename FieldT>
+// run_result_t<GroupT> profile_multiexp(
+//     test_instances_t<GroupT> group_elements,
+//     test_instances_t<FieldT> scalars)
+// {
+//     long long start_time = get_nsec_time();
+
+//     std::vector<GroupT> answers;
+//     for (size_t i = 0; i < group_elements.size(); i++) {
+//         answers.push_back(multi_exp<GroupT, FieldT, Method>(
+//             group_elements[i].cbegin(), group_elements[i].cend(),
+//             scalars[i].cbegin(), scalars[i].cend(),
+//             1));
+//     }
+
+//     long long time_delta = get_nsec_time() - start_time;
+
+//     return run_result_t<GroupT>(time_delta, answers);
+// }
+
+template<form_t Form, compression_t Comp>
+std::string base_elements_filename(
+    const std::string &tag, const size_t num_elements)
+{
+    return std::string("multiexp_base_elements_") + tag +
+           ((Form == form_plain) ? "_plain_" : "_montgomery_") +
+           ((Comp == compression_on) ? "compressed_" : "uncompressed_") +
+           std::to_string(num_elements) + ".bin";
+}
+
+template<form_t Form, compression_t Comp, typename GroupT>
+void create_base_element_file_for_config(
+    const std::string &tag, const test_instances_t<GroupT> &base_elements)
+{
+    const std::string filename =
+        base_elements_filename<Form, Comp>(tag, base_elements.size());
+
+    std::cout << "Writing file '" << filename << "' ...";
+    std::flush(std::cout);
+
+    std::ofstream out_s(
+        filename.c_str(), std::ios_base::out | std::ios_base::binary);
+    for (const GroupT &el : base_elements) {
+        group_write<encoding_binary, Form, Comp>(el, out_s);
+    }
+    out_s.close();
+
+    std::cout << " DONE\n";
+}
+
+template<typename GroupT>
+void create_base_element_files(
+    const std::string &tag, const size_t num_elements)
+{
+    test_instances_t<GroupT> base_elements =
+        generate_group_elements<GroupT>(num_elements);
+    // create_base_element_file_for_config<form_plain, compression_off>(
+    //     base_elements);
+    // create_base_element_file_for_config<form_plain, compression_on>(
+    //     base_elements);
+    // create_base_element_file_for_config<form_montgomery, compression_off>(
+    //     base_elements);
+    create_base_element_file_for_config<form_montgomery, compression_on>(
+        tag, base_elements);
+}
+
+template<typename GroupT>
+test_instances_t<GroupT> read_group_elements(
+    const std::string &tag, const size_t num_elements)
+{
+    const std::string filename =
+        base_elements_filename<form_montgomery, compression_on>(
+            tag, num_elements);
+
+    test_instances_t<GroupT> elements;
+    elements.reserve(num_elements);
+
+    std::ifstream in_s;
+    in_s.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+    in_s.open(filename, std::ios_base::in | std::ios_base::binary);
+    for (size_t i = 0; i < num_elements; ++i) {
+        GroupT v;
+        group_read<encoding_binary, form_montgomery, compression_on>(v, in_s);
+        elements.push_back(v);
+    }
+
+    return elements;
+}
+
 template<typename GroupT, typename FieldT, multi_exp_method Method>
 run_result_t<GroupT> profile_multiexp(
     test_instances_t<GroupT> group_elements, test_instances_t<FieldT> scalars)
@@ -78,13 +170,36 @@ run_result_t<GroupT> profile_multiexp(
     return run_result_t<GroupT>(time_delta, answer);
 }
 
+template<form_t Form, compression_t Comp, typename GroupT, typename FieldT>
+run_result_t<GroupT> profile_multiexp_from_disk(
+    const std::string &tag, const std::vector<FieldT> &scalars)
+{
+    const size_t num_elements = scalars.size();
+    const std::string filename =
+        base_elements_filename<Form, Comp>(tag, num_elements);
+
+    struct stat s;
+    if (stat(filename.c_str(), &s)) {
+        throw std::runtime_error("no file: " + filename);
+    }
+
+    std::ifstream in_s(
+        filename.c_str(), std::ios_base::in | std::ios_base::binary);
+    in_s.exceptions(
+        std::ios_base::eofbit | std::ios_base::badbit | std::ios_base::failbit);
+
+    throw std::runtime_error("TODO");
+}
+
 template<typename GroupT, typename FieldT>
 void print_performance_csv(
+    const std::string &tag,
     size_t expn_start,
     size_t expn_end_fast,
     size_t expn_end_naive,
     bool compare_answers)
 {
+    std::cout << "Profiling " << tag << "\n";
     printf(
         "\t%16s\t%16s\t%16s\t%16s\t%16s\n",
         "bos-coster",
@@ -96,8 +211,15 @@ void print_performance_csv(
         printf("%ld", expn);
         fflush(stdout);
 
-        test_instances_t<GroupT> group_elements =
-            generate_group_elements<GroupT>(1 << expn);
+        test_instances_t<GroupT> group_elements;
+        try {
+            group_elements = read_group_elements<GroupT>(tag, 1 << expn);
+        } catch (const std::ifstream::failure &e) {
+            std::cout << "(Generating files for 1<<" << expn << ")\n";
+            create_base_element_files<GroupT>(tag, 1 << expn);
+            continue;
+        }
+
         test_instances_t<FieldT> scalars = generate_scalars<FieldT>(1 << expn);
 
         run_result_t<GroupT> result_bos_coster =
@@ -164,11 +286,12 @@ int main(void)
     print_compilation_info();
 
     alt_bn128_pp::init_public_params();
-    printf("Profiling alt_bn128_G1\n");
-    print_performance_csv<G1<alt_bn128_pp>, Fr<alt_bn128_pp> >(8, 20, 14, true);
+    print_performance_csv<G1<alt_bn128_pp>, Fr<alt_bn128_pp>>(
+        "alt_bn128_g1", 8, 20, 14, true);
 
     printf("Profiling alt_bn128_G2\n");
-    print_performance_csv<G2<alt_bn128_pp>, Fr<alt_bn128_pp> >(8, 20, 14, true);
+    print_performance_csv<G2<alt_bn128_pp>, Fr<alt_bn128_pp>>(
+        "alt_bn128_g2", 8, 20, 14, true);
 
     return 0;
 }
