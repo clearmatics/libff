@@ -191,7 +191,8 @@ bigint<n> Fp_model<n, modulus>::Rsquared;
 template<mp_size_t n, const bigint<n>& modulus>
 bigint<n> Fp_model<n, modulus>::Rcubed;
 
-} // libff
+} // namespace libff
+
 #include <libff/algebra/fields/fp.tcc>
 
 #endif // FP_HPP_

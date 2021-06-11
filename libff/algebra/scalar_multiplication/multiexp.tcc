@@ -42,58 +42,58 @@ public:
         if (n == 3)
         {
             long res;
-            __asm__
-                ("// check for overflow           \n\t"
-                 "mov $0, %[res]                  \n\t"
-                 ADD_CMP(16)
-                 ADD_CMP(8)
-                 ADD_CMP(0)
-                 "jmp done%=                      \n\t"
-                 "subtract%=:                     \n\t"
-                 "mov $1, %[res]                  \n\t"
-                 "done%=:                         \n\t"
-                 : [res] "=&r" (res)
-                 : [A] "r" (other.r.data), [mod] "r" (this->r.data)
-                 : "cc", "%rax");
+            __asm__(                                   // Preserve alignment
+                "// check for overflow           \n\t" //
+                "mov $0, %[res]                  \n\t" //
+                ADD_CMP(16)                            //
+                ADD_CMP(8)                             //
+                ADD_CMP(0)                             //
+                "jmp done%=                      \n\t" //
+                "subtract%=:                     \n\t" //
+                "mov $1, %[res]                  \n\t" //
+                "done%=:                         \n\t" //
+                : [res] "=&r"(res)
+                : [A] "r"(other.r.data), [mod] "r"(this->r.data)
+                : "cc", "%rax");
             return res;
         }
         else if (n == 4)
         {
             long res;
-            __asm__
-                ("// check for overflow           \n\t"
-                 "mov $0, %[res]                  \n\t"
-                 ADD_CMP(24)
-                 ADD_CMP(16)
-                 ADD_CMP(8)
-                 ADD_CMP(0)
-                 "jmp done%=                      \n\t"
-                 "subtract%=:                     \n\t"
-                 "mov $1, %[res]                  \n\t"
-                 "done%=:                         \n\t"
-                 : [res] "=&r" (res)
-                 : [A] "r" (other.r.data), [mod] "r" (this->r.data)
-                 : "cc", "%rax");
+            __asm__(                                   // Preserve alignment
+                "// check for overflow           \n\t" //
+                "mov $0, %[res]                  \n\t" //
+                ADD_CMP(24)                            //
+                ADD_CMP(16)                            //
+                ADD_CMP(8)                             //
+                ADD_CMP(0)                             //
+                "jmp done%=                      \n\t" //
+                "subtract%=:                     \n\t" //
+                "mov $1, %[res]                  \n\t" //
+                "done%=:                         \n\t" //
+                : [res] "=&r"(res)
+                : [A] "r"(other.r.data), [mod] "r"(this->r.data)
+                : "cc", "%rax");
             return res;
         }
         else if (n == 5)
         {
             long res;
-            __asm__
-                ("// check for overflow           \n\t"
-                 "mov $0, %[res]                  \n\t"
-                 ADD_CMP(32)
-                 ADD_CMP(24)
-                 ADD_CMP(16)
-                 ADD_CMP(8)
-                 ADD_CMP(0)
-                 "jmp done%=                      \n\t"
-                 "subtract%=:                     \n\t"
-                 "mov $1, %[res]                  \n\t"
-                 "done%=:                         \n\t"
-                 : [res] "=&r" (res)
-                 : [A] "r" (other.r.data), [mod] "r" (this->r.data)
-                 : "cc", "%rax");
+            __asm__(                                   // Preserve alignment
+                "// check for overflow           \n\t" //
+                "mov $0, %[res]                  \n\t" //
+                ADD_CMP(32)                            //
+                ADD_CMP(24)                            //
+                ADD_CMP(16)                            //
+                ADD_CMP(8)                             //
+                ADD_CMP(0)                             //
+                "jmp done%=                      \n\t" //
+                "subtract%=:                     \n\t" //
+                "mov $1, %[res]                  \n\t" //
+                "done%=:                         \n\t" //
+                : [res] "=&r"(res)
+                : [A] "r"(other.r.data), [mod] "r"(this->r.data)
+                : "cc", "%rax");
             return res;
         }
         else

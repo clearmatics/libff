@@ -19,8 +19,8 @@ namespace libff {
 #define STR(x) STR_HELPER(x)
 
 /* addq is faster than adcq, even if preceded by clc */
-#define ADD_FIRSTADD                            \
-    "movq    (%[B]), %%rax           \n\t"      \
+#define ADD_FIRSTADD()                                                         \
+    "movq    (%[B]), %%rax           \n\t"                                     \
     "addq    %%rax, (%[A])           \n\t"
 
 #define ADD_NEXTADD(ofs)                                \
@@ -33,28 +33,28 @@ namespace libff {
     "jb      done%=              \n\t"                \
     "ja      subtract%=          \n\t"
 
-#define ADD_FIRSTSUB                            \
-    "movq    (%[mod]), %%rax     \n\t"          \
+#define ADD_FIRSTSUB()                                                         \
+    "movq    (%[mod]), %%rax     \n\t"                                         \
     "subq    %%rax, (%[A])       \n\t"
 
-#define ADD_FIRSTSUB                            \
-    "movq    (%[mod]), %%rax     \n\t"          \
+#define ADD_FIRSTSUB()                                                         \
+    "movq    (%[mod]), %%rax     \n\t"                                         \
     "subq    %%rax, (%[A])       \n\t"
 
 #define ADD_NEXTSUB(ofs)                                \
     "movq    " STR(ofs) "(%[mod]), %%rax    \n\t"       \
     "sbbq    %%rax, " STR(ofs) "(%[A])      \n\t"
 
-#define SUB_FIRSTSUB                            \
-    "movq    (%[B]), %%rax\n\t"                 \
+#define SUB_FIRSTSUB()                                                         \
+    "movq    (%[B]), %%rax\n\t"                                                \
     "subq    %%rax, (%[A])\n\t"
 
 #define SUB_NEXTSUB(ofs)                        \
     "movq    " STR(ofs) "(%[B]), %%rax\n\t"     \
     "sbbq    %%rax, " STR(ofs) "(%[A])\n\t"
 
-#define SUB_FIRSTADD                            \
-    "movq    (%[mod]), %%rax\n\t"               \
+#define SUB_FIRSTADD()                                                         \
+    "movq    (%[mod]), %%rax\n\t"                                              \
     "addq    %%rax, (%[A])\n\t"
 
 #define SUB_NEXTADD(ofs)                        \
@@ -67,8 +67,8 @@ namespace libff {
     "jb      done%=              \n\t"                \
     "ja      subtract%=          \n\t"
 
-#define MONT_FIRSTSUB                           \
-    "movq    (%[M]), %%rax     \n\t"            \
+#define MONT_FIRSTSUB()                                                        \
+    "movq    (%[M]), %%rax     \n\t"                                           \
     "subq    %%rax, (%[tmp])     \n\t"
 
 #define MONT_NEXTSUB(ofs)                               \
@@ -82,18 +82,19 @@ namespace libff {
   (see comments on top of powerpc64/mulredc.m4).
 */
 
-#define MONT_PRECOMPUTE                                                 \
-    "xorq    %[cy], %[cy]            \n\t"                              \
-    "movq    0(%[A]), %%rax          \n\t"                              \
-    "mulq    0(%[B])                 \n\t"                              \
-    "movq    %%rax, %[T0]            \n\t"                              \
-    "movq    %%rdx, %[T1]            # T1:T0 <- A[0] * B[0] \n\t"       \
-    "mulq    %[inv]                  \n\t"                              \
-    "movq    %%rax, %[u]             # u <- T0 * inv \n\t"              \
-    "mulq    0(%[M])                 \n\t"                              \
-    "addq    %[T0], %%rax            \n\t"                              \
-    "adcq    %%rdx, %[T1]            \n\t"                              \
-    "adcq    $0, %[cy]               # cy:T1 <- (M[0]*u + T1 * b + T0) / b\n\t"
+#define MONT_PRECOMPUTE()                                                      \
+    "xorq    %[cy], %[cy]            \n\t"                                     \
+    "movq    0(%[A]), %%rax          \n\t"                                     \
+    "mulq    0(%[B])                 \n\t"                                     \
+    "movq    %%rax, %[T0]            \n\t"                                     \
+    "movq    %%rdx, %[T1]            # T1:T0 <- A[0] * B[0] \n\t"              \
+    "mulq    %[inv]                  \n\t"                                     \
+    "movq    %%rax, %[u]             # u <- T0 * inv \n\t"                     \
+    "mulq    0(%[M])                 \n\t"                                     \
+    "addq    %[T0], %%rax            \n\t"                                     \
+    "adcq    %%rdx, %[T1]            \n\t"                                     \
+    "adcq    $0, %[cy]               # cy:T1 <- (M[0]*u + T1 * b + T0) / "     \
+    "b\n\t"
 
 #define MONT_FIRSTITER(j)                                               \
     "xorq    %[T0], %[T0]            \n\t"                              \
@@ -112,21 +113,24 @@ namespace libff {
     "addq    %%rdx, %[T1]            \n\t"                              \
     "adcq    %[T0], %[cy]            # cy:T1:tmp[j-1] <---- (X[0] * Y[j] + T1) + (M[j] * u + cy * b) \n\t"
 
-#define MONT_ITERFIRST(i)                            \
-    "xorq    %[cy], %[cy]            \n\t"              \
-    "movq    " STR((i*8)) "(%[A]), %%rax          \n\t" \
-    "mulq    0(%[B])                 \n\t"              \
-    "addq    0(%[tmp]), %%rax        \n\t"              \
-    "adcq    8(%[tmp]), %%rdx        \n\t"              \
-    "adcq    $0, %[cy]               \n\t"              \
-    "movq    %%rax, %[T0]            \n\t"                              \
-    "movq    %%rdx, %[T1]            # cy:T1:T0 <- A[i] * B[0] + tmp[1] * b + tmp[0]\n\t" \
-    "mulq    %[inv]                  \n\t"                              \
-    "movq    %%rax, %[u]             # u <- T0 * inv\n\t"               \
-    "mulq    0(%[M])                 \n\t"                              \
-    "addq    %[T0], %%rax            \n\t"                              \
-    "adcq    %%rdx, %[T1]            \n\t"                              \
-    "adcq    $0, %[cy]               # cy:T1 <- (M[0]*u + cy * b * b + T1 * b + T0) / b\n\t"
+#define MONT_ITERFIRST(i)                                                      \
+    "xorq    %[cy], %[cy]            \n\t"                                     \
+    "movq    " STR(                                                            \
+        (i * 8)) "(%[A]), %%rax                               \n\t"            \
+                 "mulq    0(%[B])                 \n\t"                        \
+                 "addq    0(%[tmp]), %%rax        \n\t"                        \
+                 "adcq    8(%[tmp]), %%rdx        \n\t"                        \
+                 "adcq    $0, %[cy]               \n\t"                        \
+                 "movq    %%rax, %[T0]            \n\t"                        \
+                 "movq    %%rdx, %[T1]            # cy:T1:T0 <- A[i] * B[0] "  \
+                 "+ tmp[1] * b + tmp[0]\n\t"                                   \
+                 "mulq    %[inv]                  \n\t"                        \
+                 "movq    %%rax, %[u]             # u <- T0 * inv\n\t"         \
+                 "mulq    0(%[M])                 \n\t"                        \
+                 "addq    %[T0], %%rax            \n\t"                        \
+                 "adcq    %%rdx, %[T1]            \n\t"                        \
+                 "adcq    $0, %[cy]               # cy:T1 <- (M[0]*u + cy * "  \
+                 "b * b + T1 * b + T0) / b\n\t"
 
 #define MONT_ITERITER(i, j)                                             \
     "xorq    %[T0], %[T0]            \n\t"                              \
@@ -385,5 +389,8 @@ namespace libff {
          : [modprime] "r" (inv_), [res] "r" (res_), [mod] "r" (mod_) \
          : "%rax", "%rdx", "cc", "memory")
 
+} // namespace libff
 } // libff
+} // namespace libff
+
 #endif // FP_AUX_TCC_

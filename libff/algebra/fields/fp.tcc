@@ -62,67 +62,74 @@ void Fp_model<n,modulus>::mul_reduce(const bigint<n> &other)
         REDUCE_6_LIMB_PRODUCT(k, tmp1, tmp2, tmp3, inv, res, modulus.data);
 
         /* subtract t > mod */
-        __asm__
-            ("/* check for overflow */        \n\t"
-             MONT_CMP(16)
-             MONT_CMP(8)
-             MONT_CMP(0)
-
-             "/* subtract mod if overflow */  \n\t"
-             "subtract%=:                     \n\t"
-             MONT_FIRSTSUB
-             MONT_NEXTSUB(8)
-             MONT_NEXTSUB(16)
-             "done%=:                         \n\t"
-             :
-             : [tmp] "r" (res+n), [M] "r" (modulus.data)
-             : "cc", "memory", "%rax");
-        mpn_copyi(this->mont_repr.data, res+n, n);
-    }
-    else if (n == 4)
-    { // use asm-optimized "CIOS method"
+        __asm__(                                   // Preserve alignment
+            "/* check for overflow */        \n\t" //
+            MONT_CMP(16)                           //
+            MONT_CMP(8)                            //
+            MONT_CMP(0)                            //
+            "/* subtract mod if overflow */  \n\t" //
+            "subtract%=:                     \n\t" //
+            MONT_FIRSTSUB()                        //
+            MONT_NEXTSUB(8)                        //
+            MONT_NEXTSUB(16)                       //
+            "done%=:                         \n\t" //
+            :
+            : [tmp] "r"(res + n), [M] "r"(modulus.data)
+            : "cc", "memory", "%rax");
+        mpn_copyi(this->mont_repr.data, res + n, n);
+    } else if (n == 4) { // use asm-optimized "CIOS method"
 
         mp_limb_t tmp[n+1];
         mp_limb_t T0=0, T1=1, cy=2, u=3; // TODO: fix this
 
-        __asm__ (MONT_PRECOMPUTE
-                 MONT_FIRSTITER(1)
-                 MONT_FIRSTITER(2)
-                 MONT_FIRSTITER(3)
-                 MONT_FINALIZE(3)
-                 MONT_ITERFIRST(1)
-                 MONT_ITERITER(1, 1)
-                 MONT_ITERITER(1, 2)
-                 MONT_ITERITER(1, 3)
-                 MONT_FINALIZE(3)
-                 MONT_ITERFIRST(2)
-                 MONT_ITERITER(2, 1)
-                 MONT_ITERITER(2, 2)
-                 MONT_ITERITER(2, 3)
-                 MONT_FINALIZE(3)
-                 MONT_ITERFIRST(3)
-                 MONT_ITERITER(3, 1)
-                 MONT_ITERITER(3, 2)
-                 MONT_ITERITER(3, 3)
-                 MONT_FINALIZE(3)
-                 "/* check for overflow */        \n\t"
-                 MONT_CMP(24)
-                 MONT_CMP(16)
-                 MONT_CMP(8)
-                 MONT_CMP(0)
-
-                 "/* subtract mod if overflow */  \n\t"
-                 "subtract%=:                     \n\t"
-                 MONT_FIRSTSUB
-                 MONT_NEXTSUB(8)
-                 MONT_NEXTSUB(16)
-                 MONT_NEXTSUB(24)
-                 "done%=:                         \n\t"
-                 :
-                 : [tmp] "r" (tmp), [A] "r" (this->mont_repr.data), [B] "r" (other.data), [inv] "r" (inv), [M] "r" (modulus.data),
-                   [T0] "r" (T0), [T1] "r" (T1), [cy] "r" (cy), [u] "r" (u)
-                 : "cc", "memory", "%rax", "%rdx"
-        );
+        __asm__(                               // Preserve alignment
+            MONT_PRECOMPUTE()                  //
+            MONT_FIRSTITER(1)                  //
+            MONT_FIRSTITER(2)                  //
+            MONT_FIRSTITER(3)                  //
+            MONT_FINALIZE(3)                   //
+            MONT_ITERFIRST(1)                  //
+            MONT_ITERITER(1, 1)                //
+            MONT_ITERITER(1, 2)                //
+            MONT_ITERITER(1, 3)                //
+            MONT_FINALIZE(3)                   //
+            MONT_ITERFIRST(2)                  //
+            MONT_ITERITER(2, 1)                //
+            MONT_ITERITER(2, 2)                //
+            MONT_ITERITER(2, 3)                //
+            MONT_FINALIZE(3)                   //
+            MONT_ITERFIRST(3)                  //
+            MONT_ITERITER(3, 1)                //
+            MONT_ITERITER(3, 2)                //
+            MONT_ITERITER(3, 3)                //
+            MONT_FINALIZE(3)                   //
+            "/* check for overflow */        " //
+            "\n\t"                             //
+            MONT_CMP(24)                       //
+            MONT_CMP(16)                       //
+            MONT_CMP(8)                        //
+            MONT_CMP(0)                        //
+            "/* subtract mod if overflow */  " //
+            "\n\t"                             //
+            "subtract%=:                     " //
+            "\n\t"                             //
+            MONT_FIRSTSUB()                    //
+            MONT_NEXTSUB(8)                    //
+            MONT_NEXTSUB(16)                   //
+            MONT_NEXTSUB(24)                   //
+            "done%=:                "          //
+            "         \n\t"                    //
+            :
+            : [tmp] "r"(tmp),
+              [A] "r"(this->mont_repr.data),
+              [B] "r"(other.data),
+              [inv] "r"(inv),
+              [M] "r"(modulus.data),
+              [T0] "r"(T0),
+              [T1] "r"(T1),
+              [cy] "r"(cy),
+              [u] "r"(u)
+            : "cc", "memory", "%rax", "%rdx");
         mpn_copyi(this->mont_repr.data, tmp, n);
     }
     else if (n == 5)
@@ -131,56 +138,68 @@ void Fp_model<n,modulus>::mul_reduce(const bigint<n> &other)
         mp_limb_t tmp[n+1];
         mp_limb_t T0=0, T1=1, cy=2, u=3; // TODO: fix this
 
-        __asm__ (MONT_PRECOMPUTE
-                 MONT_FIRSTITER(1)
-                 MONT_FIRSTITER(2)
-                 MONT_FIRSTITER(3)
-                 MONT_FIRSTITER(4)
-                 MONT_FINALIZE(4)
-                 MONT_ITERFIRST(1)
-                 MONT_ITERITER(1, 1)
-                 MONT_ITERITER(1, 2)
-                 MONT_ITERITER(1, 3)
-                 MONT_ITERITER(1, 4)
-                 MONT_FINALIZE(4)
-                 MONT_ITERFIRST(2)
-                 MONT_ITERITER(2, 1)
-                 MONT_ITERITER(2, 2)
-                 MONT_ITERITER(2, 3)
-                 MONT_ITERITER(2, 4)
-                 MONT_FINALIZE(4)
-                 MONT_ITERFIRST(3)
-                 MONT_ITERITER(3, 1)
-                 MONT_ITERITER(3, 2)
-                 MONT_ITERITER(3, 3)
-                 MONT_ITERITER(3, 4)
-                 MONT_FINALIZE(4)
-                 MONT_ITERFIRST(4)
-                 MONT_ITERITER(4, 1)
-                 MONT_ITERITER(4, 2)
-                 MONT_ITERITER(4, 3)
-                 MONT_ITERITER(4, 4)
-                 MONT_FINALIZE(4)
-                 "/* check for overflow */        \n\t"
-                 MONT_CMP(32)
-                 MONT_CMP(24)
-                 MONT_CMP(16)
-                 MONT_CMP(8)
-                 MONT_CMP(0)
-
-                 "/* subtract mod if overflow */  \n\t"
-                 "subtract%=:                     \n\t"
-                 MONT_FIRSTSUB
-                 MONT_NEXTSUB(8)
-                 MONT_NEXTSUB(16)
-                 MONT_NEXTSUB(24)
-                 MONT_NEXTSUB(32)
-                 "done%=:                         \n\t"
-                 :
-                 : [tmp] "r" (tmp), [A] "r" (this->mont_repr.data), [B] "r" (other.data), [inv] "r" (inv), [M] "r" (modulus.data),
-                   [T0] "r" (T0), [T1] "r" (T1), [cy] "r" (cy), [u] "r" (u)
-                 : "cc", "memory", "%rax", "%rdx"
-        );
+        __asm__(                               // Preserve alignment
+            MONT_PRECOMPUTE()                  //
+            MONT_FIRSTITER(1)                  //
+            MONT_FIRSTITER(2)                  //
+            MONT_FIRSTITER(3)                  //
+            MONT_FIRSTITER(4)                  //
+            MONT_FINALIZE(4)                   //
+            MONT_ITERFIRST(1)                  //
+            MONT_ITERITER(1, 1)                //
+            MONT_ITERITER(1, 2)                //
+            MONT_ITERITER(1, 3)                //
+            MONT_ITERITER(1, 4)                //
+            MONT_FINALIZE(4)                   //
+            MONT_ITERFIRST(2)                  //
+            MONT_ITERITER(2, 1)                //
+            MONT_ITERITER(2, 2)                //
+            MONT_ITERITER(2, 3)                //
+            MONT_ITERITER(2, 4)                //
+            MONT_FINALIZE(4)                   //
+            MONT_ITERFIRST(3)                  //
+            MONT_ITERITER(3, 1)                //
+            MONT_ITERITER(3, 2)                //
+            MONT_ITERITER(3, 3)                //
+            MONT_ITERITER(3, 4)                //
+            MONT_FINALIZE(4)                   //
+            MONT_ITERFIRST(4)                  //
+            MONT_ITERITER(4, 1)                //
+            MONT_ITERITER(4, 2)                //
+            MONT_ITERITER(4, 3)                //
+            MONT_ITERITER(4, 4)                //
+            MONT_FINALIZE(4)                   //
+            "/* check for overflow */        " //
+            "\n\t"                             //
+            MONT_CMP(32)                       //
+            MONT_CMP(24)                       //
+            MONT_CMP(16)                       //
+            MONT_CMP(8)                        //
+            MONT_CMP(0)                        //
+            "/* subtract mod if overflow */ "  //
+            " \n\t"                            //
+            "subtract%=:                    "  //
+            " \n\t"                            //
+            MONT_FIRSTSUB()                    //
+            MONT_NEXTSUB(8)                    //
+            MONT_NEXTSUB(16)                   //
+            MONT_NEXTSUB(24)                   //
+            MONT_NEXTSUB(                      //
+                32)                            //
+            "done%=:        "                  //
+            "               "                  //
+            "  \n\t"                           //
+            :
+            : [tmp] "r"(tmp),
+              [A] "r"(this->mont_repr.data),
+              [B] "r"(other.data),
+              [inv] "r"(inv),
+              [M] "r"(modulus.data),
+              [T0] "r"(T0),
+              [T1] "r"(T1),
+              [cy] "r"(cy),
+              [u] "r"(u)
+            : "cc", "memory", "%rax", "%rdx");
         mpn_copyi(this->mont_repr.data, tmp, n);
     }
     else
@@ -339,94 +358,95 @@ Fp_model<n,modulus>& Fp_model<n,modulus>::operator+=(const Fp_model<n,modulus>& 
     this->add_cnt++;
 #endif
 #if defined(__x86_64__) && defined(USE_ASM)
-    if (n == 3)
-    {
-        __asm__
-            ("/* perform bignum addition */   \n\t"
-             ADD_FIRSTADD
-             ADD_NEXTADD(8)
-             ADD_NEXTADD(16)
-             "/* if overflow: subtract     */ \n\t"
-             "/* (tricky point: if A and B are in the range we do not need to do anything special for the possible carry flag) */ \n\t"
-             "jc      subtract%=              \n\t"
-
-             "/* check for overflow */        \n\t"
-             ADD_CMP(16)
-             ADD_CMP(8)
-             ADD_CMP(0)
-
-             "/* subtract mod if overflow */  \n\t"
-             "subtract%=:                     \n\t"
-             ADD_FIRSTSUB
-             ADD_NEXTSUB(8)
-             ADD_NEXTSUB(16)
-             "done%=:                         \n\t"
-             :
-             : [A] "r" (this->mont_repr.data), [B] "r" (other.mont_repr.data), [mod] "r" (modulus.data)
-             : "cc", "memory", "%rax");
-    }
-    else if (n == 4)
-    {
-        __asm__
-            ("/* perform bignum addition */   \n\t"
-             ADD_FIRSTADD
-             ADD_NEXTADD(8)
-             ADD_NEXTADD(16)
-             ADD_NEXTADD(24)
-             "/* if overflow: subtract     */ \n\t"
-             "/* (tricky point: if A and B are in the range we do not need to do anything special for the possible carry flag) */ \n\t"
-             "jc      subtract%=              \n\t"
-
-             "/* check for overflow */        \n\t"
-             ADD_CMP(24)
-             ADD_CMP(16)
-             ADD_CMP(8)
-             ADD_CMP(0)
-
-             "/* subtract mod if overflow */  \n\t"
-             "subtract%=:                     \n\t"
-             ADD_FIRSTSUB
-             ADD_NEXTSUB(8)
-             ADD_NEXTSUB(16)
-             ADD_NEXTSUB(24)
-             "done%=:                         \n\t"
-             :
-             : [A] "r" (this->mont_repr.data), [B] "r" (other.mont_repr.data), [mod] "r" (modulus.data)
-             : "cc", "memory", "%rax");
-    }
-    else if (n == 5)
-    {
-        __asm__
-            ("/* perform bignum addition */   \n\t"
-             ADD_FIRSTADD
-             ADD_NEXTADD(8)
-             ADD_NEXTADD(16)
-             ADD_NEXTADD(24)
-             ADD_NEXTADD(32)
-             "/* if overflow: subtract     */ \n\t"
-             "/* (tricky point: if A and B are in the range we do not need to do anything special for the possible carry flag) */ \n\t"
-             "jc      subtract%=              \n\t"
-
-             "/* check for overflow */        \n\t"
-             ADD_CMP(32)
-             ADD_CMP(24)
-             ADD_CMP(16)
-             ADD_CMP(8)
-             ADD_CMP(0)
-
-             "/* subtract mod if overflow */  \n\t"
-             "subtract%=:                     \n\t"
-             ADD_FIRSTSUB
-             ADD_NEXTSUB(8)
-             ADD_NEXTSUB(16)
-             ADD_NEXTSUB(24)
-             ADD_NEXTSUB(32)
-             "done%=:                         \n\t"
-             :
-             : [A] "r" (this->mont_repr.data), [B] "r" (other.mont_repr.data), [mod] "r" (modulus.data)
-             : "cc", "memory", "%rax");
-    }
-    else
+    if (n == 3) {
+        __asm__(                                   // Preserve alignment
+            "/* perform bignum addition */   \n\t" //
+            ADD_FIRSTADD()                         //
+            ADD_NEXTADD(8)                         //
+            ADD_NEXTADD(16)                        //
+            "/* if overflow: subtract     */ \n\t" //
+            "/* (tricky point: if A and B are in the range we do " //
+            "not need to do anything special for the possible "    //
+            "carry flag) */ \n\t"                                  //
+            "jc      subtract%=              \n\t"                 //
+            "/* check for overflow */        \n\t"                 //
+            ADD_CMP(16)                                            //
+            ADD_CMP(8)                                             //
+            ADD_CMP(0)                                             //
+            "/* subtract mod if overflow */  \n\t"                 //
+            "subtract%=:                     \n\t"                 //
+            ADD_FIRSTSUB()                                         //
+            ADD_NEXTSUB(8)                                         //
+            ADD_NEXTSUB(16)                                        //
+            "done%=:                         \n\t"                 //
+            :
+            : [A] "r"(this->mont_repr.data),
+              [B] "r"(other.mont_repr.data),
+              [mod] "r"(modulus.data)
+            : "cc", "memory", "%rax");
+    } else if (n == 4) {
+        __asm__(                                   // Preserve alignment
+            "/* perform bignum addition */   \n\t" //
+            ADD_FIRSTADD()                         //
+            ADD_NEXTADD(8)                         //
+            ADD_NEXTADD(16)                        //
+            ADD_NEXTADD(24)                        //
+            "/* if overflow: subtract     */ \n\t" //
+            "/* (tricky point: if A and B are in the range we do " //
+            "not need to do anything special for the possible "    //
+            "carry flag) */ \n\t"                                  //
+            "jc      subtract%=              \n\t"                 //
+            "/* check for overflow */        \n\t"                 //
+            ADD_CMP(24)                                            //
+            ADD_CMP(16)                                            //
+            ADD_CMP(8)                                             //
+            ADD_CMP(0)                                             //
+            "/* subtract mod if overflow */  \n\t"                 //
+            "subtract%=:                     \n\t"                 //
+            ADD_FIRSTSUB()                                         //
+            ADD_NEXTSUB(8)                                         //
+            ADD_NEXTSUB(16)                                        //
+            ADD_NEXTSUB(24)                                        //
+            "done%=:                         \n\t"                 //
+            :
+            : [A] "r"(this->mont_repr.data),
+              [B] "r"(other.mont_repr.data),
+              [mod] "r"(modulus.data)
+            : "cc", "memory", "%rax");
+    } else if (n == 5) {
+        __asm__(                                   // Preserve alignment
+            "/* perform bignum addition */   \n\t" //
+            ADD_FIRSTADD()                         //
+            ADD_NEXTADD(8)                         //
+            ADD_NEXTADD(16)                        //
+            ADD_NEXTADD(24)                        //
+            ADD_NEXTADD(32)                        //
+            "/* if overflow: subtract     */ \n\t" //
+            "/* (tricky point: if A and B are in the range we do " //
+            "not need to do anything special for the possible "    //
+            "carry flag) */ \n\t"                                  //
+            "jc      subtract%=              \n\t"                 //
+            "/* check for overflow */        \n\t"                 //
+            ADD_CMP(32)                                            //
+            ADD_CMP(24)                                            //
+            ADD_CMP(16)                                            //
+            ADD_CMP(8)                                             //
+            ADD_CMP(0)                                             //
+            "/* subtract mod if overflow */  \n\t"                 //
+            "subtract%=:                     \n\t"                 //
+            ADD_FIRSTSUB()                                         //
+            ADD_NEXTSUB(8)                                         //
+            ADD_NEXTSUB(16)                                        //
+            ADD_NEXTSUB(24)                                        //
+            ADD_NEXTSUB(32)                                        //
+            "done%=:                   "                           //
+            "      \n\t"                                           //
+            :
+            : [A] "r"(this->mont_repr.data),
+              [B] "r"(other.mont_repr.data),
+              [mod] "r"(modulus.data)
+            : "cc", "memory", "%rax");
+    } else
 #endif
     {
         mp_limb_t scratch[n+1];
@@ -453,67 +473,58 @@ Fp_model<n,modulus>& Fp_model<n,modulus>::operator-=(const Fp_model<n,modulus>& 
     this->sub_cnt++;
 #endif
 #if defined(__x86_64__) && defined(USE_ASM)
-    if (n == 3)
-    {
-        __asm__
-            (SUB_FIRSTSUB
-             SUB_NEXTSUB(8)
-             SUB_NEXTSUB(16)
-
-             "jnc     done%=\n\t"
-
-             SUB_FIRSTADD
-             SUB_NEXTADD(8)
-             SUB_NEXTADD(16)
-
-             "done%=:\n\t"
-             :
-             : [A] "r" (this->mont_repr.data), [B] "r" (other.mont_repr.data), [mod] "r" (modulus.data)
-             : "cc", "memory", "%rax");
-    }
-    else if (n == 4)
-    {
-        __asm__
-            (SUB_FIRSTSUB
-             SUB_NEXTSUB(8)
-             SUB_NEXTSUB(16)
-             SUB_NEXTSUB(24)
-
-             "jnc     done%=\n\t"
-
-             SUB_FIRSTADD
-             SUB_NEXTADD(8)
-             SUB_NEXTADD(16)
-             SUB_NEXTADD(24)
-
-             "done%=:\n\t"
-             :
-             : [A] "r" (this->mont_repr.data), [B] "r" (other.mont_repr.data), [mod] "r" (modulus.data)
-             : "cc", "memory", "%rax");
-    }
-    else if (n == 5)
-    {
-        __asm__
-            (SUB_FIRSTSUB
-             SUB_NEXTSUB(8)
-             SUB_NEXTSUB(16)
-             SUB_NEXTSUB(24)
-             SUB_NEXTSUB(32)
-
-             "jnc     done%=\n\t"
-
-             SUB_FIRSTADD
-             SUB_NEXTADD(8)
-             SUB_NEXTADD(16)
-             SUB_NEXTADD(24)
-             SUB_NEXTADD(32)
-
-             "done%=:\n\t"
-             :
-             : [A] "r" (this->mont_repr.data), [B] "r" (other.mont_repr.data), [mod] "r" (modulus.data)
-             : "cc", "memory", "%rax");
-    }
-    else
+    if (n == 3) {
+        __asm__(                 // Preserve alignment
+            SUB_FIRSTSUB()       //
+            SUB_NEXTSUB(8)       //
+            SUB_NEXTSUB(16)      //
+            "jnc     done%=\n\t" //
+            SUB_FIRSTADD()       //
+            SUB_NEXTADD(8)       //
+            SUB_NEXTADD(16)      //
+            "done%=:\n\t"        //
+            :
+            : [A] "r"(this->mont_repr.data),
+              [B] "r"(other.mont_repr.data),
+              [mod] "r"(modulus.data)
+            : "cc", "memory", "%rax");
+    } else if (n == 4) {
+        __asm__(                 // Preserve alignment
+            SUB_FIRSTSUB()       //
+            SUB_NEXTSUB(8)       //
+            SUB_NEXTSUB(16)      //
+            SUB_NEXTSUB(24)      //
+            "jnc     done%=\n\t" //
+            SUB_FIRSTADD()       //
+            SUB_NEXTADD(8)       //
+            SUB_NEXTADD(16)      //
+            SUB_NEXTADD(24)      //
+            "done%=:\n\t"        //
+            :
+            : [A] "r"(this->mont_repr.data),
+              [B] "r"(other.mont_repr.data),
+              [mod] "r"(modulus.data)
+            : "cc", "memory", "%rax");
+    } else if (n == 5) {
+        __asm__(                 // Preserve alignment
+            SUB_FIRSTSUB()       //
+            SUB_NEXTSUB(8)       //
+            SUB_NEXTSUB(16)      //
+            SUB_NEXTSUB(24)      //
+            SUB_NEXTSUB(32)      //
+            "jnc     done%=\n\t" //
+            SUB_FIRSTADD()       //
+            SUB_NEXTADD(8)       //
+            SUB_NEXTADD(16)      //
+            SUB_NEXTADD(24)      //
+            SUB_NEXTADD(32)      //
+            "done%=:\n\t"        //
+            :
+            : [A] "r"(this->mont_repr.data),
+              [B] "r"(other.mont_repr.data),
+              [mod] "r"(modulus.data)
+            : "cc", "memory", "%rax");
+    } else
 #endif
     {
         mp_limb_t scratch[n+1];
@@ -638,21 +649,20 @@ Fp_model<n,modulus> Fp_model<n,modulus>::squared() const
         REDUCE_6_LIMB_PRODUCT(k, tmp1, tmp2, tmp3, inv, res, modulus.data);
 
         /* subtract t > mod */
-        __asm__ volatile
-            ("/* check for overflow */        \n\t"
-             MONT_CMP(16)
-             MONT_CMP(8)
-             MONT_CMP(0)
-
-             "/* subtract mod if overflow */  \n\t"
-             "subtract%=:                     \n\t"
-             MONT_FIRSTSUB
-             MONT_NEXTSUB(8)
-             MONT_NEXTSUB(16)
-             "done%=:                         \n\t"
-             :
-             : [tmp] "r" (res+n), [M] "r" (modulus.data)
-             : "cc", "memory", "%rax");
+        __asm__ volatile(                          // Preserve alignment
+            "/* check for overflow */        \n\t" //
+            MONT_CMP(16)                           //
+            MONT_CMP(8)                            //
+            MONT_CMP(0)                            //
+            "/* subtract mod if overflow */  \n\t" //
+            "subtract%=:                     \n\t" //
+            MONT_FIRSTSUB()                        //
+            MONT_NEXTSUB(8)                        //
+            MONT_NEXTSUB(16)                       //
+            "done%=:                         \n\t" //
+            :
+            : [tmp] "r"(res + n), [M] "r"(modulus.data)
+            : "cc", "memory", "%rax");
 
         Fp_model<n, modulus> r;
         mpn_copyi(r.mont_repr.data, res+n, n);
