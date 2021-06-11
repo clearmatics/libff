@@ -17,6 +17,12 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: format-check
+      run: |
+        scripts/format
+        git diff --no-ext-diff > format_errs
+        head -n 20 format_errs
+        [ "0" == `cat format_errs | wc -l` ]
     - name: install-dependencies
       run: |
         sudo apt-get update
