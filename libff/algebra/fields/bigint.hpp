@@ -48,7 +48,7 @@ public:
     bool is_zero() const;
 
     /// The number of bits representable by this bigint type
-    static constexpr size_t max_bits();
+    static constexpr size_t max_bits() { return n * GMP_NUMB_BITS; };
 
     /// The number of bits in this specific bigint value, i.e., position of the
     /// most-significant 1
@@ -58,10 +58,10 @@ public:
     void to_mpz(mpz_t r) const;
     bool test_bit(const std::size_t bitno) const;
 
-    bigint& randomize();
+    bigint &randomize();
 
-    friend std::ostream& operator<< <n>(std::ostream &out, const bigint<n> &b);
-    friend std::istream& operator>> <n>(std::istream &in, bigint<n> &b);
+    friend std::ostream &operator<<<n>(std::ostream &out, const bigint<n> &b);
+    friend std::istream &operator>><n>(std::istream &in, bigint<n> &b);
 };
 
 } // namespace libff

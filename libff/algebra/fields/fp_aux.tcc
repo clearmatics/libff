@@ -29,16 +29,6 @@ namespace libff {
     "movq    " STR(ofs) "(%[B]), %%rax          \n\t"                   \
     "adcq    %%rax, " STR(ofs) "(%[A])          \n\t"
 
-#define ADD_CMP(ofs)                                                           \
-    "movq    " STR(ofs) "(%[mod]), %%rax   \n\t"                               \
-                        "cmpq    %%rax, " STR(                                 \
-                            ofs) "(%[A])     \n\t"                             \
-                                 "jb      done%=              \n\t"            \
-                                 "ja      subtract%=          \n\t"
-#define ADD_CMP(ofs)                                  \
-    "movq    " STR(ofs) "(%[mod]), %%rax   \n\t"      \
-    "cmpq    %%rax, " STR(ofs) "(%[A])     \n\t"      \
-    "jb      done%=              \n\t"                \
 #define ADD_CMP(ofs)                                                    \
     "movq    " STR(ofs) "(%[mod]), %%rax   \n\t"                        \
     "cmpq    %%rax, " STR(ofs) "(%[A])     \n\t"                        \
@@ -88,10 +78,10 @@ namespace libff {
     "sbbq    %%rax, " STR(ofs) "(%[tmp])   \n\t"
 
 /*
-  The x86-64 Montgomery multiplication here is similar
-  to Algorithm 2 (CIOS method) in http://eprint.iacr.org/2012/140.pdf
-  and the PowerPC pseudocode of gmp-ecm library (c) Paul Zimmermann and Alexander Kruppa
-  (see comments on top of powerpc64/mulredc.m4).
+  The x86-64 Montgomery multiplication here is similar to Algorithm 2 (CIOS
+  method) in http://eprint.iacr.org/2012/140.pdf and the PowerPC pseudocode of
+  gmp-ecm library (c) Paul Zimmermann and Alexander Kruppa (see comments on top
+  of powerpc64/mulredc.m4).
 */
 
 #define MONT_PRECOMPUTE()                                                  \
@@ -411,8 +401,6 @@ namespace libff {
 
 // clang-format on
 
-} // namespace libff
-} // libff
 } // namespace libff
 
 #endif // FP_AUX_TCC_
