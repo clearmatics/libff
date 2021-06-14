@@ -15,11 +15,11 @@
 #define SERIALIZATION_TCC_
 
 #include <cassert>
+#include <libff/common/utils.hpp>
 #include <sstream>
 
-#include <libff/common/utils.hpp>
-
-namespace libff {
+namespace libff
+{
 
 inline void consume_newline(std::istream &in)
 {
@@ -67,8 +67,7 @@ inline void input_bool(std::istream &in, bool &b)
 inline void output_bool_vector(std::ostream &out, const std::vector<bool> &v)
 {
     out << v.size() << "\n";
-    for (const bool b : v)
-    {
+    for (const bool b : v) {
         output_bool(out, b);
     }
 }
@@ -79,16 +78,14 @@ inline void input_bool_vector(std::istream &in, std::vector<bool> &v)
     in >> size;
     consume_newline(in);
     v.resize(size);
-    for (size_t i = 0; i < size; ++i)
-    {
+    for (size_t i = 0; i < size; ++i) {
         bool b;
         input_bool(in, b);
         v[i] = b;
     }
 }
 
-template<typename T>
-T reserialize(const T &obj)
+template<typename T> T reserialize(const T &obj)
 {
     std::stringstream ss;
     ss << obj;
@@ -99,12 +96,13 @@ T reserialize(const T &obj)
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream& out, const std::vector<T> &v)
+std::ostream &operator<<(std::ostream &out, const std::vector<T> &v)
 {
-    static_assert(!std::is_same<T, bool>::value, "this does not work for std::vector<bool>");
+    static_assert(
+        !std::is_same<T, bool>::value,
+        "this does not work for std::vector<bool>");
     out << v.size() << "\n";
-    for (const T& t : v)
-    {
+    for (const T &t : v) {
         out << t << OUTPUT_NEWLINE;
     }
 
@@ -112,16 +110,17 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T> &v)
 }
 
 template<typename T>
-std::istream& operator>>(std::istream& in, std::vector<T> &v)
+std::istream &operator>>(std::istream &in, std::vector<T> &v)
 {
-    static_assert(!std::is_same<T, bool>::value, "this does not work for std::vector<bool>");
+    static_assert(
+        !std::is_same<T, bool>::value,
+        "this does not work for std::vector<bool>");
     size_t size;
     in >> size;
     consume_newline(in);
 
     v.resize(0);
-    for (size_t i = 0; i < size; ++i)
-    {
+    for (size_t i = 0; i < size; ++i) {
         T elt;
         in >> elt;
         consume_OUTPUT_NEWLINE(in);
@@ -132,12 +131,11 @@ std::istream& operator>>(std::istream& in, std::vector<T> &v)
 }
 
 template<typename T1, typename T2>
-std::ostream& operator<<(std::ostream& out, const std::map<T1, T2> &m)
+std::ostream &operator<<(std::ostream &out, const std::map<T1, T2> &m)
 {
     out << m.size() << "\n";
 
-    for (auto &it : m)
-    {
+    for (auto &it : m) {
         out << it.first << "\n";
         out << it.second << "\n";
     }
@@ -146,15 +144,14 @@ std::ostream& operator<<(std::ostream& out, const std::map<T1, T2> &m)
 }
 
 template<typename T1, typename T2>
-std::istream& operator>>(std::istream& in, std::map<T1, T2> &m)
+std::istream &operator>>(std::istream &in, std::map<T1, T2> &m)
 {
     m.clear();
     size_t size;
     in >> size;
     consume_newline(in);
 
-    for (size_t i = 0; i < size; ++i)
-    {
+    for (size_t i = 0; i < size; ++i) {
         T1 k;
         T2 v;
         in >> k;
@@ -168,29 +165,25 @@ std::istream& operator>>(std::istream& in, std::map<T1, T2> &m)
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream& out, const std::set<T> &s)
+std::ostream &operator<<(std::ostream &out, const std::set<T> &s)
 {
     out << s.size() << "\n";
 
-    for (auto &el : s)
-    {
+    for (auto &el : s) {
         out << el << "\n";
     }
 
     return out;
 }
 
-
-template<typename T>
-std::istream& operator>>(std::istream& in, std::set<T> &s)
+template<typename T> std::istream &operator>>(std::istream &in, std::set<T> &s)
 {
     s.clear();
     size_t size;
     in >> size;
     consume_newline(in);
 
-    for (size_t i = 0; i < size; ++i)
-    {
+    for (size_t i = 0; i < size; ++i) {
         T el;
         in >> el;
         consume_newline(in);
@@ -200,6 +193,6 @@ std::istream& operator>>(std::istream& in, std::set<T> &s)
     return in;
 }
 
-}
+} // namespace libff
 
 #endif // SERIALIZATION_TCC_

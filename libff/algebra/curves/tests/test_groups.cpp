@@ -6,7 +6,6 @@
  *****************************************************************************/
 
 #include <gtest/gtest.h>
-
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
@@ -17,13 +16,11 @@
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
 #include <libff/algebra/curves/curve_utils.hpp>
-
 #include <sstream>
 
 using namespace libff;
 
-template<typename GroupT>
-void test_mixed_add()
+template<typename GroupT> void test_mixed_add()
 {
     GroupT base, el, result;
 
@@ -58,8 +55,7 @@ void test_mixed_add()
     ASSERT_EQ(base.dbl(), result);
 }
 
-template<typename GroupT>
-void test_group()
+template<typename GroupT> void test_group()
 {
     bigint<1> rand1 = bigint<1>("76749407");
     bigint<1> rand2 = bigint<1>("44410867");
@@ -76,7 +72,7 @@ void test_group()
     GroupT three = bigint<1>(3l) * GroupT::one();
     GroupT four = bigint<1>(4l) * GroupT::one();
 
-    ASSERT_EQ(three+four, two+five);
+    ASSERT_EQ(three + four, two + five);
 
     GroupT a = GroupT::random_element();
     GroupT b = GroupT::random_element();
@@ -117,28 +113,24 @@ void test_group()
     test_mixed_add<GroupT>();
 }
 
-template<typename GroupT>
-void test_mul_by_q()
+template<typename GroupT> void test_mul_by_q()
 {
     GroupT a = GroupT::random_element();
-    ASSERT_EQ(a.mul_by_q(), (GroupT::base_field_char()*a));
+    ASSERT_EQ(a.mul_by_q(), (GroupT::base_field_char() * a));
 }
 
-template<typename GroupT>
-void test_mul_by_cofactor()
+template<typename GroupT> void test_mul_by_cofactor()
 {
     const GroupT a = GroupT::random_element();
-    const GroupT a_h = GroupT::h*a;
+    const GroupT a_h = GroupT::h * a;
     ASSERT_EQ(a_h, a.mul_by_cofactor());
 }
 
-template<typename GroupT>
-void test_output()
+template<typename GroupT> void test_output()
 {
     GroupT g = GroupT::zero();
 
-    for (size_t i = 0; i < 1000; ++i)
-    {
+    for (size_t i = 0; i < 1000; ++i) {
         std::stringstream ss;
         ss << g;
         g.write_compressed(ss);
@@ -159,21 +151,17 @@ void test_output()
     }
 }
 
-template<typename GroupT>
-void test_group_membership_valid()
+template<typename GroupT> void test_group_membership_valid()
 {
-    for (size_t i = 0 ; i < 1000 ; ++i)
-    {
+    for (size_t i = 0; i < 1000; ++i) {
         GroupT g = GroupT::random_element();
         ASSERT_TRUE(g.is_in_safe_subgroup());
     }
 }
 
-template<typename GroupT>
-void test_group_membership_proof_valid()
+template<typename GroupT> void test_group_membership_proof_valid()
 {
-    for (size_t i = 0 ; i < 1000 ; ++i)
-    {
+    for (size_t i = 0; i < 1000; ++i) {
         const GroupT g = GroupT::random_element();
         const GroupT membership_proof = g.proof_of_safe_subgroup();
         ASSERT_EQ(g, membership_proof.mul_by_cofactor());
@@ -189,7 +177,8 @@ void test_group_membership_invalid_g1(const typename GroupT::base_field &x)
 }
 
 template<typename GroupT>
-void test_group_membership_proof_invalid_g1(const typename GroupT::base_field &x)
+void test_group_membership_proof_invalid_g1(
+    const typename GroupT::base_field &x)
 {
     const GroupT g1_invalid = g1_curve_point_at_x<GroupT>(x);
     const GroupT proof_of_membership = g1_invalid.proof_of_safe_subgroup();
@@ -204,15 +193,13 @@ void test_group_membership_invalid_g2(const typename GroupT::twist_field &x)
     ASSERT_FALSE(g2_invalid.is_in_safe_subgroup());
 }
 
-template<typename ppT>
-void test_check_membership()
+template<typename ppT> void test_check_membership()
 {
     test_group_membership_valid<G1<ppT>>();
     test_group_membership_valid<G2<ppT>>();
 }
 
-template<>
-void test_check_membership<alt_bn128_pp>()
+template<> void test_check_membership<alt_bn128_pp>()
 {
     test_group_membership_valid<alt_bn128_G1>();
     test_group_membership_valid<alt_bn128_G2>();
@@ -221,8 +208,7 @@ void test_check_membership<alt_bn128_pp>()
     test_group_membership_invalid_g2<alt_bn128_G2>(alt_bn128_Fq2::one());
 }
 
-template<>
-void test_check_membership<bls12_377_pp>()
+template<> void test_check_membership<bls12_377_pp>()
 {
     test_group_membership_valid<bls12_377_G1>();
     test_group_membership_valid<bls12_377_G2>();
@@ -234,8 +220,7 @@ void test_check_membership<bls12_377_pp>()
     test_group_membership_proof_invalid_g1<bls12_377_G1>(bls12_377_Fq(3));
 }
 
-template<>
-void test_check_membership<bw6_761_pp>()
+template<> void test_check_membership<bw6_761_pp>()
 {
     test_group_membership_valid<bw6_761_G1>();
     test_group_membership_valid<bw6_761_G2>();
@@ -258,29 +243,29 @@ void test_bls12_377()
     const bls12_377_G2 a = bls12_377_G2::random_element();
     const bls12_377_G2 uft = a.untwist_frobenius_twist();
     const bls12_377_G2 uft_2 = uft.untwist_frobenius_twist();
-    const bls12_377_G2 z = uft_2 - (bls12_377_trace_of_frobenius * uft) + (bls12_377_modulus_q * a);
+    const bls12_377_G2 z = uft_2 - (bls12_377_trace_of_frobenius * uft) +
+                           (bls12_377_modulus_q * a);
     ASSERT_EQ(bls12_377_G2::zero(), z);
 }
 
 TEST(TestGroups, Edwards)
 {
     edwards_pp::init_public_params();
-    test_group<G1<edwards_pp> >();
-    test_output<G1<edwards_pp> >();
-    test_group<G2<edwards_pp> >();
-    test_output<G2<edwards_pp> >();
-    test_mul_by_q<G2<edwards_pp> >();
-
+    test_group<G1<edwards_pp>>();
+    test_output<G1<edwards_pp>>();
+    test_group<G2<edwards_pp>>();
+    test_output<G2<edwards_pp>>();
+    test_mul_by_q<G2<edwards_pp>>();
 }
 
 TEST(TestGroups, Mnt4)
 {
     mnt4_pp::init_public_params();
-    test_group<G1<mnt4_pp> >();
-    test_output<G1<mnt4_pp> >();
-    test_group<G2<mnt4_pp> >();
-    test_output<G2<mnt4_pp> >();
-    test_mul_by_q<G2<mnt4_pp> >();
+    test_group<G1<mnt4_pp>>();
+    test_output<G1<mnt4_pp>>();
+    test_group<G2<mnt4_pp>>();
+    test_output<G2<mnt4_pp>>();
+    test_mul_by_q<G2<mnt4_pp>>();
     test_check_membership<mnt4_pp>();
     test_mul_by_cofactor<G1<mnt4_pp>>();
     test_mul_by_cofactor<G2<mnt4_pp>>();
@@ -289,11 +274,11 @@ TEST(TestGroups, Mnt4)
 TEST(TestGroups, Mnt6)
 {
     mnt6_pp::init_public_params();
-    test_group<G1<mnt6_pp> >();
-    test_output<G1<mnt6_pp> >();
-    test_group<G2<mnt6_pp> >();
-    test_output<G2<mnt6_pp> >();
-    test_mul_by_q<G2<mnt6_pp> >();
+    test_group<G1<mnt6_pp>>();
+    test_output<G1<mnt6_pp>>();
+    test_group<G2<mnt6_pp>>();
+    test_output<G2<mnt6_pp>>();
+    test_mul_by_q<G2<mnt6_pp>>();
     test_check_membership<mnt6_pp>();
     test_mul_by_cofactor<G1<mnt6_pp>>();
     test_mul_by_cofactor<G2<mnt6_pp>>();
@@ -302,11 +287,11 @@ TEST(TestGroups, Mnt6)
 TEST(TestGroups, Alt_BN128)
 {
     alt_bn128_pp::init_public_params();
-    test_group<G1<alt_bn128_pp> >();
-    test_output<G1<alt_bn128_pp> >();
-    test_group<G2<alt_bn128_pp> >();
-    test_output<G2<alt_bn128_pp> >();
-    test_mul_by_q<G2<alt_bn128_pp> >();
+    test_group<G1<alt_bn128_pp>>();
+    test_output<G1<alt_bn128_pp>>();
+    test_group<G2<alt_bn128_pp>>();
+    test_output<G2<alt_bn128_pp>>();
+    test_mul_by_q<G2<alt_bn128_pp>>();
     test_check_membership<alt_bn128_pp>();
     test_mul_by_cofactor<G1<alt_bn128_pp>>();
     test_mul_by_cofactor<G2<alt_bn128_pp>>();
@@ -317,11 +302,11 @@ TEST(TestGroups, BLS12_377)
     // Make sure that added curves pass the libff tests
     bls12_377_pp::init_public_params();
     test_bls12_377();
-    test_group<G1<bls12_377_pp> >();
-    test_output<G1<bls12_377_pp> >();
-    test_group<G2<bls12_377_pp> >();
-    test_output<G2<bls12_377_pp> >();
-    test_mul_by_q<G2<bls12_377_pp> >();
+    test_group<G1<bls12_377_pp>>();
+    test_output<G1<bls12_377_pp>>();
+    test_group<G2<bls12_377_pp>>();
+    test_output<G2<bls12_377_pp>>();
+    test_mul_by_q<G2<bls12_377_pp>>();
     test_check_membership<bls12_377_pp>();
     test_mul_by_cofactor<G1<bls12_377_pp>>();
     test_mul_by_cofactor<G2<bls12_377_pp>>();
@@ -330,11 +315,11 @@ TEST(TestGroups, BLS12_377)
 TEST(TestGroups, BW6_761)
 {
     bw6_761_pp::init_public_params();
-    test_group<G1<bw6_761_pp> >();
-    test_output<G1<bw6_761_pp> >();
-    test_group<G2<bw6_761_pp> >();
-    test_output<G2<bw6_761_pp> >();
-    test_mul_by_q<G2<bw6_761_pp> >();
+    test_group<G1<bw6_761_pp>>();
+    test_output<G1<bw6_761_pp>>();
+    test_group<G2<bw6_761_pp>>();
+    test_output<G2<bw6_761_pp>>();
+    test_mul_by_q<G2<bw6_761_pp>>();
     test_check_membership<bw6_761_pp>();
     test_mul_by_cofactor<G1<bw6_761_pp>>();
     test_mul_by_cofactor<G2<bw6_761_pp>>();
@@ -345,10 +330,10 @@ TEST(TestGroups, BW6_761)
 TEST(TestGroups, BN128)
 {
     bn128_pp::init_public_params();
-    test_group<G1<bn128_pp> >();
-    test_output<G1<bn128_pp> >();
-    test_group<G2<bn128_pp> >();
-    test_output<G2<bn128_pp> >();
+    test_group<G1<bn128_pp>>();
+    test_output<G1<bn128_pp>>();
+    test_group<G2<bn128_pp>>();
+    test_output<G2<bn128_pp>>();
     test_check_membership<bn128_pp>();
     test_mul_by_cofactor<G1<bn128_pp>>();
     test_mul_by_cofactor<G2<bn128_pp>>();

@@ -11,33 +11,23 @@
 
 #include <cmath>
 #include <complex>
-
-#include <math.h>
-
 #include <libff/algebra/fields/bigint.hpp>
 #include <libff/common/double.hpp>
+#include <math.h>
 
-namespace libff {
-
-Double::Double()
+namespace libff
 {
-    val = std::complex<double>(0, 0);
-}
 
-Double::Double(double real)
-{
-    val = std::complex<double>(real, 0);
-}
+Double::Double() { val = std::complex<double>(0, 0); }
+
+Double::Double(double real) { val = std::complex<double>(real, 0); }
 
 Double::Double(double real, double imag)
 {
     val = std::complex<double>(real, imag);
 }
 
-Double::Double(std::complex<double> num)
-{
-    val = num;
-}
+Double::Double(std::complex<double> num) { val = num; }
 
 unsigned Double::add_cnt = 0;
 unsigned Double::sub_cnt = 0;
@@ -73,12 +63,13 @@ Double Double::operator*(const Double &other) const
 
 Double Double::operator-() const
 {
-    if (val.imag() == 0) return Double(-val.real());
+    if (val.imag() == 0)
+        return Double(-val.real());
 
     return Double(-val.real(), -val.imag());
 }
 
-Double& Double::operator+=(const Double &other)
+Double &Double::operator+=(const Double &other)
 {
 #ifdef PROFILE_OP_COUNTS
     ++add_cnt;
@@ -88,7 +79,7 @@ Double& Double::operator+=(const Double &other)
     return *this;
 }
 
-Double& Double::operator-=(const Double &other)
+Double &Double::operator-=(const Double &other)
 {
 #ifdef PROFILE_OP_COUNTS
     ++sub_cnt;
@@ -98,7 +89,7 @@ Double& Double::operator-=(const Double &other)
     return *this;
 }
 
-Double& Double::operator*=(const Double &other)
+Double &Double::operator*=(const Double &other)
 {
 #ifdef PROFILE_OP_COUNTS
     ++mul_cnt;
@@ -110,8 +101,8 @@ Double& Double::operator*=(const Double &other)
 
 bool Double::operator==(const Double &other) const
 {
-    return (std::abs(val.real() - other.val.real()) < 0.000001)
-        && (std::abs(val.imag() - other.val.imag()) < 0.000001);
+    return (std::abs(val.real() - other.val.real()) < 0.000001) &&
+           (std::abs(val.imag() - other.val.imag()) < 0.000001);
 }
 
 bool Double::operator!=(const Double &other) const
@@ -153,41 +144,20 @@ libff::bigint<1> Double::as_bigint() const
     return libff::bigint<1>(val.real());
 }
 
-unsigned long Double::as_ulong() const
-{
-    return round(val.real());
-}
+unsigned long Double::as_ulong() const { return round(val.real()); }
 
-Double Double::squared() const
-{
-    return Double(val * val);
-}
+Double Double::squared() const { return Double(val * val); }
 
-Double Double::one()
-{
-    return Double(1);
-}
+Double Double::one() { return Double(1); }
 
-Double Double::zero()
-{
-    return Double(0);
-}
+Double Double::zero() { return Double(0); }
 
-Double Double::random_element()
-{
-    return Double(std::rand() % 1001);
-}
+Double Double::random_element() { return Double(std::rand() % 1001); }
 
-Double Double::geometric_generator()
-{
-    return Double(2);
-}
+Double Double::geometric_generator() { return Double(2); }
 
-Double Double::arithmetic_generator()
-{
-    return Double(1);
-}
+Double Double::arithmetic_generator() { return Double(1); }
 
 Double Double::multiplicative_generator = Double(2);
 
-} // libff
+} // namespace libff

@@ -19,12 +19,13 @@
 #include <string>
 #include <vector>
 
-namespace libff {
+namespace libff
+{
 
 void start_profiling();
 long long get_nsec_time();
-void print_time(const char* msg);
-void print_header(const char* msg);
+void print_time(const char *msg);
+void print_header(const char *msg);
 
 void print_indent();
 
@@ -36,16 +37,17 @@ extern std::map<std::string, long long> cumulative_times;
 
 void clear_profiling_counters();
 
-void print_cumulative_time_entry(const std::string &key, const long long factor=1);
-void print_cumulative_times(const long long factor=1);
-void print_cumulative_op_counts(const bool only_fq=false);
+void print_cumulative_time_entry(
+    const std::string &key, const long long factor = 1);
+void print_cumulative_times(const long long factor = 1);
+void print_cumulative_op_counts(const bool only_fq = false);
 
-void enter_block(const std::string &msg, const bool indent=true);
-void leave_block(const std::string &msg, const bool indent=true);
+void enter_block(const std::string &msg, const bool indent = true);
+void leave_block(const std::string &msg, const bool indent = true);
 
 void print_mem(const std::string &s = "");
 void print_compilation_info();
 
-} // libff
+} // namespace libff
 
 #endif // PROFILING_HPP_

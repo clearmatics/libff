@@ -1,10 +1,9 @@
-#include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
-#include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
-#include <libff/common/profiling.hpp>
-
 #include <exception>
 #include <fcntl.h>
 #include <fstream>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
+#include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
+#include <libff/common/profiling.hpp>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -28,8 +27,7 @@ bool ensure_group_elements_file_uncompressed(const std::string &identifier)
 
     // If file doesn't exist, create it.
     struct stat s;
-    if (stat(filename.c_str(), &s))
-    {
+    if (stat(filename.c_str(), &s)) {
         std::cout << "  File '" << filename.c_str()
                   << "' does not exist. Creating ... ";
         std::flush(std::cout);
@@ -37,16 +35,14 @@ bool ensure_group_elements_file_uncompressed(const std::string &identifier)
         // Fill a buffer with random elements
         std::vector<GroupT> elements;
         elements.reserve(NUM_DIFFERENT_ELEMENTS);
-        for (size_t i = 0; i < NUM_DIFFERENT_ELEMENTS; ++i)
-        {
+        for (size_t i = 0; i < NUM_DIFFERENT_ELEMENTS; ++i) {
             elements.push_back(GroupT::random_element());
         }
 
         // Use the buffer to fill the file
         std::ofstream out_s(
             filename.c_str(), std::ios_base::out | std::ios_base::binary);
-        for (size_t i = 0; i < NUM_ELEMENTS_IN_FILE; ++i)
-        {
+        for (size_t i = 0; i < NUM_ELEMENTS_IN_FILE; ++i) {
             elements[i % NUM_DIFFERENT_ELEMENTS].write_uncompressed(out_s);
         }
         out_s.close();
@@ -78,8 +74,7 @@ bool profile_group_read_sequential_uncompressed(const std::string &identifier)
 
         {
             enter_block("Read group elements profiling");
-            for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i)
-            {
+            for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
                 GroupT::read_uncompressed(
                     in_s, elements[i % NUM_DIFFERENT_ELEMENTS]);
             }
@@ -92,12 +87,10 @@ bool profile_group_read_sequential_uncompressed(const std::string &identifier)
     return true;
 }
 
-template<typename GroupT>
-void run_profile(const std::string &identifier)
+template<typename GroupT> void run_profile(const std::string &identifier)
 {
     std::cout << " profile: " << identifier << "\n";
-    if (!ensure_group_elements_file_uncompressed<GroupT>(identifier))
-    {
+    if (!ensure_group_elements_file_uncompressed<GroupT>(identifier)) {
         std::cout << "  Purge disk cache and re-run to profile.\n";
         return;
     }

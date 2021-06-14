@@ -8,18 +8,19 @@
 #ifndef EDWARDS_G2_HPP_
 #define EDWARDS_G2_HPP_
 #include <iostream>
-#include <vector>
-
 #include <libff/algebra/curves/curve_utils.hpp>
 #include <libff/algebra/curves/edwards/edwards_init.hpp>
+#include <vector>
 
-namespace libff {
+namespace libff
+{
 
 class edwards_G2;
-std::ostream& operator<<(std::ostream &, const edwards_G2&);
-std::istream& operator>>(std::istream &, edwards_G2&);
+std::ostream &operator<<(std::ostream &, const edwards_G2 &);
+std::istream &operator>>(std::istream &, edwards_G2 &);
 
-class edwards_G2 {
+class edwards_G2
+{
 public:
 #ifdef PROFILE_OP_COUNTS
     static long long add_cnt;
@@ -33,8 +34,11 @@ public:
 
     edwards_Fq3 X, Y, Z;
     edwards_G2();
+
 private:
-    edwards_G2(const edwards_Fq3& X, const edwards_Fq3& Y, const edwards_Fq3& Z) : X(X), Y(Y), Z(Z) {};
+    edwards_G2(const edwards_Fq3 &X, const edwards_Fq3 &Y, const edwards_Fq3 &Z)
+        : X(X), Y(Y), Z(Z){};
+
 public:
     static edwards_Fq3 mul_by_a(const edwards_Fq3 &elt);
     static edwards_Fq3 mul_by_d(const edwards_Fq3 &elt);
@@ -43,7 +47,8 @@ public:
     typedef edwards_Fr scalar_field;
 
     // using inverted coordinates
-    edwards_G2(const edwards_Fq3& X, const edwards_Fq3& Y) : X(Y), Y(X), Z(X*Y) {};
+    edwards_G2(const edwards_Fq3 &X, const edwards_Fq3 &Y)
+        : X(Y), Y(X), Z(X * Y){};
 
     void print() const;
     void print_coordinates() const;
@@ -73,8 +78,14 @@ public:
     static edwards_G2 random_element();
 
     static size_t size_in_bits() { return twist_field::size_in_bits() + 1; }
-    static bigint<base_field::num_limbs> base_field_char() { return base_field::field_char(); }
-    static bigint<scalar_field::num_limbs> order() { return scalar_field::field_char(); }
+    static bigint<base_field::num_limbs> base_field_char()
+    {
+        return base_field::field_char();
+    }
+    static bigint<scalar_field::num_limbs> order()
+    {
+        return scalar_field::field_char();
+    }
 
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
@@ -90,11 +101,12 @@ edwards_G2 operator*(const bigint<m> &lhs, const edwards_G2 &rhs)
     return scalar_mul<edwards_G2, m>(rhs, lhs);
 }
 
-template<mp_size_t m, const bigint<m>& modulus_p>
+template<mp_size_t m, const bigint<m> &modulus_p>
 edwards_G2 operator*(const Fp_model<m, modulus_p> &lhs, const edwards_G2 &rhs)
 {
-   return scalar_mul<edwards_G2, m>(rhs, lhs.as_bigint());
+    return scalar_mul<edwards_G2, m>(rhs, lhs.as_bigint());
 }
 
-} // libff
+} // namespace libff
+
 #endif // EDWARDS_G2_HPP_

@@ -12,18 +12,19 @@
 #ifndef MNT6_G1_HPP_
 #define MNT6_G1_HPP_
 
-#include <vector>
-
 #include <libff/algebra/curves/curve_utils.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_init.hpp>
+#include <vector>
 
-namespace libff {
+namespace libff
+{
 
 class mnt6_G1;
-std::ostream& operator<<(std::ostream &, const mnt6_G1&);
-std::istream& operator>>(std::istream &, mnt6_G1&);
+std::ostream &operator<<(std::ostream &, const mnt6_G1 &);
+std::istream &operator>>(std::istream &, mnt6_G1 &);
 
-class mnt6_G1 {
+class mnt6_G1
+{
 public:
 #ifdef PROFILE_OP_COUNTS
     static long long add_cnt;
@@ -41,15 +42,22 @@ public:
 
     // Cofactor
     static const mp_size_t h_bitcount = 1;
-    static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+    static const mp_size_t h_limbs =
+        (h_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
     static bigint<h_limbs> h;
 
     mnt6_Fq X, Y, Z;
 
     // using projective coordinates
     mnt6_G1();
-    mnt6_G1(const mnt6_Fq& X, const mnt6_Fq& Y) : X(X), Y(Y), Z(base_field::one()) {}
-    mnt6_G1(const mnt6_Fq& X, const mnt6_Fq& Y, const mnt6_Fq& Z) : X(X), Y(Y), Z(Z) {}
+    mnt6_G1(const mnt6_Fq &X, const mnt6_Fq &Y)
+        : X(X), Y(Y), Z(base_field::one())
+    {
+    }
+    mnt6_G1(const mnt6_Fq &X, const mnt6_Fq &Y, const mnt6_Fq &Z)
+        : X(X), Y(Y), Z(Z)
+    {
+    }
 
     void print() const;
     void print_coordinates() const;
@@ -80,8 +88,14 @@ public:
     static mnt6_G1 random_element();
 
     static size_t size_in_bits() { return base_field::size_in_bits() + 1; }
-    static bigint<base_field::num_limbs> base_field_char() { return base_field::field_char(); }
-    static bigint<scalar_field::num_limbs> order() { return scalar_field::field_char(); }
+    static bigint<base_field::num_limbs> base_field_char()
+    {
+        return base_field::field_char();
+    }
+    static bigint<scalar_field::num_limbs> order()
+    {
+        return scalar_field::field_char();
+    }
 
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
@@ -97,12 +111,12 @@ mnt6_G1 operator*(const bigint<m> &lhs, const mnt6_G1 &rhs)
     return scalar_mul<mnt6_G1, m>(rhs, lhs);
 }
 
-template<mp_size_t m, const bigint<m>& modulus_p>
-mnt6_G1 operator*(const Fp_model<m,modulus_p> &lhs, const mnt6_G1 &rhs)
+template<mp_size_t m, const bigint<m> &modulus_p>
+mnt6_G1 operator*(const Fp_model<m, modulus_p> &lhs, const mnt6_G1 &rhs)
 {
     return scalar_mul<mnt6_G1, m>(rhs, lhs.as_bigint());
 }
 
-} // libff
+} // namespace libff
 
 #endif // MNT6_G1_HPP_

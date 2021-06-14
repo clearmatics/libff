@@ -12,15 +12,14 @@
 #ifndef TEMPLATE_UTILS_HPP_
 #define TEMPLATE_UTILS_HPP_
 
-namespace libff {
+namespace libff
+{
 
 /* A commonly used SFINAE helper type */
-template<typename T>
-struct void_type
-{
+template<typename T> struct void_type {
     typedef void type;
 };
 
-} // libff
+} // namespace libff
 
 #endif // TEMPLATE_UTILS_HPP_

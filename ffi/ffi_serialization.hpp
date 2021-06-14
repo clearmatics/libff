@@ -3,9 +3,11 @@
 
 #include <libff/algebra/curves/public_params.hpp>
 
-namespace libff {
+namespace libff
+{
 
-namespace ffi {
+namespace ffi
+{
 
 // FFI buffers are expected to be big-endian formatted, and padded on the left
 // to be the same size as the in-memory bigint representations. Coefficients of
@@ -50,7 +52,8 @@ bool group_element_read(GroupT &g, const void *buffer, size_t buffer_size);
 /// Write a group element to a buffer (in affine form), checking that the size
 /// is as expected. Returns true on success.
 template<typename GroupT>
-bool group_element_write(const GroupT &g, const void *buffer, size_t buffer_size);
+bool group_element_write(
+    const GroupT &g, const void *buffer, size_t buffer_size);
 
 } // namespace ffi
 

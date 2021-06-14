@@ -7,18 +7,19 @@
 
 #ifndef BLS12_377_G2_HPP_
 #define BLS12_377_G2_HPP_
-#include <vector>
-
 #include <libff/algebra/curves/bls12_377/bls12_377_init.hpp>
 #include <libff/algebra/curves/curve_utils.hpp>
+#include <vector>
 
-namespace libff {
+namespace libff
+{
 
 class bls12_377_G2;
-std::ostream& operator<<(std::ostream &, const bls12_377_G2&);
-std::istream& operator>>(std::istream &, bls12_377_G2&);
+std::ostream &operator<<(std::ostream &, const bls12_377_G2 &);
+std::istream &operator>>(std::istream &, bls12_377_G2 &);
 
-class bls12_377_G2 {
+class bls12_377_G2
+{
 public:
 #ifdef PROFILE_OP_COUNTS
     static long long add_cnt;
@@ -37,14 +38,17 @@ public:
 
     // Cofactor
     static const mp_size_t h_bitcount = 502;
-    static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+    static const mp_size_t h_limbs =
+        (h_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
     static bigint<h_limbs> h;
 
     bls12_377_Fq2 X, Y, Z;
 
     // using Jacobian coordinates
     bls12_377_G2();
-    bls12_377_G2(const bls12_377_Fq2& X, const bls12_377_Fq2& Y, const bls12_377_Fq2& Z) : X(X), Y(Y), Z(Z) {};
+    bls12_377_G2(
+        const bls12_377_Fq2 &X, const bls12_377_Fq2 &Y, const bls12_377_Fq2 &Z)
+        : X(X), Y(Y), Z(Z){};
 
     static bls12_377_Fq2 mul_by_b(const bls12_377_Fq2 &elt);
 
@@ -79,8 +83,14 @@ public:
     static bls12_377_G2 random_element();
 
     static size_t size_in_bits() { return twist_field::size_in_bits() + 1; }
-    static bigint<base_field::num_limbs> base_field_char() { return base_field::field_char(); }
-    static bigint<scalar_field::num_limbs> order() { return scalar_field::field_char(); }
+    static bigint<base_field::num_limbs> base_field_char()
+    {
+        return base_field::field_char();
+    }
+    static bigint<scalar_field::num_limbs> order()
+    {
+        return scalar_field::field_char();
+    }
 
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
@@ -96,12 +106,13 @@ bls12_377_G2 operator*(const bigint<m> &lhs, const bls12_377_G2 &rhs)
     return scalar_mul<bls12_377_G2, m>(rhs, lhs);
 }
 
-template<mp_size_t m, const bigint<m>& modulus_p>
-bls12_377_G2 operator*(const Fp_model<m,modulus_p> &lhs, const bls12_377_G2 &rhs)
+template<mp_size_t m, const bigint<m> &modulus_p>
+bls12_377_G2 operator*(
+    const Fp_model<m, modulus_p> &lhs, const bls12_377_G2 &rhs)
 {
     return scalar_mul<bls12_377_G2, m>(rhs, lhs.as_bigint());
 }
 
+} // namespace libff
 
-} // libff
 #endif // BLS12_377_G2_HPP_
