@@ -24,14 +24,12 @@ std::ostream& operator<<(std::ostream &, const Fp3_model<n, modulus> &);
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &, Fp3_model<n, modulus> &);
 
-/**
- * Arithmetic in the field F[p^3].
- *
- * Let p := modulus. This interface provides arithmetic for the extension field
- * Fp3 = Fp[U]/(U^3-non_residue), where non_residue is in Fp.
- *
- * ASSUMPTION: p = 1 (mod 6)
- */
+/// Arithmetic in the field F[p^3].
+///
+/// Let p := modulus. This interface provides arithmetic for the extension field
+/// Fp3 = Fp[U]/(U^3-non_residue), where non_residue is in Fp.
+///
+/// ASSUMPTION: p = 1 (mod 6)
 template<mp_size_t n, const bigint<n>& modulus>
 class Fp3_model {
 public:
@@ -39,15 +37,25 @@ public:
 
     static const size_t tower_extension_degree = 3;
 
-    static bigint<3*n> euler; // (modulus^3-1)/2
-    static size_t s;       // modulus^3 = 2^s * t + 1
-    static bigint<3*n> t;  // with t odd
-    static bigint<3*n> t_minus_1_over_2; // (t-1)/2
-    static my_Fp non_residue; // X^6-non_residue irreducible over Fp; used for constructing Fp3 = Fp[X] / (X^3 - non_residue)
-    static Fp3_model<n, modulus> nqr; // a quadratic nonresidue in Fp3
-    static Fp3_model<n, modulus> nqr_to_t; // nqr^t
-    static my_Fp Frobenius_coeffs_c1[3]; // non_residue^((modulus^i-1)/3)   for i=0,1,2
-    static my_Fp Frobenius_coeffs_c2[3]; // non_residue^((2*modulus^i-2)/3) for i=0,1,2
+    // (modulus^3-1)/2
+    static bigint<3 * n> euler;
+    // modulus^3 = 2^s * t + 1
+    static size_t s;
+    // with t odd
+    static bigint<3 * n> t;
+    // (t-1)/2
+    static bigint<3 * n> t_minus_1_over_2;
+    // X^6-non_residue irreducible over Fp; used for constructing
+    //   aFp3 = Fp[X] / (X^3 - non_residue)
+    static my_Fp non_residue;
+    // a quadratic nonresidue in Fp3
+    static Fp3_model<n, modulus> nqr;
+    // nqr^t
+    static Fp3_model<n, modulus> nqr_to_t;
+    // non_residue^((modulus^i-1)/3)   for i=0,1,2
+    static my_Fp Frobenius_coeffs_c1[3];
+    // non_residue^((2*modulus^i-2)/3) for i=0,1,2
+    static my_Fp Frobenius_coeffs_c2[3];
 
     my_Fp coeffs[3];
     Fp3_model() {};

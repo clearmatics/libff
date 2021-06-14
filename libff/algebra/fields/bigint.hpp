@@ -22,11 +22,9 @@ template<mp_size_t n> class bigint;
 template<mp_size_t n> std::ostream& operator<<(std::ostream &, const bigint<n>&);
 template<mp_size_t n> std::istream& operator>>(std::istream &, bigint<n>&);
 
-/**
- * Wrapper class around GMP's MPZ long integers. It supports arithmetic operations,
- * serialization and randomization. Serialization is fragile, see common/serialization.hpp.
- */
-
+/// Wrapper class around GMP's MPZ long integers. It supports arithmetic
+/// operations, serialization and randomization. Serialization is fragile, see
+/// common/serialization.hpp.
 template<mp_size_t n>
 class bigint {
 public:
@@ -35,9 +33,12 @@ public:
     mp_limb_t data[n] = {0};
 
     bigint() = default;
-    bigint(const unsigned long x); /// Initalize from a small integer
-    bigint(const char* s); /// Initialize from a string containing an integer in decimal notation
-    bigint(const mpz_t r); /// Initialize from MPZ element
+    /// Initalize from a small integer
+    bigint(const unsigned long x);
+    /// Initialize from a string containing an integer in decimal notation
+    bigint(const char *s);
+    /// Initialize from MPZ element
+    bigint(const mpz_t r);
 
     void print() const;
     void print_hex() const;
@@ -45,8 +46,13 @@ public:
     bool operator!=(const bigint<n>& other) const;
     void clear();
     bool is_zero() const;
-    size_t max_bits() const { return n * GMP_NUMB_BITS; } /// Returns the number of bits representable by this bigint type
-    size_t num_bits() const; /// Returns the number of bits in this specific bigint value, i.e., position of the most-significant 1
+
+    /// The number of bits representable by this bigint type
+    static constexpr size_t max_bits();
+
+    /// The number of bits in this specific bigint value, i.e., position of the
+    /// most-significant 1
+    size_t num_bits() const;
 
     unsigned long as_ulong() const; /// Return the last limb of the integer
     void to_mpz(mpz_t r) const;
@@ -58,6 +64,8 @@ public:
     friend std::istream& operator>> <n>(std::istream &in, bigint<n> &b);
 };
 
-} // libff
+} // namespace libff
+
 #include <libff/algebra/fields/bigint.tcc>
-#endif
+
+#endif // BIGINT_HPP_

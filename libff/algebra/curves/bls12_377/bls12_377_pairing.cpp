@@ -282,10 +282,10 @@ void bls12_377_doubling_step_for_miller_loop(const bls12_377_Fq two_inv,
     //
     // The tangent line evaluated at the twisting point P = (x_p, y_p) is
     // computed as:
-    // (-2YZ*y_p)vw + (3*X^2 * x_p) * v^2 + bls12_377_twist * bls12_377_twist * (3*bls12_377_twist_coeff_b*Z^2 - Y^2)
-    //     ^                  ^                                    ^
-    //     |                  |                                    |
-    //    -H                 3*J                           bls12_377_twist * I
+    //   (-2YZ*y_p)vw +                            <-- -H
+    //   (3*X^2 * x_p) * v^2 +                     <-- 3*J
+    //   bls12_377_twist * bls12_377_twist *       <-- bls12_377_twist * I
+    //     (3*bls12_377_twist_coeff_b*Z^2 - Y^2)
     c.ell_VW = -H;
     c.ell_VV = J+J+J;
     c.ell_0 = bls12_377_twist * I;
@@ -358,7 +358,8 @@ bls12_377_ate_G2_precomp bls12_377_ate_precompute_G2(const bls12_377_G2& Q)
     bls12_377_G2 Qcopy(Q);
     Qcopy.to_affine_coordinates();
 
-    bls12_377_Fq two_inv = (bls12_377_Fq("2").inverse()); // could add to global params if needed
+    // could add to global params if needed
+    bls12_377_Fq two_inv = (bls12_377_Fq("2").inverse());
 
     bls12_377_ate_G2_precomp result;
     result.QX = Qcopy.X;

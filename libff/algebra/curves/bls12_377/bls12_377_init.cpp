@@ -341,10 +341,12 @@ void init_bls12_377_params()
     // Pairing parameters
     // sage: u = 9586122913090633729
     // sage: ceil(log(u, 2)) # = 64
-    // sage: bin(u) # = '0b1000010100001000110000000000000000000000000000000000000000000001'
-    // The Hamming weight of u is: HW(u) = 7
-    // u = 2**63 + 2**58 + 2**56 + 2**51 + 2**47 + 2**46 + 1
-    // Based on the power-2 decomposition of u, we should have 63 doubling steps and 7 addition steps in the Miller Loop.
+    // sage: bin(u) # =
+    //   '0b1000010100001000110000000000000000000000000000000000000000000001'
+    // The Hamming weight of u is: HW(u) = 7, where
+    //   u = 2**63 + 2**58 + 2**56 + 2**51 + 2**47 + 2**46 + 1
+    // Based on the power-2 decomposition of u, we should have 63 doubling
+    // steps and 7 addition steps in the Miller Loop.
     bls12_377_ate_loop_count = bigint_q("9586122913090633729");
     bls12_377_ate_is_loop_count_neg = false;
     // k (embedding degree) = 12
