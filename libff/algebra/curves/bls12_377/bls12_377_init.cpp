@@ -184,6 +184,7 @@ void init_bls12_377_params()
     bls12_377_Fq2::Frobenius_coeffs_c1[1] = bls12_377_Fq(
         "2586644260129690940106527336948935335363935127549146605398842626667204"
         "68348340822774968888139573360124440321458176");
+    bls12_377_Fq2::static_init();
 
     // Parameters for Fq6 = (Fq2)^3
     bls12_377_Fq6::non_residue =
