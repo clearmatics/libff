@@ -362,9 +362,9 @@ bool alt_bn128_G1::is_in_safe_subgroup() const
     return true;
 }
 
-alt_bn128_G1 alt_bn128_G1::zero() { return G1_zero; }
+const alt_bn128_G1 &alt_bn128_G1::zero() { return G1_zero; }
 
-alt_bn128_G1 alt_bn128_G1::one() { return G1_one; }
+const alt_bn128_G1 &alt_bn128_G1::one() { return G1_one; }
 
 alt_bn128_G1 alt_bn128_G1::random_element()
 {

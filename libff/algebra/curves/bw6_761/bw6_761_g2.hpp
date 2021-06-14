@@ -72,8 +72,8 @@ public:
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
 
-    static bw6_761_G2 zero();
-    static bw6_761_G2 one();
+    static const bw6_761_G2 &zero();
+    static const bw6_761_G2 &one();
     static bw6_761_G2 random_element();
 
     static size_t size_in_bits() { return twist_field::size_in_bits() + 1; }

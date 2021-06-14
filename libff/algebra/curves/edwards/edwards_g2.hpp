@@ -73,8 +73,8 @@ public:
 
     bool is_well_formed() const;
 
-    static edwards_G2 zero();
-    static edwards_G2 one();
+    static const edwards_G2 &zero();
+    static const edwards_G2 &one();
     static edwards_G2 random_element();
 
     static size_t size_in_bits() { return twist_field::size_in_bits() + 1; }

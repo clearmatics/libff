@@ -311,9 +311,9 @@ bn128_G1 bn128_G1::mul_by_cofactor() const
     return (*this);
 }
 
-bn128_G1 bn128_G1::zero() { return G1_zero; }
+const bn128_G1 &bn128_G1::zero() { return G1_zero; }
 
-bn128_G1 bn128_G1::one() { return G1_one; }
+const bn128_G1 &bn128_G1::one() { return G1_one; }
 
 bn128_G1 bn128_G1::random_element()
 {
