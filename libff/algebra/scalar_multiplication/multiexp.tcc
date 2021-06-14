@@ -29,6 +29,9 @@
 namespace libff
 {
 
+namespace internal
+{
+
 size_t pippenger_optimal_c(const size_t num_elements)
 {
     // empirically, this seems to be a decent estimate of the optimal value of c
@@ -74,185 +77,6 @@ GroupT multiexp_accumulate_buckets(
     }
 
     return sum;
-}
-
-/// buckets and bucket_hit should have at least 2^{c-1] entries.
-template<typename GroupT, typename BigIntT, bool MixedAddition>
-GroupT multiexp_signed_digits_round(
-    typename std::vector<GroupT>::const_iterator bases,
-    typename std::vector<GroupT>::const_iterator bases_end,
-    typename std::vector<BigIntT>::const_iterator exponents,
-    std::vector<GroupT> &buckets,
-    std::vector<bool> &bucket_hit,
-    const size_t num_entries,
-    const size_t num_buckets,
-    const size_t c,
-    const size_t digit_idx)
-{
-    UNUSED(bases_end);
-
-    assert(buckets.size() >= num_buckets);
-    assert(bucket_hit.size() >= num_buckets);
-
-    // Zero bucket_hit array.
-    bucket_hit.assign(num_buckets, false);
-
-    // For each scalar, element pair ...
-    size_t num_buckets_initialized = 0;
-    for (size_t i = 0; i < num_entries; ++i) {
-        const ssize_t digit =
-            field_get_signed_digit(exponents[i], c, digit_idx);
-        if (digit == 0) {
-            continue;
-        }
-
-        // Unroll each branch, to avoid copying the group elements.
-        if (digit < 0) {
-            const size_t bucket_idx = (-digit) - 1;
-            assert(bucket_idx < num_buckets);
-            if (bucket_hit[bucket_idx]) {
-                if (MixedAddition) {
-                    buckets[bucket_idx] =
-                        buckets[bucket_idx].mixed_add(-bases[i]);
-                } else {
-                    buckets[bucket_idx] = buckets[bucket_idx].add(-bases[i]);
-                }
-            } else {
-                buckets[bucket_idx] = -bases[i];
-                bucket_hit[bucket_idx] = true;
-                ++num_buckets_initialized;
-            }
-        } else {
-            const size_t bucket_idx = digit - 1;
-            assert(bucket_idx < num_buckets);
-            if (bucket_hit[bucket_idx]) {
-                if (MixedAddition) {
-                    buckets[bucket_idx] =
-                        buckets[bucket_idx].mixed_add(bases[i]);
-                } else {
-                    buckets[bucket_idx] = buckets[bucket_idx].add(bases[i]);
-                }
-            } else {
-                buckets[bucket_idx] = bases[i];
-                bucket_hit[bucket_idx] = true;
-                ++num_buckets_initialized;
-            }
-        }
-    }
-
-    // Check up-front for the edge-case where no buckets have been touched.
-    if (num_buckets_initialized == 0) {
-        return GroupT::zero();
-    }
-
-    return multiexp_accumulate_buckets(buckets, bucket_hit, num_buckets);
-}
-
-template<typename GroupT, typename FieldT, bool MixedAddition>
-GroupT multiexp_signed_digits(
-    typename std::vector<GroupT>::const_iterator bases,
-    typename std::vector<GroupT>::const_iterator bases_end,
-    typename std::vector<FieldT>::const_iterator exponents,
-    typename std::vector<FieldT>::const_iterator exponents_end)
-{
-    UNUSED(exponents_end);
-
-    const size_t num_entries = bases_end - bases;
-    assert(exponents_end - exponents == (ssize_t)num_entries);
-    const size_t c = pippenger_optimal_c(num_entries) + 1;
-    assert(c > 0);
-    using bigint_t =
-        typename std::decay<decltype(((FieldT *)nullptr)->mont_repr)>::type;
-
-    // Pre-compute the bigint values
-    size_t num_bits = 0;
-    std::vector<bigint_t> bi_exponents(num_entries);
-    for (size_t i = 0; i < num_entries; ++i) {
-        bi_exponents[i] = exponents[i].as_bigint();
-        num_bits = std::max(num_bits, bi_exponents[i].num_bits());
-    }
-
-    const size_t num_rounds = (num_bits + c - 1) / c;
-
-    // Digits have values between -(2^{c-1}) and 2^{c-1} - 1. Negative values
-    // are negated (to make them positive since we have cheap inversion of base
-    // elements), and 0 values are ignored. Hence we require up to 2^{c-1}
-    // buckets
-    const size_t num_buckets = 1 << (c - 1);
-
-    // Allocate the round state once, and reuse it.
-    std::vector<GroupT> buckets(num_buckets);
-    std::vector<bool> bucket_hit(num_buckets);
-    assert(buckets.size() == num_buckets);
-    assert(bucket_hit.size() == num_buckets);
-
-    // Compute from highest-order to lowest-order digits, accumulating at the
-    // same time.
-    GroupT result =
-        multiexp_signed_digits_round<GroupT, bigint_t, MixedAddition>(
-            bases,
-            bases_end,
-            bi_exponents.begin(),
-            buckets,
-            bucket_hit,
-            num_entries,
-            num_buckets,
-            c,
-            num_rounds - 1);
-    for (size_t round_idx = 1; round_idx < num_rounds; ++round_idx) {
-        const size_t digit_idx = num_rounds - 1 - round_idx;
-        for (size_t i = 0; i < c; ++i) {
-            result = result.dbl();
-        }
-
-        const GroupT round_result =
-            multiexp_signed_digits_round<GroupT, bigint_t, MixedAddition>(
-                bases,
-                bases_end,
-                bi_exponents.begin(),
-                buckets,
-                bucket_hit,
-                num_entries,
-                num_buckets,
-                c,
-                digit_idx);
-        result = result + round_result;
-    }
-
-    return result;
-}
-
-template<
-    typename GroupT,
-    typename FieldT,
-    multi_exp_method Method,
-    typename std::enable_if<(Method == multi_exp_method_BDLO12_signed), int>::
-        type = 0>
-GroupT multi_exp_inner(
-    typename std::vector<GroupT>::const_iterator bases,
-    typename std::vector<GroupT>::const_iterator bases_end,
-    typename std::vector<FieldT>::const_iterator exponents,
-    typename std::vector<FieldT>::const_iterator exponents_end)
-{
-    return multiexp_signed_digits<GroupT, FieldT, false>(
-        bases, bases_end, exponents, exponents_end);
-}
-
-template<
-    typename GroupT,
-    typename FieldT,
-    multi_exp_method Method,
-    typename std::enable_if<
-        (Method == multi_exp_method_BDLO12_signed_mixed),
-        int>::type = 0>
-GroupT multi_exp_inner(
-    typename std::vector<GroupT>::const_iterator bases,
-    typename std::vector<GroupT>::const_iterator bases_end,
-    typename std::vector<FieldT>::const_iterator exponents,
-    typename std::vector<FieldT>::const_iterator exponents_end)
-{
-    return multiexp_signed_digits<GroupT, FieldT, true>(
-        bases, bases_end, exponents, exponents_end);
 }
 
 template<mp_size_t n> class ordered_exponent
@@ -326,297 +150,478 @@ public:
     }
 };
 
-/**
- * multi_exp_inner<T, FieldT, Method>() implements the specified
- * multi-exponentiation method.
- * This implementation relies on some rather arcane template magic:
- * function templates cannot be partially specialized, so we cannot just write:
- *     template<typename T, typename FieldT>
- *     T multi_exp_inner<T, FieldT, multi_exp_method_naive>
- * Thus we resort to using std::enable_if. the basic idea is that *overloading*
- * is what's actually happening here, it's just that, for any given value of
- * Method, only one of the templates will be valid, and thus the correct
- * implementation will be used.
- */
-
+// Class holding the specialized multi exp implementations. Must implment a
+// public static method of the form:
+//   static GroupT multi_exp_inner(
+//       typename std::vector<GroupT>::const_iterator bases,
+//       typename std::vector<GroupT>::const_iterator bases_end,
+//       typename std::vector<FieldT>::const_iterator exponents,
+//       typename std::vector<FieldT>::const_iterator exponents_end);
 template<
-    typename T,
+    typename GroupT,
     typename FieldT,
     multi_exp_method Method,
-    typename std::enable_if<(Method == multi_exp_method_naive), int>::type = 0>
-T multi_exp_inner(
-    typename std::vector<T>::const_iterator vec_start,
-    typename std::vector<T>::const_iterator vec_end,
-    typename std::vector<FieldT>::const_iterator scalar_start,
-    typename std::vector<FieldT>::const_iterator scalar_end)
+    multi_exp_base_form BaseForm>
+class multi_exp_implementation
 {
-    T result(T::zero());
+};
 
-    typename std::vector<T>::const_iterator vec_it;
-    typename std::vector<FieldT>::const_iterator scalar_it;
-
-    for (vec_it = vec_start, scalar_it = scalar_start; vec_it != vec_end;
-         ++vec_it, ++scalar_it) {
-        bigint<FieldT::num_limbs> scalar_bigint = scalar_it->as_bigint();
-        result = result + opt_window_wnaf_exp(
-                              *vec_it, scalar_bigint, scalar_bigint.num_bits());
-    }
-    assert(scalar_it == scalar_end);
-    UNUSED(scalar_end);
-
-    return result;
-}
-
-template<
-    typename T,
-    typename FieldT,
-    multi_exp_method Method,
-    typename std::enable_if<(Method == multi_exp_method_naive_plain), int>::
-        type = 0>
-T multi_exp_inner(
-    typename std::vector<T>::const_iterator vec_start,
-    typename std::vector<T>::const_iterator vec_end,
-    typename std::vector<FieldT>::const_iterator scalar_start,
-    typename std::vector<FieldT>::const_iterator scalar_end)
+/// Naive multi_exp_implementation
+template<typename GroupT, typename FieldT, multi_exp_base_form BaseForm>
+class multi_exp_implementation<GroupT, FieldT, multi_exp_method_naive, BaseForm>
 {
-    T result(T::zero());
+public:
+    static GroupT multi_exp_inner(
+        typename std::vector<GroupT>::const_iterator vec_start,
+        typename std::vector<GroupT>::const_iterator vec_end,
+        typename std::vector<FieldT>::const_iterator scalar_start,
+        typename std::vector<FieldT>::const_iterator scalar_end)
+    {
+        GroupT result(GroupT::zero());
 
-    typename std::vector<T>::const_iterator vec_it;
-    typename std::vector<FieldT>::const_iterator scalar_it;
+        typename std::vector<GroupT>::const_iterator vec_it;
+        typename std::vector<FieldT>::const_iterator scalar_it;
 
-    for (vec_it = vec_start, scalar_it = scalar_start; vec_it != vec_end;
-         ++vec_it, ++scalar_it) {
-        result = result + (*scalar_it) * (*vec_it);
-    }
-    assert(scalar_it == scalar_end);
-    UNUSED(scalar_end);
-
-    return result;
-}
-
-template<
-    typename T,
-    typename FieldT,
-    multi_exp_method Method,
-    typename std::enable_if<(Method == multi_exp_method_BDLO12), int>::type = 0>
-T multi_exp_inner(
-    typename std::vector<T>::const_iterator bases,
-    typename std::vector<T>::const_iterator bases_end,
-    typename std::vector<FieldT>::const_iterator exponents,
-    typename std::vector<FieldT>::const_iterator exponents_end)
-{
-    UNUSED(exponents_end);
-    const size_t length = bases_end - bases;
-    const size_t c = pippenger_optimal_c(length);
-
-    const mp_size_t exp_num_limbs =
-        std::remove_reference<decltype(*exponents)>::type::num_limbs;
-    std::vector<bigint<exp_num_limbs>> bn_exponents(length);
-    size_t num_bits = 0;
-
-    for (size_t i = 0; i < length; i++) {
-        bn_exponents[i] = exponents[i].as_bigint();
-        num_bits = std::max(num_bits, bn_exponents[i].num_bits());
-    }
-
-    const size_t num_groups = (num_bits + c - 1) / c;
-
-    T result;
-    bool result_nonzero = false;
-
-    for (size_t k = num_groups - 1; k <= num_groups; k--) {
-        if (result_nonzero) {
-            for (size_t i = 0; i < c; i++) {
-                result = result.dbl();
-            }
+        for (vec_it = vec_start, scalar_it = scalar_start; vec_it != vec_end;
+             ++vec_it, ++scalar_it) {
+            bigint<FieldT::num_limbs> scalar_bigint = scalar_it->as_bigint();
+            result =
+                result + opt_window_wnaf_exp(
+                             *vec_it, scalar_bigint, scalar_bigint.num_bits());
         }
+        assert(scalar_it == scalar_end);
+        UNUSED(scalar_end);
 
-        std::vector<T> buckets(1 << c);
-        std::vector<bool> bucket_nonzero(1 << c);
+        return result;
+    }
+};
+
+// Naive plain multi_exp_implementation
+template<typename GroupT, typename FieldT, multi_exp_base_form BaseForm>
+class multi_exp_implementation<
+    GroupT,
+    FieldT,
+    multi_exp_method_naive_plain,
+    BaseForm>
+{
+public:
+    static GroupT multi_exp_inner(
+        typename std::vector<GroupT>::const_iterator vec_start,
+        typename std::vector<GroupT>::const_iterator vec_end,
+        typename std::vector<FieldT>::const_iterator scalar_start,
+        typename std::vector<FieldT>::const_iterator scalar_end)
+    {
+        GroupT result(GroupT::zero());
+
+        typename std::vector<GroupT>::const_iterator vec_it;
+        typename std::vector<FieldT>::const_iterator scalar_it;
+
+        for (vec_it = vec_start, scalar_it = scalar_start; vec_it != vec_end;
+             ++vec_it, ++scalar_it) {
+            result = result + (*scalar_it) * (*vec_it);
+        }
+        assert(scalar_it == scalar_end);
+        UNUSED(scalar_end);
+
+        return result;
+    }
+};
+
+// multi_exp_implementation for BDLO12
+template<typename GroupT, typename FieldT, multi_exp_base_form BaseForm>
+class multi_exp_implementation<
+    GroupT,
+    FieldT,
+    multi_exp_method_BDLO12,
+    BaseForm>
+{
+public:
+    static GroupT multi_exp_inner(
+        typename std::vector<GroupT>::const_iterator bases,
+        typename std::vector<GroupT>::const_iterator bases_end,
+        typename std::vector<FieldT>::const_iterator exponents,
+        typename std::vector<FieldT>::const_iterator exponents_end)
+    {
+        UNUSED(exponents_end);
+        const size_t length = bases_end - bases;
+        const size_t c = internal::pippenger_optimal_c(length);
+
+        const mp_size_t exp_num_limbs =
+            std::remove_reference<decltype(*exponents)>::type::num_limbs;
+        std::vector<bigint<exp_num_limbs>> bn_exponents(length);
+        size_t num_bits = 0;
 
         for (size_t i = 0; i < length; i++) {
-            // id = k-th "digit" of bn_exponents[i], radix 2^c
-            //    = (bn_exponents[i] >> (c*k)) & (2^c - 1)
-            size_t id = 0;
-            for (size_t j = 0; j < c; j++) {
-                if (bn_exponents[i].test_bit(k * c + j)) {
-                    id |= 1 << j;
+            bn_exponents[i] = exponents[i].as_bigint();
+            num_bits = std::max(num_bits, bn_exponents[i].num_bits());
+        }
+
+        const size_t num_groups = (num_bits + c - 1) / c;
+
+        GroupT result;
+        bool result_nonzero = false;
+
+        for (size_t k = num_groups - 1; k <= num_groups; k--) {
+            if (result_nonzero) {
+                for (size_t i = 0; i < c; i++) {
+                    result = result.dbl();
                 }
             }
 
-            // Skip 0 digits.
-            if (id == 0) {
+            std::vector<GroupT> buckets(1 << c);
+            std::vector<bool> bucket_nonzero(1 << c);
+
+            for (size_t i = 0; i < length; i++) {
+                // id = k-th "digit" of bn_exponents[i], radix 2^c
+                //    = (bn_exponents[i] >> (c*k)) & (2^c - 1)
+                size_t id = 0;
+                for (size_t j = 0; j < c; j++) {
+                    if (bn_exponents[i].test_bit(k * c + j)) {
+                        id |= 1 << j;
+                    }
+                }
+
+                // Skip 0 digits.
+                if (id == 0) {
+                    continue;
+                }
+
+                // Add (or write) the group element into the appropriate bucket.
+                if (bucket_nonzero[id]) {
+                    if (BaseForm == multi_exp_base_form_special) {
+                        buckets[id] = buckets[id].mixed_add(bases[i]);
+                    } else {
+                        buckets[id] = buckets[id] + bases[i];
+                    }
+                } else {
+                    buckets[id] = bases[i];
+                    bucket_nonzero[id] = true;
+                }
+            }
+
+#ifdef USE_MIXED_ADDITION
+            batch_to_special(buckets);
+#endif
+
+            GroupT running_sum;
+            bool running_sum_nonzero = false;
+
+            for (size_t i = (1u << c) - 1; i > 0; i--) {
+                if (bucket_nonzero[i]) {
+                    if (running_sum_nonzero) {
+#ifdef USE_MIXED_ADDITION
+                        running_sum = running_sum.mixed_add(buckets[i]);
+#else
+                        running_sum = running_sum + buckets[i];
+#endif
+                    } else {
+                        running_sum = buckets[i];
+                        running_sum_nonzero = true;
+                    }
+                }
+
+                if (running_sum_nonzero) {
+                    if (result_nonzero) {
+                        result = result + running_sum;
+                    } else {
+                        result = running_sum;
+                        result_nonzero = true;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+};
+
+template<typename GroupT, typename FieldT, multi_exp_base_form BaseForm>
+class multi_exp_implementation<
+    GroupT,
+    FieldT,
+    multi_exp_method_bos_coster,
+    BaseForm>
+{
+public:
+    static GroupT multi_exp_inner(
+        typename std::vector<GroupT>::const_iterator vec_start,
+        typename std::vector<GroupT>::const_iterator vec_end,
+        typename std::vector<FieldT>::const_iterator scalar_start,
+        typename std::vector<FieldT>::const_iterator scalar_end)
+    {
+        const mp_size_t n =
+            std::remove_reference<decltype(*scalar_start)>::type::num_limbs;
+
+        if (vec_start == vec_end) {
+            return GroupT::zero();
+        }
+
+        if (vec_start + 1 == vec_end) {
+            return (*scalar_start) * (*vec_start);
+        }
+
+        std::vector<ordered_exponent<n>> opt_q;
+        const size_t vec_len = scalar_end - scalar_start;
+        const size_t odd_vec_len = (vec_len % 2 == 1 ? vec_len : vec_len + 1);
+        opt_q.reserve(odd_vec_len);
+        std::vector<GroupT> g;
+        g.reserve(odd_vec_len);
+
+        typename std::vector<GroupT>::const_iterator vec_it;
+        typename std::vector<FieldT>::const_iterator scalar_it;
+        size_t i;
+        for (i = 0, vec_it = vec_start, scalar_it = scalar_start;
+             vec_it != vec_end;
+             ++vec_it, ++scalar_it, ++i) {
+            g.emplace_back(*vec_it);
+
+            opt_q.emplace_back(ordered_exponent<n>(i, scalar_it->as_bigint()));
+        }
+        std::make_heap(opt_q.begin(), opt_q.end());
+        assert(scalar_it == scalar_end);
+
+        if (vec_len != odd_vec_len) {
+            g.emplace_back(GroupT::zero());
+            opt_q.emplace_back(
+                ordered_exponent<n>(odd_vec_len - 1, bigint<n>(0ul)));
+        }
+        assert(g.size() % 2 == 1);
+        assert(opt_q.size() == g.size());
+
+        GroupT opt_result = GroupT::zero();
+
+        while (true) {
+            ordered_exponent<n> &a = opt_q[0];
+            ordered_exponent<n> &b =
+                (opt_q[1] < opt_q[2] ? opt_q[2] : opt_q[1]);
+
+            const size_t abits = a.r.num_bits();
+
+            if (b.r.is_zero()) {
+                // opt_result = opt_result + (a.r * g[a.idx]);
+                opt_result =
+                    opt_result + opt_window_wnaf_exp(g[a.idx], a.r, abits);
+                break;
+            }
+
+            const size_t bbits = b.r.num_bits();
+            const size_t limit = (abits - bbits >= 20 ? 20 : abits - bbits);
+
+            if (bbits < 1ul << limit) {
+                /*
+                  In this case, exponentiating to the power of a is cheaper than
+                  subtracting b from a multiple times, so let's do it directly
+                */
+                // opt_result = opt_result + (a.r * g[a.idx]);
+                opt_result =
+                    opt_result + opt_window_wnaf_exp(g[a.idx], a.r, abits);
+#ifdef DEBUG
+                printf(
+                    "Skipping the following pair (%zu bit number vs %zu "
+                    "bit):\n",
+                    abits,
+                    bbits);
+                a.r.print();
+                b.r.print();
+#endif
+                a.r.clear();
+            } else {
+                // x A + y B => (x-y) A + y (B+A)
+                mpn_sub_n(a.r.data, a.r.data, b.r.data, n);
+                g[b.idx] = g[b.idx] + g[a.idx];
+            }
+
+            // regardless of whether a was cleared or subtracted from we push it
+            // down, then take back up
+
+            /* heapify A down */
+            size_t a_pos = 0;
+            while (2 * a_pos + 2 < odd_vec_len) {
+                // this is a max-heap so to maintain a heap property we swap
+                // with the largest of the two
+                if (opt_q[2 * a_pos + 1] < opt_q[2 * a_pos + 2]) {
+                    std::swap(opt_q[a_pos], opt_q[2 * a_pos + 2]);
+                    a_pos = 2 * a_pos + 2;
+                } else {
+                    std::swap(opt_q[a_pos], opt_q[2 * a_pos + 1]);
+                    a_pos = 2 * a_pos + 1;
+                }
+            }
+
+            /* now heapify A up appropriate amount of times */
+            while (a_pos > 0 && opt_q[(a_pos - 1) / 2] < opt_q[a_pos]) {
+                std::swap(opt_q[a_pos], opt_q[(a_pos - 1) / 2]);
+                a_pos = (a_pos - 1) / 2;
+            }
+        }
+
+        return opt_result;
+    }
+};
+
+template<typename GroupT, typename FieldT, multi_exp_base_form BaseForm>
+class multi_exp_implementation<
+    GroupT,
+    FieldT,
+    multi_exp_method_BDLO12_signed,
+    BaseForm>
+{
+public:
+    using BigInt =
+        typename std::decay<decltype(((FieldT *)nullptr)->mont_repr)>::type;
+
+    /// buckets and bucket_hit should have at least 2^{c-1] entries.
+    static GroupT signed_digits_round(
+        typename std::vector<GroupT>::const_iterator bases,
+        typename std::vector<GroupT>::const_iterator bases_end,
+        typename std::vector<BigInt>::const_iterator exponents,
+        std::vector<GroupT> &buckets,
+        std::vector<bool> &bucket_hit,
+        const size_t num_entries,
+        const size_t num_buckets,
+        const size_t c,
+        const size_t digit_idx)
+    {
+        UNUSED(bases_end);
+
+        assert(buckets.size() >= num_buckets);
+        assert(bucket_hit.size() >= num_buckets);
+
+        // Zero bucket_hit array.
+        bucket_hit.assign(num_buckets, false);
+
+        // For each scalar, element pair ...
+        size_t num_buckets_initialized = 0;
+        for (size_t i = 0; i < num_entries; ++i) {
+            const ssize_t digit =
+                field_get_signed_digit(exponents[i], c, digit_idx);
+            if (digit == 0) {
                 continue;
             }
 
-            // Add (or write) the group element into the appropriate bucket.
-            if (bucket_nonzero[id]) {
-#ifdef USE_MIXED_ADDITION
-                buckets[id] = buckets[id].mixed_add(bases[i]);
-#else
-                buckets[id] = buckets[id] + bases[i];
-#endif
+            // Unroll each branch, to avoid copying the group elements.
+            if (digit < 0) {
+                const size_t bucket_idx = (-digit) - 1;
+                assert(bucket_idx < num_buckets);
+                if (bucket_hit[bucket_idx]) {
+                    if (BaseForm == multi_exp_base_form_special) {
+                        buckets[bucket_idx] =
+                            buckets[bucket_idx].mixed_add(-bases[i]);
+                    } else {
+                        buckets[bucket_idx] =
+                            buckets[bucket_idx].add(-bases[i]);
+                    }
+                } else {
+                    buckets[bucket_idx] = -bases[i];
+                    bucket_hit[bucket_idx] = true;
+                    ++num_buckets_initialized;
+                }
             } else {
-                buckets[id] = bases[i];
-                bucket_nonzero[id] = true;
-            }
-        }
-
-#ifdef USE_MIXED_ADDITION
-        batch_to_special(buckets);
-#endif
-
-        T running_sum;
-        bool running_sum_nonzero = false;
-
-        for (size_t i = (1u << c) - 1; i > 0; i--) {
-            if (bucket_nonzero[i]) {
-                if (running_sum_nonzero) {
-#ifdef USE_MIXED_ADDITION
-                    running_sum = running_sum.mixed_add(buckets[i]);
-#else
-                    running_sum = running_sum + buckets[i];
-#endif
+                const size_t bucket_idx = digit - 1;
+                assert(bucket_idx < num_buckets);
+                if (bucket_hit[bucket_idx]) {
+                    if (BaseForm == multi_exp_base_form_special) {
+                        buckets[bucket_idx] =
+                            buckets[bucket_idx].mixed_add(bases[i]);
+                    } else {
+                        buckets[bucket_idx] = buckets[bucket_idx].add(bases[i]);
+                    }
                 } else {
-                    running_sum = buckets[i];
-                    running_sum_nonzero = true;
-                }
-            }
-
-            if (running_sum_nonzero) {
-                if (result_nonzero) {
-                    result = result + running_sum;
-                } else {
-                    result = running_sum;
-                    result_nonzero = true;
+                    buckets[bucket_idx] = bases[i];
+                    bucket_hit[bucket_idx] = true;
+                    ++num_buckets_initialized;
                 }
             }
         }
+
+        // Check up-front for the edge-case where no buckets have been touched.
+        if (num_buckets_initialized == 0) {
+            return GroupT::zero();
+        }
+
+        return multiexp_accumulate_buckets(buckets, bucket_hit, num_buckets);
     }
 
-    return result;
-}
+    static GroupT multi_exp_inner(
+        typename std::vector<GroupT>::const_iterator bases,
+        typename std::vector<GroupT>::const_iterator bases_end,
+        typename std::vector<FieldT>::const_iterator exponents,
+        typename std::vector<FieldT>::const_iterator exponents_end)
+    {
+        UNUSED(exponents_end);
+
+        const size_t num_entries = bases_end - bases;
+        assert(exponents_end - exponents == (ssize_t)num_entries);
+        const size_t c = internal::pippenger_optimal_c(num_entries) + 1;
+        assert(c > 0);
+
+        // Pre-compute the bigint values
+        size_t num_bits = 0;
+        std::vector<BigInt> bi_exponents(num_entries);
+        for (size_t i = 0; i < num_entries; ++i) {
+            bi_exponents[i] = exponents[i].as_bigint();
+            num_bits = std::max(num_bits, bi_exponents[i].num_bits());
+        }
+
+        const size_t num_rounds = (num_bits + c - 1) / c;
+
+        // Digits have values between -(2^{c-1}) and 2^{c-1} - 1. Negative
+        // values are negated (to make them positive since we have cheap
+        // inversion of base elements), and 0 values are ignored. Hence we
+        // require up to 2^{c-1} buckets
+        const size_t num_buckets = 1 << (c - 1);
+
+        // Allocate the round state once, and reuse it.
+        std::vector<GroupT> buckets(num_buckets);
+        std::vector<bool> bucket_hit(num_buckets);
+        assert(buckets.size() == num_buckets);
+        assert(bucket_hit.size() == num_buckets);
+
+        // Compute from highest-order to lowest-order digits, accumulating at
+        // the same time.
+        GroupT result = signed_digits_round(
+            bases,
+            bases_end,
+            bi_exponents.begin(),
+            buckets,
+            bucket_hit,
+            num_entries,
+            num_buckets,
+            c,
+            num_rounds - 1);
+        for (size_t round_idx = 1; round_idx < num_rounds; ++round_idx) {
+            const size_t digit_idx = num_rounds - 1 - round_idx;
+            for (size_t i = 0; i < c; ++i) {
+                result = result.dbl();
+            }
+
+            const GroupT round_result = signed_digits_round(
+                bases,
+                bases_end,
+                bi_exponents.begin(),
+                buckets,
+                bucket_hit,
+                num_entries,
+                num_buckets,
+                c,
+                digit_idx);
+            result = result + round_result;
+        }
+
+        return result;
+    }
+};
+
+} // namespace internal
 
 template<
-    typename T,
+    typename GroupT,
     typename FieldT,
     multi_exp_method Method,
-    typename std::enable_if<(Method == multi_exp_method_bos_coster), int>::
-        type = 0>
-T multi_exp_inner(
-    typename std::vector<T>::const_iterator vec_start,
-    typename std::vector<T>::const_iterator vec_end,
-    typename std::vector<FieldT>::const_iterator scalar_start,
-    typename std::vector<FieldT>::const_iterator scalar_end)
-{
-    const mp_size_t n =
-        std::remove_reference<decltype(*scalar_start)>::type::num_limbs;
-
-    if (vec_start == vec_end) {
-        return T::zero();
-    }
-
-    if (vec_start + 1 == vec_end) {
-        return (*scalar_start) * (*vec_start);
-    }
-
-    std::vector<ordered_exponent<n>> opt_q;
-    const size_t vec_len = scalar_end - scalar_start;
-    const size_t odd_vec_len = (vec_len % 2 == 1 ? vec_len : vec_len + 1);
-    opt_q.reserve(odd_vec_len);
-    std::vector<T> g;
-    g.reserve(odd_vec_len);
-
-    typename std::vector<T>::const_iterator vec_it;
-    typename std::vector<FieldT>::const_iterator scalar_it;
-    size_t i;
-    for (i = 0, vec_it = vec_start, scalar_it = scalar_start; vec_it != vec_end;
-         ++vec_it, ++scalar_it, ++i) {
-        g.emplace_back(*vec_it);
-
-        opt_q.emplace_back(ordered_exponent<n>(i, scalar_it->as_bigint()));
-    }
-    std::make_heap(opt_q.begin(), opt_q.end());
-    assert(scalar_it == scalar_end);
-
-    if (vec_len != odd_vec_len) {
-        g.emplace_back(T::zero());
-        opt_q.emplace_back(
-            ordered_exponent<n>(odd_vec_len - 1, bigint<n>(0ul)));
-    }
-    assert(g.size() % 2 == 1);
-    assert(opt_q.size() == g.size());
-
-    T opt_result = T::zero();
-
-    while (true) {
-        ordered_exponent<n> &a = opt_q[0];
-        ordered_exponent<n> &b = (opt_q[1] < opt_q[2] ? opt_q[2] : opt_q[1]);
-
-        const size_t abits = a.r.num_bits();
-
-        if (b.r.is_zero()) {
-            // opt_result = opt_result + (a.r * g[a.idx]);
-            opt_result = opt_result + opt_window_wnaf_exp(g[a.idx], a.r, abits);
-            break;
-        }
-
-        const size_t bbits = b.r.num_bits();
-        const size_t limit = (abits - bbits >= 20 ? 20 : abits - bbits);
-
-        if (bbits < 1ul << limit) {
-            /*
-              In this case, exponentiating to the power of a is cheaper than
-              subtracting b from a multiple times, so let's do it directly
-            */
-            // opt_result = opt_result + (a.r * g[a.idx]);
-            opt_result = opt_result + opt_window_wnaf_exp(g[a.idx], a.r, abits);
-#ifdef DEBUG
-            printf(
-                "Skipping the following pair (%zu bit number vs %zu bit):\n",
-                abits,
-                bbits);
-            a.r.print();
-            b.r.print();
-#endif
-            a.r.clear();
-        } else {
-            // x A + y B => (x-y) A + y (B+A)
-            mpn_sub_n(a.r.data, a.r.data, b.r.data, n);
-            g[b.idx] = g[b.idx] + g[a.idx];
-        }
-
-        // regardless of whether a was cleared or subtracted from we push it
-        // down, then take back up
-
-        /* heapify A down */
-        size_t a_pos = 0;
-        while (2 * a_pos + 2 < odd_vec_len) {
-            // this is a max-heap so to maintain a heap property we swap with
-            // the largest of the two
-            if (opt_q[2 * a_pos + 1] < opt_q[2 * a_pos + 2]) {
-                std::swap(opt_q[a_pos], opt_q[2 * a_pos + 2]);
-                a_pos = 2 * a_pos + 2;
-            } else {
-                std::swap(opt_q[a_pos], opt_q[2 * a_pos + 1]);
-                a_pos = 2 * a_pos + 1;
-            }
-        }
-
-        /* now heapify A up appropriate amount of times */
-        while (a_pos > 0 && opt_q[(a_pos - 1) / 2] < opt_q[a_pos]) {
-            std::swap(opt_q[a_pos], opt_q[(a_pos - 1) / 2]);
-            a_pos = (a_pos - 1) / 2;
-        }
-    }
-
-    return opt_result;
-}
-
-template<typename T, typename FieldT, multi_exp_method Method>
-T multi_exp(
-    typename std::vector<T>::const_iterator vec_start,
-    typename std::vector<T>::const_iterator vec_end,
+    multi_exp_base_form BaseForm>
+GroupT multi_exp(
+    typename std::vector<GroupT>::const_iterator vec_start,
+    typename std::vector<GroupT>::const_iterator vec_end,
     typename std::vector<FieldT>::const_iterator scalar_start,
     typename std::vector<FieldT>::const_iterator scalar_end,
     const size_t chunks)
@@ -624,26 +629,30 @@ T multi_exp(
     const size_t total = vec_end - vec_start;
     if ((total < chunks) || (chunks == 1)) {
         // no need to split into "chunks", can call implementation directly
-        return multi_exp_inner<T, FieldT, Method>(
-            vec_start, vec_end, scalar_start, scalar_end);
+        return internal::
+            multi_exp_implementation<GroupT, FieldT, Method, BaseForm>::
+                multi_exp_inner(vec_start, vec_end, scalar_start, scalar_end);
     }
 
     const size_t one = total / chunks;
 
-    std::vector<T> partial(chunks, T::zero());
+    std::vector<GroupT> partial(chunks, GroupT::zero());
 
 #ifdef MULTICORE
 #pragma omp parallel for
 #endif
     for (size_t i = 0; i < chunks; ++i) {
-        partial[i] = multi_exp_inner<T, FieldT, Method>(
-            vec_start + i * one,
-            (i == chunks - 1 ? vec_end : vec_start + (i + 1) * one),
-            scalar_start + i * one,
-            (i == chunks - 1 ? scalar_end : scalar_start + (i + 1) * one));
+        partial[i] = internal::
+            multi_exp_implementation<GroupT, FieldT, Method, BaseForm>::
+                multi_exp_inner(
+                    vec_start + i * one,
+                    (i == chunks - 1) ? vec_end : (vec_start + (i + 1) * one),
+                    scalar_start + i * one,
+                    (i == chunks - 1) ? scalar_end
+                                      : (scalar_start + (i + 1) * one));
     }
 
-    T final = T::zero();
+    GroupT final = GroupT::zero();
 
     for (size_t i = 0; i < chunks; ++i) {
         final = final + partial[i];
@@ -652,10 +661,10 @@ T multi_exp(
     return final;
 }
 
-template<typename T, typename FieldT, multi_exp_method Method>
-T multi_exp_with_mixed_addition(
-    typename std::vector<T>::const_iterator vec_start,
-    typename std::vector<T>::const_iterator vec_end,
+template<typename GroupT, typename FieldT, multi_exp_method Method>
+GroupT multi_exp_with_mixed_addition(
+    typename std::vector<GroupT>::const_iterator vec_start,
+    typename std::vector<GroupT>::const_iterator vec_end,
     typename std::vector<FieldT>::const_iterator scalar_start,
     typename std::vector<FieldT>::const_iterator scalar_end,
     const size_t chunks)
@@ -671,9 +680,9 @@ T multi_exp_with_mixed_addition(
     const FieldT zero = FieldT::zero();
     const FieldT one = FieldT::one();
     std::vector<FieldT> p;
-    std::vector<T> g;
+    std::vector<GroupT> g;
 
-    T acc = T::zero();
+    GroupT acc = GroupT::zero();
 
     size_t num_skip = 0;
     size_t num_add = 0;
@@ -714,7 +723,7 @@ T multi_exp_with_mixed_addition(
 
     leave_block("Process scalar vector");
 
-    return acc + multi_exp<T, FieldT, Method>(
+    return acc + multi_exp<GroupT, FieldT, Method, multi_exp_base_form_special>(
                      g.begin(), g.end(), p.begin(), p.end(), chunks);
 }
 
@@ -1010,7 +1019,7 @@ GroupT multi_exp_base_elements_from_fifo_all_rounds(
     }
 
     // For each digit, sum the buckets and accumulate the total
-    GroupT result = multiexp_accumulate_buckets(
+    GroupT result = internal::multiexp_accumulate_buckets(
         round_buckets[num_digits - 1],
         round_bucket_hit[num_digits - 1],
         num_buckets);
@@ -1023,7 +1032,7 @@ GroupT multi_exp_base_elements_from_fifo_all_rounds(
             result = result.dbl();
         }
 
-        const GroupT digit_sum = multiexp_accumulate_buckets(
+        const GroupT digit_sum = internal::multiexp_accumulate_buckets(
             round_buckets[digit_idx], round_bucket_hit[digit_idx], num_buckets);
         round_buckets[digit_idx].clear();
         round_bucket_hit[digit_idx].clear();
@@ -1045,7 +1054,7 @@ GroupT multi_exp_stream(
     concurrent_fifo_spsc<GroupT> fifo(FIFO_SIZE);
 
     // TODO: Better estimate of optimal c
-    const size_t c = pippenger_optimal_c(num_entries) + 1;
+    const size_t c = internal::pippenger_optimal_c(num_entries) + 1;
     assert(c > 0);
 
     // Launch the reading thread

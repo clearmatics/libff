@@ -144,7 +144,11 @@ test_instances_t<GroupT> read_group_elements(
     return elements;
 }
 
-template<typename GroupT, typename FieldT, multi_exp_method Method>
+template<
+    typename GroupT,
+    typename FieldT,
+    multi_exp_method Method,
+    multi_exp_base_form BaseForm = multi_exp_base_form_normal>
 run_result_t<GroupT> profile_multiexp(
     test_instances_t<GroupT> group_elements, test_instances_t<FieldT> scalars)
 {
@@ -152,7 +156,7 @@ run_result_t<GroupT> profile_multiexp(
 
     GroupT answer;
     for (size_t iter = 0; iter < NUM_ITERATIONS; ++iter) {
-        answer = multi_exp<GroupT, FieldT, Method>(
+        answer = multi_exp<GroupT, FieldT, Method, BaseForm>(
             group_elements.cbegin(),
             group_elements.cend(),
             scalars.cbegin(),
@@ -260,7 +264,8 @@ void print_performance_csv(
         run_result_t<GroupT> result_djb_signed_mixed = profile_multiexp<
             GroupT,
             FieldT,
-            multi_exp_method_BDLO12_signed_mixed>(group_elements, scalars);
+            multi_exp_method_BDLO12_signed,
+            multi_exp_base_form_special>(group_elements, scalars);
         printf("\t%16lld", result_djb_signed_mixed.first);
         fflush(stdout);
 
