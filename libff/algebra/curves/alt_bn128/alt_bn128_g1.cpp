@@ -133,67 +133,7 @@ bool alt_bn128_G1::operator!=(const alt_bn128_G1 &other) const
 
 alt_bn128_G1 alt_bn128_G1::operator+(const alt_bn128_G1 &other) const
 {
-    // handle special cases having to do with O
-    if (this->is_zero()) {
-        return other;
-    }
-
-    if (other.is_zero()) {
-        return *this;
-    }
-
-    // no need to handle points of order 2,4
-    // (they cannot exist in a prime-order subgroup)
-
-    // check for doubling case
-
-    // using Jacobian coordinates so:
-    //   (X1:Y1:Z1) = (X2:Y2:Z2)
-    //   iff
-    //   X1/Z1^2 == X2/Z2^2 and Y1/Z1^3 == Y2/Z2^3
-    //   iff
-    //   X1 * Z2^2 == X2 * Z1^2 and Y1 * Z2^3 == Y2 * Z1^3
-
-    alt_bn128_Fq Z1Z1 = (this->Z).squared();
-    alt_bn128_Fq Z2Z2 = (other.Z).squared();
-
-    alt_bn128_Fq U1 = this->X * Z2Z2;
-    alt_bn128_Fq U2 = other.X * Z1Z1;
-
-    alt_bn128_Fq Z1_cubed = (this->Z) * Z1Z1;
-    alt_bn128_Fq Z2_cubed = (other.Z) * Z2Z2;
-
-    // S1 = Y1 * Z2 * Z2Z2
-    alt_bn128_Fq S1 = (this->Y) * Z2_cubed;
-    // S2 = Y2 * Z1 * Z1Z1
-    alt_bn128_Fq S2 = (other.Y) * Z1_cubed;
-
-    if (U1 == U2 && S1 == S2) {
-        // dbl case; nothing of above can be reused
-        return this->dbl();
-    }
-
-    // rest of add case
-    // H = U2-U1
-    alt_bn128_Fq H = U2 - U1;
-    alt_bn128_Fq S2_minus_S1 = S2 - S1;
-    // I = (2 * H)^2
-    alt_bn128_Fq I = (H + H).squared();
-    // J = H * I
-    alt_bn128_Fq J = H * I;
-    // r = 2 * (S2-S1)
-    alt_bn128_Fq r = S2_minus_S1 + S2_minus_S1;
-    // V = U1 * I
-    alt_bn128_Fq V = U1 * I;
-    // X3 = r^2 - J - 2 * V
-    alt_bn128_Fq X3 = r.squared() - J - (V + V);
-    alt_bn128_Fq S1_J = S1 * J;
-    // Y3 = r * (V-X3)-2 S1 J
-    alt_bn128_Fq Y3 = r * (V - X3) - (S1_J + S1_J);
-    // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
-    alt_bn128_Fq Z3 = ((this->Z + other.Z).squared() - Z1Z1 - Z2Z2) * H;
-
-    return alt_bn128_G1(X3, Y3, Z3);
+    return add(other);
 }
 
 alt_bn128_G1 alt_bn128_G1::operator-() const
