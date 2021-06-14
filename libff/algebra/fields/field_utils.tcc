@@ -11,13 +11,41 @@
 #define FIELD_UTILS_TCC_
 
 #include <complex>
-#include <libff/algebra/fields/bigint.hpp>
+#include <libff/algebra/fields/fp.hpp>
 #include <libff/common/double.hpp>
 #include <libff/common/utils.hpp>
 #include <stdexcept>
 
 namespace libff
 {
+
+namespace internal
+{
+
+template<typename FieldT> class component_0_getter
+{
+public:
+    static const typename FieldT::my_Fp &get_component_0(const FieldT &field_el)
+    {
+        using NextSubfield =
+            typename std::decay<decltype(field_el.coeffs[0])>::type;
+        return component_0_getter<NextSubfield>::get_component_0(
+            field_el.coeffs[0]);
+    }
+};
+
+template<mp_size_t n, const bigint<n> &modulus>
+class component_0_getter<Fp_model<n, modulus>>
+{
+public:
+    static const Fp_model<n, modulus> &get_component_0(
+        const Fp_model<n, modulus> &field_el)
+    {
+        return field_el;
+    }
+};
+
+} // namespace internal
 
 template<mp_size_t n>
 size_t field_get_digit(
@@ -262,6 +290,12 @@ template<typename FieldT> void batch_invert(std::vector<FieldT> &vec)
         vec[i] = acc_inverse * prod[i];
         acc_inverse = acc_inverse * old_el;
     }
+}
+
+template<typename FieldT>
+const typename FieldT::my_Fp &field_get_component_0(const FieldT &v)
+{
+    return internal::component_0_getter<FieldT>::get_component_0(v);
 }
 
 } // namespace libff

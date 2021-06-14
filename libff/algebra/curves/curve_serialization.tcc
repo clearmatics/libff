@@ -115,15 +115,14 @@ class group_element_codec<encoding_binary, Form, compression_on, GroupT>
 public:
     static void write(const GroupT &group_el, std::ostream &out_s)
     {
-        using BigIntT =
-            typename std::decay<decltype(group_el.X.mont_repr)>::type;
+        using BaseField = typename GroupT::base_field;
 
         if (!group_el.is_zero()) {
             GroupT affine(group_el);
             affine.to_affine_coordinates();
 
-            BigIntT v = affine.Y.as_bigint();
-            const mp_limb_t flags = v.data[0] & 1;
+            const auto y_0 = field_get_component_0(affine.Y).as_bigint();
+            const mp_limb_t flags = y_0.data[0] & 1;
 
             field_write_with_flags<encoding_binary, Form>(
                 affine.X, flags, out_s);
@@ -138,25 +137,14 @@ public:
         using Fq = typename std::decay<decltype(group_el.X)>::type;
 
         mp_limb_t flags;
-        Fq X;
-
-        // Initially, read the value without reduction. Only reduce if
-        // necessary. (For the Form == form_montgomery case, we could read
-        // directly into group_el.X. This may be worth measuring.)
-
-        field_read_with_flags<encoding_binary, form_montgomery>(X, flags, in_s);
+        field_read_with_flags<encoding_binary, Form>(group_el.X, flags, in_s);
         if (0 == (flags & 0x2)) {
-            if (Form == form_plain) {
-                group_el.X = Fq(X.mont_repr);
-            } else {
-                group_el.X = X;
-            }
             group_el.Y = curve_point_y_at_x<GroupT>(group_el.X);
 
             // Reuse X.mont_repr to hold the reduced Y value. Invert
             // Y if least-significant bit does not match the flag.
-            X.mont_repr = group_el.Y.as_bigint();
-            if ((flags & 1) != (X.mont_repr.data[0] & 1)) {
+            const auto y_0 = field_get_component_0(group_el.Y).as_bigint();
+            if ((flags & 1) != (y_0.data[0] & 1)) {
                 group_el.Y = -group_el.Y;
             }
 
