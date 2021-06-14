@@ -54,13 +54,14 @@ bn::Fp bn128_G1::sqrt(const bn::Fp &el)
             m += 1;
         }
 
+        // w = z^2^(v-m-1)
         int j = v-m-1;
         w = z;
         while (j > 0)
         {
             bn::Fp::square(w, w);
             --j;
-        } // w = z^2^(v-m-1)
+        }
 
         z = w * w;
         b = b * z;
@@ -451,7 +452,8 @@ void bn128_G1::read_uncompressed(std::istream &in, bn128_G1 &g)
 void bn128_G1::read_compressed(std::istream &in, bn128_G1 &g)
 {
     char is_zero;
-    in.read((char*)&is_zero, 1); // this reads is_zero;
+    // this reads is_zero;
+    in.read((char*)&is_zero, 1);
     is_zero -= '0';
     consume_OUTPUT_SEPARATOR(in);
 

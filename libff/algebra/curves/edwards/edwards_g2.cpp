@@ -30,7 +30,10 @@ edwards_G2::edwards_G2()
 edwards_Fq3 edwards_G2::mul_by_a(const edwards_Fq3 &elt)
 {
 	// should be
-	//  edwards_Fq3(edwards_twist_mul_by_a_c0 * elt.coeffs[2], edwards_twist_mul_by_a_c1 * elt.coeffs[0], edwards_twist_mul_by_a_c2 * elt.coeffs[1])
+	//  edwards_Fq3(
+	//    edwards_twist_mul_by_a_c0 * elt.coeffs[2],
+	//    edwards_twist_mul_by_a_c1 * elt.coeffs[0],
+	//    edwards_twist_mul_by_a_c2 * elt.coeffs[1])
 	// but optimizing the fact that edwards_twist_mul_by_a_c1 = edwards_twist_mul_by_a_c2 = 1
     return edwards_Fq3(edwards_twist_mul_by_a_c0 * elt.coeffs[2], elt.coeffs[0], elt.coeffs[1]);
 }
@@ -203,16 +206,26 @@ edwards_G2 edwards_G2::add(const edwards_G2 &other) const
     // NOTE: does not handle O and pts of order 2,4
     // http://www.hyperelliptic.org/EFD/g1p/auto-twisted-inverted.html#addition-add-2008-bbjlp
 
-    const edwards_Fq3 A = (this->Z) * (other.Z);                       // A = Z1*Z2
-    const edwards_Fq3 B = edwards_G2::mul_by_d(A.squared());           // B = d*A^2
-    const edwards_Fq3 C = (this->X) * (other.X);                       // C = X1*X2
-    const edwards_Fq3 D = (this->Y) * (other.Y);                       // D = Y1*Y2
-    const edwards_Fq3 E = C*D;                                         // E = C*D
-    const edwards_Fq3 H = C - edwards_G2::mul_by_a(D);                 // H = C-a*D
-    const edwards_Fq3 I = (this->X+this->Y)*(other.X+other.Y)-C-D;     // I = (X1+Y1)*(X2+Y2)-C-D
-    const edwards_Fq3 X3 = (E+B)*H;                                    // X3 = (E+B)*H
-    const edwards_Fq3 Y3 = (E-B)*I;                                    // Y3 = (E-B)*I
-    const edwards_Fq3 Z3 = A*H*I;                                      // Z3 = A*H*I
+    // A = Z1*Z2
+    const edwards_Fq3 A = (this->Z) * (other.Z);
+    // B = d*A^2
+    const edwards_Fq3 B = edwards_G2::mul_by_d(A.squared());
+    // C = X1*X2
+    const edwards_Fq3 C = (this->X) * (other.X);
+    // D = Y1*Y2
+    const edwards_Fq3 D = (this->Y) * (other.Y);
+    // E = C*D
+    const edwards_Fq3 E = C*D;
+    // H = C-a*D
+    const edwards_Fq3 H = C - edwards_G2::mul_by_a(D);
+    // I = (X1+Y1)*(X2+Y2)-C-D
+    const edwards_Fq3 I = (this->X+this->Y)*(other.X+other.Y)-C-D;
+    // X3 = (E+B)*H
+    const edwards_Fq3 X3 = (E+B)*H;
+    // Y3 = (E-B)*I
+    const edwards_Fq3 Y3 = (E-B)*I;
+    // Z3 = A*H*I
+    const edwards_Fq3 Z3 = A*H*I;
 
     return edwards_G2(X3, Y3, Z3);
 }
@@ -240,16 +253,26 @@ edwards_G2 edwards_G2::mixed_add(const edwards_G2 &other) const
     // NOTE: does not handle O and pts of order 2,4
     // http://www.hyperelliptic.org/EFD/g1p/auto-edwards-inverted.html#addition-madd-2007-lb
 
-    const edwards_Fq3 A = this->Z;                                     // A = Z1*Z2
-    const edwards_Fq3 B = edwards_G2::mul_by_d(A.squared());           // B = d*A^2
-    const edwards_Fq3 C = (this->X) * (other.X);                       // C = X1*X2
-    const edwards_Fq3 D = (this->Y) * (other.Y);                       // D = Y1*Y2
-    const edwards_Fq3 E = C*D;                                         // E = C*D
-    const edwards_Fq3 H = C - edwards_G2::mul_by_a(D);                 // H = C-a*D
-    const edwards_Fq3 I = (this->X+this->Y)*(other.X+other.Y)-C-D;     // I = (X1+Y1)*(X2+Y2)-C-D
-    const edwards_Fq3 X3 = (E+B)*H;                                    // X3 = (E+B)*H
-    const edwards_Fq3 Y3 = (E-B)*I;                                    // Y3 = (E-B)*I
-    const edwards_Fq3 Z3 = A*H*I;                                      // Z3 = A*H*I
+    // A = Z1*Z2
+    const edwards_Fq3 A = this->Z;
+    // B = d*A^2
+    const edwards_Fq3 B = edwards_G2::mul_by_d(A.squared());
+    // C = X1*X2
+    const edwards_Fq3 C = (this->X) * (other.X);
+    // D = Y1*Y2
+    const edwards_Fq3 D = (this->Y) * (other.Y);
+    // E = C*D
+    const edwards_Fq3 E = C*D;
+    // H = C-a*D
+    const edwards_Fq3 H = C - edwards_G2::mul_by_a(D);
+    // I = (X1+Y1)*(X2+Y2)-C-D
+    const edwards_Fq3 I = (this->X+this->Y)*(other.X+other.Y)-C-D;
+    // X3 = (E+B)*H
+    const edwards_Fq3 X3 = (E+B)*H;
+    // Y3 = (E-B)*I
+    const edwards_Fq3 Y3 = (E-B)*I;
+    // Z3 = A*H*I
+    const edwards_Fq3 Z3 = A*H*I;
 
     return edwards_G2(X3, Y3, Z3);
 }
@@ -268,16 +291,25 @@ edwards_G2 edwards_G2::dbl() const
         // NOTE: does not handle O and pts of order 2,4
         // http://www.hyperelliptic.org/EFD/g1p/auto-twisted-inverted.html#doubling-dbl-2008-bbjlp
 
-        const edwards_Fq3 A = (this->X).squared();                      // A = X1^2
-        const edwards_Fq3 B = (this->Y).squared();                      // B = Y1^2
-        const edwards_Fq3 U = edwards_G2::mul_by_a(B);                  // U = a*B
-        const edwards_Fq3 C = A+U;                                      // C = A+U
-        const edwards_Fq3 D = A-U;                                      // D = A-U
-        const edwards_Fq3 E = (this->X+this->Y).squared()-A-B;          // E = (X1+Y1)^2-A-B
-        const edwards_Fq3 X3 = C*D;                                     // X3 = C*D
+        // A = X1^2
+        const edwards_Fq3 A = (this->X).squared();
+        // B = Y1^2
+        const edwards_Fq3 B = (this->Y).squared();
+        // U = a*B
+        const edwards_Fq3 U = edwards_G2::mul_by_a(B);
+        // C = A+U
+        const edwards_Fq3 C = A+U;
+        // D = A-U
+        const edwards_Fq3 D = A-U;
+        // E = (X1+Y1)^2-A-B
+        const edwards_Fq3 E = (this->X+this->Y).squared()-A-B;
+        // X3 = C*D
+        const edwards_Fq3 X3 = C*D;
         const edwards_Fq3 dZZ = edwards_G2::mul_by_d(this->Z.squared());
-        const edwards_Fq3 Y3 = E*(C-dZZ-dZZ);                           // Y3 = E*(C-2*d*Z1^2)
-        const edwards_Fq3 Z3 = D*E;                                     // Z3 = D*E
+        // Y3 = E*(C-2*d*Z1^2)
+        const edwards_Fq3 Y3 = E*(C-dZZ-dZZ);
+        // Z3 = D*E
+        const edwards_Fq3 Z3 = D*E;
 
         return edwards_G2(X3, Y3, Z3);
     }
@@ -292,22 +324,20 @@ edwards_G2 edwards_G2::mul_by_q() const
 
 bool edwards_G2::is_well_formed() const
 {
-    /* Note that point at infinity is the only special case we must check as
-       inverted representation does no cover points (0, +-c) and (+-c, 0). */
+     // Note that point at infinity is the only special case we must check as
+     // inverted representation does no cover points (0, +-c) and (+-c, 0).
     if (this->is_zero())
     {
         return true;
     }
     else
     {
-        /*
-          a x^2 + y^2 = 1 + d x^2 y^2
-
-          We are using inverted, so equation we need to check is actually
-
-          a (z/x)^2 + (z/y)^2 = 1 + d z^4 / (x^2 * y^2)
-          z^2 (a y^2 + x^2 - dz^2) = x^2 y^2
-        */
+        // a x^2 + y^2 = 1 + d x^2 y^2
+        //
+        // We are using inverted, so equation we need to check is actually
+        //
+        // a (z/x)^2 + (z/y)^2 = 1 + d z^4 / (x^2 * y^2)
+        // z^2 (a y^2 + x^2 - dz^2) = x^2 y^2
         edwards_Fq3 X2 = this->X.squared();
         edwards_Fq3 Y2 = this->Y.squared();
         edwards_Fq3 Z2 = this->Z.squared();
@@ -366,10 +396,8 @@ void edwards_G2::read_uncompressed(std::istream &in, edwards_G2 &g)
 
 void edwards_G2::read_compressed(std::istream &in, edwards_G2 &g)
 {
-    /*
-      a x^2 + y^2 = 1 + d x^2 y^2
-      y = sqrt((1-ax^2)/(1-dx^2))
-    */
+    // a x^2 + y^2 = 1 + d x^2 y^2
+    // y = sqrt((1-ax^2)/(1-dx^2))
     edwards_Fq3 tX, tY;
     unsigned char Y_lsb;
     in >> tX;

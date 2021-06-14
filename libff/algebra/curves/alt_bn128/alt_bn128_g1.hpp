@@ -98,4 +98,5 @@ alt_bn128_G1 operator*(const Fp_model<m,modulus_p> &lhs, const alt_bn128_G1 &rhs
 }
 
 } // libff
+
 #endif // ALT_BN128_G1_HPP_

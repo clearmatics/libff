@@ -149,60 +149,87 @@ mnt6_G1 mnt6_G1::operator+(const mnt6_G1 &other) const
     // (they cannot exist in a prime-order subgroup)
 
     // handle double case, and then all the rest
-    /*
-      The code below is equivalent to (but faster than) the snippet below:
 
-      if (this->operator==(other))
-      {
-      return this->dbl();
-      }
-      else
-      {
-      return this->add(other);
-      }
-    */
+    // The code below is equivalent to (but faster than) the snippet below:
+    //
+    // if (this->operator==(other))
+    // {
+    //   return this->dbl();
+    // }
+    // else
+    // {
+    //   return this->add(other);
+    // }
 
-    const mnt6_Fq X1Z2 = (this->X) * (other.Z);        // X1Z2 = X1*Z2
-    const mnt6_Fq X2Z1 = (this->Z) * (other.X);        // X2Z1 = X2*Z1
+    // X1Z2 = X1*Z2
+    const mnt6_Fq X1Z2 = (this->X) * (other.Z);
+    // X2Z1 = X2*Z1
+    const mnt6_Fq X2Z1 = (this->Z) * (other.X);
 
     // (used both in add and double checks)
 
-    const mnt6_Fq Y1Z2 = (this->Y) * (other.Z);        // Y1Z2 = Y1*Z2
-    const mnt6_Fq Y2Z1 = (this->Z) * (other.Y);        // Y2Z1 = Y2*Z1
+    // Y1Z2 = Y1*Z2
+    const mnt6_Fq Y1Z2 = (this->Y) * (other.Z);
+    // Y2Z1 = Y2*Z1
+    const mnt6_Fq Y2Z1 = (this->Z) * (other.Y);
 
     if (X1Z2 == X2Z1 && Y1Z2 == Y2Z1)
     {
         // perform dbl case
-        const mnt6_Fq XX   = (this->X).squared();                   // XX  = X1^2
-        const mnt6_Fq ZZ   = (this->Z).squared();                   // ZZ  = Z1^2
-        const mnt6_Fq w    = mnt6_G1::coeff_a * ZZ + (XX + XX + XX); // w   = a*ZZ + 3*XX
+        // XX  = X1^2
+        const mnt6_Fq XX   = (this->X).squared();
+        // ZZ  = Z1^2
+        const mnt6_Fq ZZ   = (this->Z).squared();
+        // w   = a*ZZ + 3*XX
+        const mnt6_Fq w    = mnt6_G1::coeff_a * ZZ + (XX + XX + XX);
         const mnt6_Fq Y1Z1 = (this->Y) * (this->Z);
-        const mnt6_Fq s    = Y1Z1 + Y1Z1;                            // s   = 2*Y1*Z1
-        const mnt6_Fq ss   = s.squared();                            // ss  = s^2
-        const mnt6_Fq sss  = s * ss;                                 // sss = s*ss
-        const mnt6_Fq R    = (this->Y) * s;                         // R   = Y1*s
-        const mnt6_Fq RR   = R.squared();                            // RR  = R^2
-        const mnt6_Fq B    = ((this->X)+R).squared()-XX-RR;         // B   = (X1+R)^2 - XX - RR
-        const mnt6_Fq h    = w.squared() - (B+B);                    // h   = w^2 - 2*B
-        const mnt6_Fq X3   = h * s;                                  // X3  = h*s
-        const mnt6_Fq Y3   = w * (B-h)-(RR+RR);                      // Y3  = w*(B-h) - 2*RR
-        const mnt6_Fq Z3   = sss;                                    // Z3  = sss
+        // s   = 2*Y1*Z1
+        const mnt6_Fq s    = Y1Z1 + Y1Z1;
+        // ss  = s^2
+        const mnt6_Fq ss   = s.squared();
+        // sss = s*ss
+        const mnt6_Fq sss  = s * ss;
+        // R   = Y1*s
+        const mnt6_Fq R    = (this->Y) * s;
+        // RR  = R^2
+        const mnt6_Fq RR   = R.squared();
+        // B   = (X1+R)^2 - XX - RR
+        const mnt6_Fq B    = ((this->X)+R).squared()-XX-RR;
+        // h   = w^2 - 2*B
+        const mnt6_Fq h    = w.squared() - (B+B);
+        // X3  = h*s
+        const mnt6_Fq X3   = h * s;
+        // Y3  = w*(B-h) - 2*RR
+        const mnt6_Fq Y3   = w * (B-h)-(RR+RR);
+        // Z3  = sss
+        const mnt6_Fq Z3   = sss;
 
         return mnt6_G1(X3, Y3, Z3);
     }
 
     // if we have arrived here we are in the add case
-    const mnt6_Fq Z1Z2 = (this->Z) * (other.Z);      // Z1Z2 = Z1*Z2
-    const mnt6_Fq u    = Y2Z1 - Y1Z2;                  // u    = Y2*Z1-Y1Z2
-    const mnt6_Fq uu   = u.squared();                  // uu   = u^2
-    const mnt6_Fq v    = X2Z1 - X1Z2;                  // v    = X2*Z1-X1Z2
-    const mnt6_Fq vv   = v.squared();                  // vv   = v^2
-    const mnt6_Fq vvv  = v * vv;                       // vvv  = v*vv
-    const mnt6_Fq R    = vv * X1Z2;                    // R    = vv*X1Z2
-    const mnt6_Fq A    = uu * Z1Z2 - (vvv + R + R);    // A    = uu*Z1Z2 - vvv - 2*R
-    const mnt6_Fq X3   = v * A;                        // X3   = v*A
-    const mnt6_Fq Y3   = u * (R-A) - vvv * Y1Z2;       // Y3   = u*(R-A) - vvv*Y1Z2
-    const mnt6_Fq Z3   = vvv * Z1Z2;                   // Z3   = vvv*Z1Z2
+    // Z1Z2 = Z1*Z2
+    const mnt6_Fq Z1Z2 = (this->Z) * (other.Z);
+    // u    = Y2*Z1-Y1Z2
+    const mnt6_Fq u    = Y2Z1 - Y1Z2;
+    // uu   = u^2
+    const mnt6_Fq uu   = u.squared();
+    // v    = X2*Z1-X1Z2
+    const mnt6_Fq v    = X2Z1 - X1Z2;
+    // vv   = v^2
+    const mnt6_Fq vv   = v.squared();
+    // vvv  = v*vv
+    const mnt6_Fq vvv  = v * vv;
+    // R    = vv*X1Z2
+    const mnt6_Fq R    = vv * X1Z2;
+    // A    = uu*Z1Z2 - vvv - 2*R
+    const mnt6_Fq A    = uu * Z1Z2 - (vvv + R + R);
+    // X3   = v*A
+    const mnt6_Fq X3   = v * A;
+    // Y3   = u*(R-A) - vvv*Y1Z2
+    const mnt6_Fq Y3   = u * (R-A) - vvv * Y1Z2;
+    // Z3   = vvv*Z1Z2
+    const mnt6_Fq Z3   = vvv * Z1Z2;
 
     return mnt6_G1(X3, Y3, Z3);
 }
@@ -246,19 +273,32 @@ mnt6_G1 mnt6_G1::add(const mnt6_G1 &other) const
     // NOTE: does not handle O and pts of order 2,4
     // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-projective.html#addition-add-1998-cmo-2
 
-    const mnt6_Fq Y1Z2 = (this->Y) * (other.Z);        // Y1Z2 = Y1*Z2
-    const mnt6_Fq X1Z2 = (this->X) * (other.Z);        // X1Z2 = X1*Z2
-    const mnt6_Fq Z1Z2 = (this->Z) * (other.Z);        // Z1Z2 = Z1*Z2
-    const mnt6_Fq u    = (other.Y) * (this->Z) - Y1Z2; // u    = Y2*Z1-Y1Z2
-    const mnt6_Fq uu   = u.squared();                    // uu   = u^2
-    const mnt6_Fq v    = (other.X) * (this->Z) - X1Z2; // v    = X2*Z1-X1Z2
-    const mnt6_Fq vv   = v.squared();                    // vv   = v^2
-    const mnt6_Fq vvv  = v * vv;                         // vvv  = v*vv
-    const mnt6_Fq R    = vv * X1Z2;                      // R    = vv*X1Z2
-    const mnt6_Fq A    = uu * Z1Z2 - (vvv + R + R);      // A    = uu*Z1Z2 - vvv - 2*R
-    const mnt6_Fq X3   = v * A;                          // X3   = v*A
-    const mnt6_Fq Y3   = u * (R-A) - vvv * Y1Z2;         // Y3   = u*(R-A) - vvv*Y1Z2
-    const mnt6_Fq Z3   = vvv * Z1Z2;                     // Z3   = vvv*Z1Z2
+    // Y1Z2 = Y1*Z2
+    const mnt6_Fq Y1Z2 = (this->Y) * (other.Z);
+    // X1Z2 = X1*Z2
+    const mnt6_Fq X1Z2 = (this->X) * (other.Z);
+    // Z1Z2 = Z1*Z2
+    const mnt6_Fq Z1Z2 = (this->Z) * (other.Z);
+    // u    = Y2*Z1-Y1Z2
+    const mnt6_Fq u    = (other.Y) * (this->Z) - Y1Z2;
+    // uu   = u^2
+    const mnt6_Fq uu   = u.squared();
+    // v    = X2*Z1-X1Z2
+    const mnt6_Fq v    = (other.X) * (this->Z) - X1Z2;
+    // vv   = v^2
+    const mnt6_Fq vv   = v.squared();
+    // vvv  = v*vv
+    const mnt6_Fq vvv  = v * vv;
+    // R    = vv*X1Z2
+    const mnt6_Fq R    = vv * X1Z2;
+    // A    = uu*Z1Z2 - vvv - 2*R
+    const mnt6_Fq A    = uu * Z1Z2 - (vvv + R + R);
+    // X3   = v*A
+    const mnt6_Fq X3   = v * A;
+    // Y3   = u*(R-A) - vvv*Y1Z2
+    const mnt6_Fq Y3   = u * (R-A) - vvv * Y1Z2;
+    // Z3   = vvv*Z1Z2
+    const mnt6_Fq Z3   = vvv * Z1Z2;
 
     return mnt6_G1(X3, Y3, Z3);
 }
@@ -286,29 +326,43 @@ mnt6_G1 mnt6_G1::mixed_add(const mnt6_G1 &other) const
     assert(other.is_special());
 #endif
 
-    const mnt6_Fq &X1Z2 = (this->X);                    // X1Z2 = X1*Z2 (but other is special and not zero)
-    const mnt6_Fq X2Z1 = (this->Z) * (other.X);        // X2Z1 = X2*Z1
+    // X1Z2 = X1*Z2 (but other is special and not zero)
+    const mnt6_Fq &X1Z2 = (this->X);
+    // X2Z1 = X2*Z1
+    const mnt6_Fq X2Z1 = (this->Z) * (other.X);
 
     // (used both in add and double checks)
 
-    const mnt6_Fq &Y1Z2 = (this->Y);                    // Y1Z2 = Y1*Z2 (but other is special and not zero)
-    const mnt6_Fq Y2Z1 = (this->Z) * (other.Y);        // Y2Z1 = Y2*Z1
+    // Y1Z2 = Y1*Z2 (but other is special and not zero)
+    const mnt6_Fq &Y1Z2 = (this->Y);
+    // Y2Z1 = Y2*Z1
+    const mnt6_Fq Y2Z1 = (this->Z) * (other.Y);
 
     if (X1Z2 == X2Z1 && Y1Z2 == Y2Z1)
     {
         return this->dbl();
     }
 
-    mnt6_Fq u = Y2Z1 - this->Y;             // u = Y2*Z1-Y1
-    mnt6_Fq uu = u.squared();                // uu = u2
-    mnt6_Fq v = X2Z1 - this->X;             // v = X2*Z1-X1
-    mnt6_Fq vv = v.squared();                // vv = v2
-    mnt6_Fq vvv = v*vv;                      // vvv = v*vv
-    mnt6_Fq R = vv * this->X;               // R = vv*X1
-    mnt6_Fq A = uu * this->Z - vvv - R - R; // A = uu*Z1-vvv-2*R
-    mnt6_Fq X3 = v * A;                      // X3 = v*A
-    mnt6_Fq Y3 = u*(R-A) - vvv * this->Y;   // Y3 = u*(R-A)-vvv*Y1
-    mnt6_Fq Z3 = vvv * this->Z;             // Z3 = vvv*Z1
+    // u = Y2*Z1-Y1
+    mnt6_Fq u = Y2Z1 - this->Y;
+    // uu = u2
+    mnt6_Fq uu = u.squared();
+    // v = X2*Z1-X1
+    mnt6_Fq v = X2Z1 - this->X;
+    // vv = v2
+    mnt6_Fq vv = v.squared();
+    // vvv = v*vv
+    mnt6_Fq vvv = v*vv;
+    // R = vv*X1
+    mnt6_Fq R = vv * this->X;
+    // A = uu*Z1-vvv-2*R
+    mnt6_Fq A = uu * this->Z - vvv - R - R;
+    // X3 = v*A
+    mnt6_Fq X3 = v * A;
+    // Y3 = u*(R-A)-vvv*Y1
+    mnt6_Fq Y3 = u*(R-A) - vvv * this->Y;
+    // Z3 = vvv*Z1
+    mnt6_Fq Z3 = vvv * this->Z;
 
     return mnt6_G1(X3, Y3, Z3);
 }
@@ -327,20 +381,33 @@ mnt6_G1 mnt6_G1::dbl() const
         // NOTE: does not handle O and pts of order 2,4
         // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-projective.html#doubling-dbl-2007-bl
 
-        const mnt6_Fq XX   = (this->X).squared();                   // XX  = X1^2
-        const mnt6_Fq ZZ   = (this->Z).squared();                   // ZZ  = Z1^2
-        const mnt6_Fq w    = mnt6_G1::coeff_a * ZZ + (XX + XX + XX); // w   = a*ZZ + 3*XX
+        // XX  = X1^2
+        const mnt6_Fq XX   = (this->X).squared();
+        // ZZ  = Z1^2
+        const mnt6_Fq ZZ   = (this->Z).squared();
+        // w   = a*ZZ + 3*XX
+        const mnt6_Fq w    = mnt6_G1::coeff_a * ZZ + (XX + XX + XX);
         const mnt6_Fq Y1Z1 = (this->Y) * (this->Z);
-        const mnt6_Fq s    = Y1Z1 + Y1Z1;                            // s   = 2*Y1*Z1
-        const mnt6_Fq ss   = s.squared();                            // ss  = s^2
-        const mnt6_Fq sss  = s * ss;                                 // sss = s*ss
-        const mnt6_Fq R    = (this->Y) * s;                         // R   = Y1*s
-        const mnt6_Fq RR   = R.squared();                            // RR  = R^2
-        const mnt6_Fq B    = ((this->X)+R).squared()-XX-RR;         // B   = (X1+R)^2 - XX - RR
-        const mnt6_Fq h    = w.squared() - (B+B);                    // h   = w^2 - 2*B
-        const mnt6_Fq X3   = h * s;                                  // X3  = h*s
-        const mnt6_Fq Y3   = w * (B-h)-(RR+RR);                      // Y3  = w*(B-h) - 2*RR
-        const mnt6_Fq Z3   = sss;                                    // Z3  = sss
+        // s   = 2*Y1*Z1
+        const mnt6_Fq s    = Y1Z1 + Y1Z1;
+        // ss  = s^2
+        const mnt6_Fq ss   = s.squared();
+        // sss = s*ss
+        const mnt6_Fq sss  = s * ss;
+        // R   = Y1*s
+        const mnt6_Fq R    = (this->Y) * s;
+        // RR  = R^2
+        const mnt6_Fq RR   = R.squared();
+        // B   = (X1+R)^2 - XX - RR
+        const mnt6_Fq B    = ((this->X)+R).squared()-XX-RR;
+        // h   = w^2 - 2*B
+        const mnt6_Fq h    = w.squared() - (B+B);
+        // X3  = h*s
+        const mnt6_Fq X3   = h * s;
+        // Y3  = w*(B-h) - 2*RR
+        const mnt6_Fq Y3   = w * (B-h)-(RR+RR);
+        // Z3  = sss
+        const mnt6_Fq Z3   = sss;
 
         return mnt6_G1(X3, Y3, Z3);
     }
@@ -360,16 +427,14 @@ bool mnt6_G1::is_well_formed() const
     }
     else
     {
-        /*
-          y^2 = x^3 + ax + b
-
-          We are using projective, so equation we need to check is actually
-
-          (y/z)^2 = (x/z)^3 + a (x/z) + b
-          z y^2 = x^3  + a z^2 x + b z^3
-
-          z (y^2 - b z^2) = x ( x^2 + a z^2)
-        */
+        // y^2 = x^3 + ax + b
+        //
+        // We are using projective, so equation we need to check is actually
+        //
+        // (y/z)^2 = (x/z)^3 + a (x/z) + b
+        // z y^2 = x^3  + a z^2 x + b z^3
+        //
+        // z (y^2 - b z^2) = x ( x^2 + a z^2)
         const mnt6_Fq X2 = this->X.squared();
         const mnt6_Fq Y2 = this->Y.squared();
         const mnt6_Fq Z2 = this->Z.squared();
@@ -441,7 +506,8 @@ void mnt6_G1::read_compressed(std::istream &in, mnt6_G1 &g)
 {
     char is_zero;
     mnt6_Fq tX, tY;
-    in.read((char*)&is_zero, 1); // this reads is_zero;
+    // this reads is_zero;
+    in.read((char*)&is_zero, 1);
     is_zero -= '0';
     consume_OUTPUT_SEPARATOR(in);
 

@@ -111,4 +111,5 @@ bls12_377_G1 operator*(const Fp_model<m,modulus_p> &lhs, const bls12_377_G1 &rhs
 }
 
 } // libff
+
 #endif // BLS12_377_G1_HPP_

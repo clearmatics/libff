@@ -98,9 +98,9 @@ bool bw6_761_G1::operator==(const bw6_761_G1 &other) const
     }
 
     // Using Projective coordinates so:
-    // (X1:Y1:Z1) = (X2:Y2:Z2) <=>
-    // X1/Z1 = X2/Z2 AND Y1/Z1 = Y2/Z2
-    // <=> X1*Z2 = X2*Z1 AND Y1*Z2 = Y2*Z1
+    //   (X1:Y1:Z1) = (X2:Y2:Z2) <=>
+    //   X1/Z1 = X2/Z2 AND Y1/Z1 = Y2/Z2 <=>
+    //   X1*Z2 = X2*Z1 AND Y1*Z2 = Y2*Z1
     if (((this->X * other.Z) != (other.X * this->Z)) ||
         ((this->Y * other.Z) != (other.Y * this->Z)))
     {
@@ -473,7 +473,8 @@ void bw6_761_G1::read_compressed(std::istream &in, bw6_761_G1 &g)
     char is_zero;
     bw6_761_Fq tX, tY;
 
-    in.read((char*)&is_zero, 1); // this reads is_zero;
+    // this reads is_zero;
+    in.read((char*)&is_zero, 1);
     is_zero -= '0';
     consume_OUTPUT_SEPARATOR(in);
 

@@ -54,13 +54,14 @@ bn::Fp2 bn128_G2::sqrt(const bn::Fp2 &el)
             m += 1;
         }
 
+        // w = z^2^(v-m-1)
         int j = v-m-1;
         w = z;
         while (j > 0)
         {
             bn::Fp2::square(w, w);
             --j;
-        } // w = z^2^(v-m-1)
+        }
 
         z = w * w;
         b = b * z;
@@ -152,7 +153,7 @@ bool bn128_G2::operator==(const bn128_G2 &other) const
         return false;
     }
 
-    /* now neither is O */
+    // now neither is O
 
     bn::Fp2 Z1sq, Z2sq, lhs, rhs;
     bn::Fp2::square(Z1sq, this->Z);
@@ -255,11 +256,11 @@ bn128_G2 bn128_G2::mixed_add(const bn128_G2 &other) const
     // check for doubling case
 
     // using Jacobian coordinates so:
-    // (X1:Y1:Z1) = (X2:Y2:Z2)
-    // iff
-    // X1/Z1^2 == X2/Z2^2 and Y1/Z1^3 == Y2/Z2^3
-    // iff
-    // X1 * Z2^2 == X2 * Z1^2 and Y1 * Z2^3 == Y2 * Z1^3
+    //   (X1:Y1:Z1) = (X2:Y2:Z2)
+    //   iff
+    //   X1/Z1^2 == X2/Z2^2 and Y1/Z1^3 == Y2/Z2^3
+    //   iff
+    //   X1 * Z2^2 == X2 * Z1^2 and Y1 * Z2^3 == Y2 * Z1^3
 
     // we know that Z2 = 1
 
@@ -273,7 +274,8 @@ bn128_G2 bn128_G2::mixed_add(const bn128_G2 &other) const
 
     const bn::Fp2 &S1 = this->Y;
     bn::Fp2 S2;
-    bn::Fp2::mul(S2, other.Y, Z1_cubed); // S2 = Y2*Z1*Z1Z1
+    // S2 = Y2*Z1*Z1Z1
+    bn::Fp2::mul(S2, other.Y, Z1_cubed);
 
     if (U1 == U2 && S1 == S2)
     {
@@ -347,15 +349,13 @@ bool bn128_G2::is_well_formed() const
     }
     else
     {
-        /*
-          y^2 = x^3 + b
-
-          We are using Jacobian coordinates, so equation we need to check is actually
-
-          (y/z^3)^2 = (x/z^2)^3 + b
-          y^2 / z^6 = x^3 / z^6 + b
-          y^2 = x^3 + b z^6
-        */
+        // y^2 = x^3 + b
+        //
+        // We are using Jacobian coordinates, so equation we need to check is actually
+        //
+        // (y/z^3)^2 = (x/z^2)^3 + b
+        // y^2 / z^6 = x^3 / z^6 + b
+        // y^2 = x^3 + b z^6
         bn::Fp2 X2, Y2, Z2;
         bn::Fp2::square(X2, this->X);
         bn::Fp2::square(Y2, this->Y);
@@ -428,7 +428,8 @@ void bn128_G2::write_compressed(std::ostream &out) const
 void bn128_G2::read_uncompressed(std::istream &in, bn128_G2 &g)
 {
     char is_zero;
-    in.read((char*)&is_zero, 1); // this reads is_zero;
+    // this reads is_zero;
+    in.read((char*)&is_zero, 1);
     is_zero -= '0';
     consume_OUTPUT_SEPARATOR(in);
 
@@ -447,7 +448,7 @@ void bn128_G2::read_uncompressed(std::istream &in, bn128_G2 &g)
     in.read((char*) &g.Y.b_, sizeof(g.Y.b_));
 #endif
 
-    /* finalize */
+    // finalize
     if (!is_zero)
     {
         g.Z = bn::Fp2(bn::Fp(1), bn::Fp(0));
@@ -461,7 +462,8 @@ void bn128_G2::read_uncompressed(std::istream &in, bn128_G2 &g)
 void bn128_G2::read_compressed(std::istream &in, bn128_G2 &g)
 {
     char is_zero;
-    in.read((char*)&is_zero, 1); // this reads is_zero;
+    // this reads is_zero;
+    in.read((char*)&is_zero, 1);
     is_zero -= '0';
     consume_OUTPUT_SEPARATOR(in);
 
@@ -495,7 +497,7 @@ void bn128_G2::read_compressed(std::istream &in, bn128_G2 &g)
         }
     }
 
-    /* finalize */
+    // finalize
     if (!is_zero)
     {
         g.Z = bn::Fp2(bn::Fp(1), bn::Fp(0));

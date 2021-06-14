@@ -97,4 +97,5 @@ edwards_G2 operator*(const Fp_model<m, modulus_p> &lhs, const edwards_G2 &rhs)
 }
 
 } // libff
+
 #endif // EDWARDS_G2_HPP_

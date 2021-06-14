@@ -116,13 +116,12 @@ bool bls12_377_G2::operator==(const bls12_377_G2 &other) const
         return false;
     }
 
-    /* now neither is O */
+    // now neither is O
 
     // Using Jacobian coordinates so:
-    // (X1:Y1:Z1) = (X2:Y2:Z2) <=>
-    // X1/Z1^2 == X2/Z2^2 AND Y1/Z1^3 == Y2/Z2^3
-    // <=>
-    // X1 * Z2^2 == X2 * Z1^2 AND Y1 * Z2^3 == Y2 * Z1^3
+    //   (X1:Y1:Z1) = (X2:Y2:Z2) <=>
+    //   X1/Z1^2 == X2/Z2^2 AND Y1/Z1^3 == Y2/Z2^3 <=>
+    //   X1 * Z2^2 == X2 * Z1^2 AND Y1 * Z2^3 == Y2 * Z1^3
     bls12_377_Fq2 Z1_squared = (this->Z).squared();
     bls12_377_Fq2 Z2_squared = (other.Z).squared();
     bls12_377_Fq2 Z1_cubed = (this->Z) * Z1_squared;
@@ -533,7 +532,8 @@ void bls12_377_G2::read_compressed(std::istream &in, bls12_377_G2 &g)
 {
     char is_zero;
     bls12_377_Fq2 tX, tY;
-    in.read((char*)&is_zero, 1); // this reads is_zero;
+    // this reads is_zero;
+    in.read((char*)&is_zero, 1);
     is_zero -= '0';
     consume_OUTPUT_SEPARATOR(in);
 
