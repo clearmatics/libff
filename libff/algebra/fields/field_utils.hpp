@@ -24,6 +24,16 @@ template<typename FieldT>
 typename std::enable_if<!std::is_same<FieldT, Double>::value, FieldT>::type
 get_root_of_unity(const size_t n);
 
+/// Decompose v into fixed-size digits of digit_size bits each.
+template<mp_size_t n>
+size_t field_get_digit(
+    const bigint<n> &v, const size_t digit_size, const size_t digit_index);
+
+/// Decompose v into fixed-size signed digits of digit_size bits each.
+template<mp_size_t n>
+ssize_t field_get_signed_digit(
+    const bigint<n> &v, const size_t digit_size, const size_t digit_index);
+
 template<typename FieldT>
 std::vector<FieldT> pack_int_vector_into_field_element_vector(
     const std::vector<size_t> &v, const size_t w);
