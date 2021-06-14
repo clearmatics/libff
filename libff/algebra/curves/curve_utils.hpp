@@ -17,6 +17,13 @@ namespace libff
 template<typename GroupT, mp_size_t m>
 GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar);
 
+// Utility function to compute Y coordinate of a point on the curve E(Fq) with
+// the given x coordinate. This is "unsafe" in that it does not check whether
+// E(Fq) has a solution at x.
+template<typename GroupT>
+decltype(((GroupT *)nullptr)->X) curve_point_y_at_x(
+    const decltype(((GroupT *)nullptr)->X) &x);
+
 // Utility function to compute a point on the curve E(Fq) with the given x
 // coordinate. If the curve has no solution, this function throws an
 // exception.

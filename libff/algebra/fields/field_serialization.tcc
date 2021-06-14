@@ -23,11 +23,11 @@ namespace libff
 namespace internal
 {
 
-template<encoding_t Enc, typename FieldT, form_t Form = form_plain>
+template<encoding_t Enc, form_t Form, typename FieldT>
 class field_element_codec;
 
 template<typename FieldT, form_t Form>
-class field_element_codec<encoding_json, FieldT, Form>
+class field_element_codec<encoding_json, Form, FieldT>
 {
 public:
     // Convert a field element to JSON
@@ -42,7 +42,7 @@ public:
         size_t i = FieldT::tower_extension_degree - 1;
         do {
             // out_s << field_element_to_json(field_el.coeffs[i]);
-            field_element_codec<encoding_json, base_field_t, Form>::write(
+            field_element_codec<encoding_json, Form, base_field_t>::write(
                 field_el.coeffs[i], out_s);
             if (i > 0) {
                 out_s << ',';
@@ -68,7 +68,7 @@ public:
 
         size_t i = FieldT::tower_extension_degree - 1;
         do {
-            field_element_codec<encoding_json, base_field_t, Form>::read(
+            field_element_codec<encoding_json, Form, base_field_t>::read(
                 field_el.coeffs[i], in_s);
             // field_element_read_json(field_el.coeffs[i], in_s);
             if (i > 0) {
@@ -89,7 +89,7 @@ public:
 // Implementation of field_element_codec<encoding_json, ...> for the base-case
 // of Fp_model types.
 template<mp_size_t n, const libff::bigint<n> &modulus, form_t Form>
-class field_element_codec<encoding_json, libff::Fp_model<n, modulus>, Form>
+class field_element_codec<encoding_json, Form, libff::Fp_model<n, modulus>>
 {
 public:
     using Field = libff::Fp_model<n, modulus>;
@@ -127,7 +127,7 @@ public:
 
 // Generic reader and write for fields and field extensions.
 template<typename FieldT, form_t Form>
-class field_element_codec<encoding_binary, FieldT, Form>
+class field_element_codec<encoding_binary, Form, FieldT>
 {
 public:
     static void write(const FieldT &field_el, std::ostream &out_s)
@@ -135,8 +135,7 @@ public:
         using base_field_t =
             typename std::decay<decltype(field_el.coeffs[0])>::type;
         for (size_t i = 0; i < FieldT::tower_extension_degree; ++i) {
-            // field_element_write_bytes(field_el.coeffs[i], out_s);
-            field_element_codec<encoding_binary, base_field_t, Form>::write(
+            field_element_codec<encoding_binary, Form, base_field_t>::write(
                 field_el.coeffs[i], out_s);
         }
     }
@@ -145,8 +144,35 @@ public:
         using base_field_t =
             typename std::decay<decltype(field_el.coeffs[0])>::type;
         for (size_t i = 0; i < FieldT::tower_extension_degree; ++i) {
-            // field_element_read_bytes(field_el.coeffs[i], in_s);
-            field_element_codec<encoding_binary, base_field_t, Form>::read(
+            field_element_codec<encoding_binary, Form, base_field_t>::read(
+                field_el.coeffs[i], in_s);
+        }
+    }
+    static void write_with_flags(
+        const FieldT &field_el, const mp_limb_t flags, std::ostream &out_s)
+    {
+        using base_field_t =
+            typename std::decay<decltype(field_el.coeffs[0])>::type;
+        // Write first component with flags, then all remaining components as
+        // normal.
+        field_element_codec<encoding_binary, Form, base_field_t>::
+            write_with_flags(field_el.coeffs[0], flags, out_s);
+        for (size_t i = 1; i < FieldT::tower_extension_degree; ++i) {
+            field_element_codec<encoding_binary, Form, base_field_t>::write(
+                field_el.coeffs[i], out_s);
+        }
+    }
+    static void read_with_flags(
+        FieldT &field_el, mp_limb_t &flags, std::istream &in_s)
+    {
+        using base_field_t =
+            typename std::decay<decltype(field_el.coeffs[0])>::type;
+        // Read first component with flags, then all remaining components as
+        // normal.
+        field_element_codec<encoding_binary, Form, base_field_t>::
+            read_with_flags(field_el.coeffs[0], flags, in_s);
+        for (size_t i = 1; i < FieldT::tower_extension_degree; ++i) {
+            field_element_codec<encoding_binary, Form, base_field_t>::read(
                 field_el.coeffs[i], in_s);
         }
     }
@@ -155,10 +181,22 @@ public:
 /// Implementation of field_element_bytes for the base-case of Fp_model types.
 /// Big-endian bigint values (i.e. not in montgomery form).
 template<mp_size_t n, const libff::bigint<n> &modulus, form_t Form>
-class field_element_codec<encoding_binary, libff::Fp_model<n, modulus>, Form>
+class field_element_codec<encoding_binary, Form, libff::Fp_model<n, modulus>>
 {
 public:
     using Field = libff::Fp_model<n, modulus>;
+
+    static constexpr size_t NUM_FLAG_BITS = 2;
+    static constexpr size_t FLAG_SHIFT =
+        (8 * sizeof(mp_limb_t)) - NUM_FLAG_BITS;
+    static constexpr mp_limb_t VALUE_MASK = (((mp_limb_t)1) << FLAG_SHIFT) - 1;
+
+    static bool verify_flag_capacity()
+    {
+        const size_t field_bits = Field::num_bits;
+        const size_t field_size_on_disk = 8 * sizeof(Field);
+        return (field_size_on_disk - field_bits) >= NUM_FLAG_BITS;
+    }
     static void write(const Field &field_el, std::ostream &out_s)
     {
         // Convert to bigint, reverse bytes in-place, and write to stream.
@@ -186,6 +224,49 @@ public:
             std::reverse((char *)(&res), (char *)(&res + 1));
         }
     }
+    static void write_with_flags(
+        const Field &field_el, const mp_limb_t flags, std::ostream &out_s)
+    {
+        assert(verify_flag_capacity());
+        assert(flags == (flags & ((1 << NUM_FLAG_BITS) - 1)));
+        libff::bigint<n> bi;
+        if (Form == form_plain) {
+            bi = field_el.as_bigint();
+        } else {
+            bi = field_el.mont_repr;
+        }
+
+        assert((bi.data[n - 1] & VALUE_MASK) == bi.data[n - 1]);
+        bi.data[n - 1] = bi.data[n - 1] | (flags << FLAG_SHIFT);
+
+        std::reverse((char *)(&bi), (char *)(&bi + 1));
+        out_s.write((const char *)(&bi.data[0]), sizeof(bi));
+    }
+    static void read_with_flags(
+        Field &field_el, mp_limb_t &flags, std::istream &in_s)
+    {
+        assert(verify_flag_capacity());
+
+        // Read bigint from stream, reverse bytes in-place, extract flags and
+        // convert to field element.
+        if (Form == form_plain) {
+            libff::bigint<n> res;
+            in_s.read((char *)(&res.data[0]), sizeof(res));
+            std::reverse((char *)(&res), (char *)(&res + 1));
+
+            flags = res.data[n - 1] >> FLAG_SHIFT;
+            res.data[n - 1] = res.data[n - 1] & VALUE_MASK;
+
+            field_el = Field(res);
+        } else {
+            libff::bigint<n> &res = field_el.mont_repr;
+            in_s.read((char *)(&res.data[0]), sizeof(res));
+            std::reverse((char *)(&res), (char *)(&res + 1));
+
+            flags = res.data[n - 1] >> FLAG_SHIFT;
+            res.data[n - 1] = res.data[n - 1] & VALUE_MASK;
+        }
+    }
 };
 
 } // namespace internal
@@ -204,13 +285,28 @@ template<typename BigIntT> std::string bigint_to_hex(const BigIntT &v)
 template<encoding_t Enc, form_t Form, typename FieldT>
 void field_read(FieldT &v, std::istream &in_s)
 {
-    internal::field_element_codec<Enc, FieldT>::read(v, in_s);
+    internal::field_element_codec<Enc, Form, FieldT>::read(v, in_s);
 }
 
 template<encoding_t Enc, form_t Form, typename FieldT>
 void field_write(const FieldT &v, std::ostream &out_s)
 {
-    internal::field_element_codec<Enc, FieldT>::write(v, out_s);
+    internal::field_element_codec<Enc, Form, FieldT>::write(v, out_s);
+}
+
+template<encoding_t Enc, form_t Form, typename FieldT>
+void field_read_with_flags(FieldT &v, mp_limb_t &flags, std::istream &in_s)
+{
+    internal::field_element_codec<Enc, Form, FieldT>::read_with_flags(
+        v, flags, in_s);
+}
+
+template<encoding_t Enc, form_t Form, typename FieldT>
+void field_write_with_flags(
+    const FieldT &v, mp_limb_t flags, std::ostream &out_s)
+{
+    internal::field_element_codec<Enc, Form, FieldT>::write_with_flags(
+        v, flags, out_s);
 }
 
 } // namespace libff
