@@ -116,6 +116,19 @@ if ("${IS_LIBFF_PARENT}")
     gtest_main
   )
 
+  add_executable(
+    algebra_multiexp_test
+    EXCLUDE_FROM_ALL
+
+    algebra/scalar_multiplication/test_multiexp.cpp
+  )
+  target_link_libraries(
+    algebra_multiexp_test
+
+    ff
+    gtest_main
+  )
+
   include(CTest)
   add_test(
     NAME algebra_bilinearity_test
@@ -130,9 +143,15 @@ if ("${IS_LIBFF_PARENT}")
     COMMAND algebra_fields_test
   )
 
+  add_test(
+    NAME algebra_multiexp_test
+    COMMAND algebra_multiexp_test
+  )
+
   add_dependencies(check algebra_bilinearity_test)
   add_dependencies(check algebra_groups_test)
   add_dependencies(check algebra_fields_test)
+  add_dependencies(check algebra_multiexp_test)
 
   add_executable(
     multiexp_profile
