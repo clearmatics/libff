@@ -217,7 +217,7 @@ template<typename GroupT> void test_serialize_group()
 template<typename ppT> void test_serialize()
 {
     test_serialize_group<G1<ppT>>();
-    // test_serialize_group<G2<ppT>>();
+    test_serialize_group<G2<ppT>>();
 }
 
 template<typename GroupT> void test_group_membership_valid()
