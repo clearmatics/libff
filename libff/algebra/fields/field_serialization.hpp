@@ -10,7 +10,6 @@
 #define __LIBFF_ALGEBRA_FIELDS_FIELD_SERIALIZATION_HPP__
 
 #include "libff/algebra/fields/bigint.hpp"
-#include "libff/algebra/fields/fp.hpp"
 #include "libff/algebra/serialization.hpp"
 
 namespace libff

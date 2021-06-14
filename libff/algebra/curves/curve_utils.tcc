@@ -32,12 +32,24 @@ GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar)
 }
 
 template<typename GroupT>
+decltype(((GroupT *)nullptr)->X) curve_point_y_at_x(
+    const decltype(((GroupT *)nullptr)->X) &x)
+{
+    using base_field = decltype(((GroupT *)nullptr)->X);
+    const base_field x_squared = x * x;
+    const base_field x_cubed = x_squared * x;
+    const base_field y_squared =
+        x_cubed + (GroupT::coeff_a * x) + GroupT::coeff_b;
+    return y_squared.sqrt();
+}
+
+template<typename GroupT>
 GroupT g1_curve_point_at_x(const typename GroupT::base_field &x)
 {
     const typename GroupT::base_field x_squared = x * x;
     const typename GroupT::base_field x_cubed = x_squared * x;
     const typename GroupT::base_field y_squared =
-        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
+        x_cubed + (GroupT::coeff_a * x) + GroupT::coeff_b;
     // Check that y_squared is a quadratic residue (ensuring that sqrt()
     // terminates).
     if ((y_squared ^ GroupT::base_field::euler) != GroupT::base_field::one()) {
@@ -51,13 +63,8 @@ GroupT g1_curve_point_at_x(const typename GroupT::base_field &x)
 template<typename GroupT>
 GroupT g2_curve_point_at_x(const typename GroupT::twist_field &x)
 {
-    const typename GroupT::twist_field x_squared = x * x;
-    const typename GroupT::twist_field x_cubed = x_squared * x;
-    const typename GroupT::twist_field y_squared =
-        x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
     // TODO: Generic check (over all fields) that y_squared.sqrt() terminates.
-    const typename GroupT::twist_field y = y_squared.sqrt();
-    return GroupT(x, y, GroupT::twist_field::one());
+    return GroupT(x, curve_point_y_at_x<GroupT>(x), GroupT::twist_field::one());
 }
 
 } // namespace libff
