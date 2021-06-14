@@ -150,6 +150,21 @@ bool alt_bn128_G2::operator!=(const alt_bn128_G2 &other) const
 
 alt_bn128_G2 alt_bn128_G2::operator+(const alt_bn128_G2 &other) const
 {
+    return add(other);
+}
+
+alt_bn128_G2 alt_bn128_G2::operator-() const
+{
+    return alt_bn128_G2(this->X, -(this->Y), this->Z);
+}
+
+alt_bn128_G2 alt_bn128_G2::operator-(const alt_bn128_G2 &other) const
+{
+    return (*this) + (-other);
+}
+
+alt_bn128_G2 alt_bn128_G2::add(const alt_bn128_G2 &other) const
+{
     // handle special cases having to do with O
     if (this->is_zero()) {
         return other;
@@ -190,78 +205,12 @@ alt_bn128_G2 alt_bn128_G2::operator+(const alt_bn128_G2 &other) const
         return this->dbl();
     }
 
-    // rest of add case
-    // H = U2-U1
-    alt_bn128_Fq2 H = U2 - U1;
-    alt_bn128_Fq2 S2_minus_S1 = S2 - S1;
-    // I = (2 * H)^2
-    alt_bn128_Fq2 I = (H + H).squared();
-    // J = H * I
-    alt_bn128_Fq2 J = H * I;
-    // r = 2 * (S2-S1)
-    alt_bn128_Fq2 r = S2_minus_S1 + S2_minus_S1;
-    // V = U1 * I
-    alt_bn128_Fq2 V = U1 * I;
-    // X3 = r^2 - J - 2 * V
-    alt_bn128_Fq2 X3 = r.squared() - J - (V + V);
-    alt_bn128_Fq2 S1_J = S1 * J;
-    // Y3 = r * (V-X3)-2 S1 J
-    alt_bn128_Fq2 Y3 = r * (V - X3) - (S1_J + S1_J);
-    // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
-    alt_bn128_Fq2 Z3 = ((this->Z + other.Z).squared() - Z1Z1 - Z2Z2) * H;
-
-    return alt_bn128_G2(X3, Y3, Z3);
-}
-
-alt_bn128_G2 alt_bn128_G2::operator-() const
-{
-    return alt_bn128_G2(this->X, -(this->Y), this->Z);
-}
-
-alt_bn128_G2 alt_bn128_G2::operator-(const alt_bn128_G2 &other) const
-{
-    return (*this) + (-other);
-}
-
-alt_bn128_G2 alt_bn128_G2::add(const alt_bn128_G2 &other) const
-{
-    // handle special cases having to do with O
-    if (this->is_zero()) {
-        return other;
-    }
-
-    if (other.is_zero()) {
-        return *this;
-    }
-
-    // no need to handle points of order 2,4
-    // (they cannot exist in a prime-order subgroup)
-
-    // handle double case
-    if (this->operator==(other)) {
-        return this->dbl();
-    }
-
 #ifdef PROFILE_OP_COUNTS
     this->add_cnt++;
 #endif
-    // NOTE: does not handle O and pts of order 2,4
-    // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-projective.html#addition-add-1998-cmo-2
 
-    // Z1Z1 = Z1^2
-    alt_bn128_Fq2 Z1Z1 = (this->Z).squared();
-    // Z2Z2 = Z2^2
-    alt_bn128_Fq2 Z2Z2 = (other.Z).squared();
-    // U1 = X1 * Z2Z2
-    alt_bn128_Fq2 U1 = (this->X) * Z2Z2;
-    // U2 = X2 * Z1Z1
-    alt_bn128_Fq2 U2 = (other.X) * Z1Z1;
-    // S1 = Y1 * Z2 * Z2Z2
-    alt_bn128_Fq2 S1 = (this->Y) * (other.Z) * Z2Z2;
-    // S2 = Y2 * Z1 * Z1Z1
-    alt_bn128_Fq2 S2 = (other.Y) * (this->Z) * Z1Z1;
-    // H = U2-U1
-    alt_bn128_Fq2 H = U2 - U1;
+    // rest of add case
+    alt_bn128_Fq2 H = U2 - U1; // H = U2-U1
     alt_bn128_Fq2 S2_minus_S1 = S2 - S1;
     // I = (2 * H)^2
     alt_bn128_Fq2 I = (H + H).squared();
