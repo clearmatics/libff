@@ -115,15 +115,12 @@ class group_element_codec<encoding_binary, Form, compression_on, GroupT>
 public:
     static void write(const GroupT &group_el, std::ostream &out_s)
     {
-        using BaseField = typename GroupT::base_field;
-
         if (!group_el.is_zero()) {
             GroupT affine(group_el);
             affine.to_affine_coordinates();
 
-            const auto y_0 = field_get_component_0(affine.Y).as_bigint();
-            const mp_limb_t flags = y_0.data[0] & 1;
-
+            const mp_limb_t flags =
+                field_get_component_0(affine.Y).mont_repr.data[0] & 1;
             field_write_with_flags<encoding_binary, Form>(
                 affine.X, flags, out_s);
         } else {
@@ -141,10 +138,9 @@ public:
         if (0 == (flags & 0x2)) {
             group_el.Y = curve_point_y_at_x<GroupT>(group_el.X);
 
-            // Reuse X.mont_repr to hold the reduced Y value. Invert
-            // Y if least-significant bit does not match the flag.
-            const auto y_0 = field_get_component_0(group_el.Y).as_bigint();
-            if ((flags & 1) != (y_0.data[0] & 1)) {
+            const mp_limb_t Y_lsb =
+                field_get_component_0(group_el.Y).mont_repr.data[0] & 1;
+            if ((flags & 1) != Y_lsb) {
                 group_el.Y = -group_el.Y;
             }
 
