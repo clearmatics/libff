@@ -1,6 +1,7 @@
+#include "libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp"
+#include "libff/algebra/scalar_multiplication/multiexp.hpp"
+
 #include <gtest/gtest.h>
-#include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
-#include <libff/algebra/scalar_multiplication/multiexp.hpp>
 
 using namespace libff;
 
@@ -33,12 +34,12 @@ void test_multiexp_accumulate_buckets(const size_t num_buckets)
 
     // Actual value
     const GroupT actual =
-        multiexp_accumulate_buckets(values, value_hit, num_buckets);
+        internal::multiexp_accumulate_buckets(values, value_hit, num_buckets);
 
     ASSERT_EQ(expected, actual);
 }
 
-template<typename GroupT, bool MixedAddition>
+template<typename GroupT, multi_exp_base_form BaseForm>
 void test_multiexp_signed_digits_round(const size_t digit_idx)
 {
     using FieldT = typename GroupT::scalar_field;
@@ -78,8 +79,12 @@ void test_multiexp_signed_digits_round(const size_t digit_idx)
     const GroupT expected = FieldT(20) * GroupT::one();
 
     // Actual value
-    const GroupT actual =
-        multiexp_signed_digits_round<GroupT, BigIntT, MixedAddition>(
+    const GroupT actual = internal::multi_exp_implementation<
+        GroupT,
+        FieldT,
+        multi_exp_method_BDLO12_signed,
+        BaseForm>::
+        signed_digits_round(
             bases.begin(),
             bases.end(),
             exponents.begin(),
@@ -93,7 +98,8 @@ void test_multiexp_signed_digits_round(const size_t digit_idx)
     ASSERT_EQ(expected, actual);
 }
 
-template<typename GroupT, multi_exp_method Method> void test_multiexp_inner()
+template<typename GroupT, multi_exp_method Method, multi_exp_base_form BaseForm>
+void test_multiexp_inner()
 {
     using FieldT = typename GroupT::scalar_field;
 
@@ -135,8 +141,10 @@ template<typename GroupT, multi_exp_method Method> void test_multiexp_inner()
     const GroupT expected = FieldT(expected_unencoded) * GroupT::one();
 
     // Actual value
-    const GroupT actual = multi_exp_inner<GroupT, FieldT, Method>(
-        bases.begin(), bases.end(), exponents.begin(), exponents.end());
+    const GroupT actual =
+        internal::multi_exp_implementation<GroupT, FieldT, Method, BaseForm>::
+            multi_exp_inner(
+                bases.begin(), bases.end(), exponents.begin(), exponents.end());
 
     ASSERT_EQ(expected, actual);
 }
@@ -150,19 +158,26 @@ TEST(MultiExpTest, TestMultiExpAccumulateBuckets)
 
 TEST(MultiExpTest, TestMultiExpSignedDigitsRound)
 {
-    test_multiexp_signed_digits_round<alt_bn128_G1, false>(0);
-    test_multiexp_signed_digits_round<alt_bn128_G1, true>(0);
-    test_multiexp_signed_digits_round<alt_bn128_G1, false>(1);
-    test_multiexp_signed_digits_round<alt_bn128_G1, true>(1);
-    test_multiexp_signed_digits_round<alt_bn128_G1, false>(2);
-    test_multiexp_signed_digits_round<alt_bn128_G1, true>(2);
-    test_multiexp_signed_digits_round<alt_bn128_G1, false>(3);
-    test_multiexp_signed_digits_round<alt_bn128_G1, true>(3);
-}
-
-TEST(MultiExpTest, TestMultiExpInner)
-{
-    test_multiexp_inner<alt_bn128_G1, multi_exp_method_BDLO12_signed_mixed>();
+    test_multiexp_signed_digits_round<alt_bn128_G1, multi_exp_base_form_normal>(
+        0);
+    test_multiexp_signed_digits_round<
+        alt_bn128_G1,
+        multi_exp_base_form_special>(0);
+    test_multiexp_signed_digits_round<alt_bn128_G1, multi_exp_base_form_normal>(
+        1);
+    test_multiexp_signed_digits_round<
+        alt_bn128_G1,
+        multi_exp_base_form_special>(1);
+    test_multiexp_signed_digits_round<alt_bn128_G1, multi_exp_base_form_normal>(
+        2);
+    test_multiexp_signed_digits_round<
+        alt_bn128_G1,
+        multi_exp_base_form_special>(2);
+    test_multiexp_signed_digits_round<alt_bn128_G1, multi_exp_base_form_normal>(
+        3);
+    test_multiexp_signed_digits_round<
+        alt_bn128_G1,
+        multi_exp_base_form_special>(3);
 }
 
 } // namespace
