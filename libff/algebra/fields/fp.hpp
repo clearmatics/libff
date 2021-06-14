@@ -40,7 +40,7 @@ template<mp_size_t n, const bigint<n>& modulus>
 class Fp_model {
 public:
     bigint<n> mont_repr;
-public:
+
     static void static_init();
 
     static const mp_size_t num_limbs = n;
