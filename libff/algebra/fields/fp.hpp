@@ -38,6 +38,8 @@ std::istream &operator>>(std::istream &, Fp_model<n, modulus> &);
 template<mp_size_t n, const bigint<n> &modulus> class Fp_model
 {
 public:
+    typedef Fp_model<n, modulus> my_Fp;
+
     bigint<n> mont_repr;
 
     static void static_init();
