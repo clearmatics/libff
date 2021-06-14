@@ -89,7 +89,8 @@ Fp6_3over2_model<n, modulus> operator*(const Fp2_model<n, modulus> &lhs, const F
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_3over2_model<n,modulus> Fp6_3over2_model<n,modulus>::operator*(const Fp6_3over2_model<n,modulus> &other) const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 4 (Karatsuba) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 4 (Karatsuba)
 
     const my_Fp2 &A = other.coeffs[0], &B = other.coeffs[1], &C = other.coeffs[2],
                  &a = this->coeffs[0], &b = this->coeffs[1], &c = this->coeffs[2];
@@ -113,7 +114,8 @@ Fp6_3over2_model<n,modulus> Fp6_3over2_model<n,modulus>::operator-() const
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_3over2_model<n,modulus> Fp6_3over2_model<n,modulus>::squared() const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 4 (CH-SQR2) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 4 (CH-SQR2)
 
     const my_Fp2 &a = this->coeffs[0], &b = this->coeffs[1], &c = this->coeffs[2];
     const my_Fp2 s0 = a.squared();
@@ -132,7 +134,8 @@ Fp6_3over2_model<n,modulus> Fp6_3over2_model<n,modulus>::squared() const
 template<mp_size_t n, const bigint<n>& modulus>
 Fp6_3over2_model<n,modulus> Fp6_3over2_model<n,modulus>::inverse() const
 {
-    /* From "High-Speed Software Implementation of the Optimal Ate Pairing over Barreto-Naehrig Curves"; Algorithm 17 */
+    // From "High-Speed Software Implementation of the Optimal Ate Pairing over
+    // Barreto-Naehrig Curves"; Algorithm 17
 
     const my_Fp2 &a = this->coeffs[0], &b = this->coeffs[1], &c = this->coeffs[2];
     const my_Fp2 t0 = a.squared();
@@ -143,7 +146,8 @@ Fp6_3over2_model<n,modulus> Fp6_3over2_model<n,modulus>::inverse() const
     const my_Fp2 t5 = b*c;
     const my_Fp2 c0 = t0 - Fp6_3over2_model<n,modulus>::mul_by_non_residue(t5);
     const my_Fp2 c1 = Fp6_3over2_model<n,modulus>::mul_by_non_residue(t2) - t3;
-    const my_Fp2 c2 = t1 - t4; // typo in paper referenced above. should be "-" as per Scott, but is "*"
+    // typo in paper referenced above. should be "-" as per Scott, but is "*"
+    const my_Fp2 c2 = t1 - t4;
     const my_Fp2 t6 = (a * c0 + Fp6_3over2_model<n,modulus>::mul_by_non_residue((c * c1 + b * c2))).inverse();
     return Fp6_3over2_model<n,modulus>(t6 * c0, t6 * c1, t6 * c2);
 }
@@ -213,4 +217,5 @@ std::istream& operator>>(std::istream& in, std::vector<Fp6_3over2_model<n, modul
 }
 
 } // libff
+
 #endif // FP6_3_OVER_2_TCC_

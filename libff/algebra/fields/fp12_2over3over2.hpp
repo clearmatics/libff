@@ -26,14 +26,13 @@ std::ostream& operator<<(std::ostream &, const Fp12_2over3over2_model<n, modulus
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &, Fp12_2over3over2_model<n, modulus> &);
 
-/**
- * Arithmetic in the finite field F[((p^2)^3)^2].
- *
- * Let p := modulus. This interface provides arithmetic for the extension field
- * Fp12 = Fp6[W]/(W^2-V) where Fp6 = Fp2[V]/(V^3-non_residue) and non_residue is in Fp2
- *
- * ASSUMPTION: p = 1 (mod 6)
- */
+/// Arithmetic in the finite field F[((p^2)^3)^2].
+///
+/// Let p := modulus. This interface provides arithmetic for the extension
+/// field Fp12 = Fp6[W]/(W^2-V) where Fp6 = Fp2[V]/(V^3-non_residue) and
+/// non_residue is in Fp2
+///
+/// ASSUMPTION: p = 1 (mod 6)
 template<mp_size_t n, const bigint<n>& modulus>
 class Fp12_2over3over2_model {
 public:
@@ -42,7 +41,8 @@ public:
     typedef Fp6_3over2_model<n, modulus> my_Fp6;
 
     static Fp2_model<n, modulus> non_residue;
-    static Fp2_model<n, modulus> Frobenius_coeffs_c1[12]; // non_residue^((modulus^i-1)/6) for i=0,...,11
+    // non_residue^((modulus^i-1)/6) for i=0,...,11
+    static Fp2_model<n, modulus> Frobenius_coeffs_c1[12];
 
     static const size_t tower_extension_degree = 2;
 
@@ -65,7 +65,8 @@ public:
     Fp12_2over3over2_model operator-(const Fp12_2over3over2_model &other) const;
     Fp12_2over3over2_model operator*(const Fp12_2over3over2_model &other) const;
     Fp12_2over3over2_model operator-() const;
-    Fp12_2over3over2_model squared() const; // default is squared_complex
+    // default is squared_complex
+    Fp12_2over3over2_model squared() const;
     Fp12_2over3over2_model squared_karatsuba() const;
     Fp12_2over3over2_model squared_complex() const;
     Fp12_2over3over2_model inverse() const;
@@ -115,5 +116,7 @@ template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::Frobenius_coeffs_c1[12];
 
 } // libff
+
 #include <libff/algebra/fields/fp12_2over3over2.tcc>
+
 #endif // FP12_2OVER3OVER2_HPP_

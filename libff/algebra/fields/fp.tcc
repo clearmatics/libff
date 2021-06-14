@@ -49,7 +49,7 @@ void Fp_model<n,modulus>::static_init()
 template<mp_size_t n, const bigint<n>& modulus>
 void Fp_model<n,modulus>::mul_reduce(const bigint<n> &other)
 {
-    /* stupid pre-processor tricks; beware */
+    // stupid pre-processor tricks; beware
 #if defined(__x86_64__) && defined(USE_ASM)
     if (n == 3)
     { // Use asm-optimized Comba multiplication and reduction
@@ -61,7 +61,7 @@ void Fp_model<n,modulus>::mul_reduce(const bigint<n> &other)
         mp_limb_t tmp1, tmp2, tmp3;
         REDUCE_6_LIMB_PRODUCT(k, tmp1, tmp2, tmp3, inv, res, modulus.data);
 
-        /* subtract t > mod */
+        // subtract t > mod
         __asm__(                                   // Preserve alignment
             "/* check for overflow */        \n\t" //
             MONT_CMP(16)                           //
@@ -131,10 +131,8 @@ void Fp_model<n,modulus>::mul_reduce(const bigint<n> &other)
               [u] "r"(u)
             : "cc", "memory", "%rax", "%rdx");
         mpn_copyi(this->mont_repr.data, tmp, n);
-    }
-    else if (n == 5)
-    { // use asm-optimized "CIOS method"
-
+    } else if (n == 5) {
+        // use asm-optimized "CIOS method"
         mp_limb_t tmp[n+1];
         mp_limb_t T0=0, T1=1, cy=2, u=3; // TODO: fix this
 
@@ -208,15 +206,13 @@ void Fp_model<n,modulus>::mul_reduce(const bigint<n> &other)
         mp_limb_t res[2*n];
         mpn_mul_n(res, this->mont_repr.data, other.data, n);
 
-        /*
-          The Montgomery reduction here is based on Algorithm 14.32 in
-          Handbook of Applied Cryptography
-          <http://cacr.uwaterloo.ca/hac/about/chap14.pdf>.
-         */
+        // The Montgomery reduction here is based on Algorithm 14.32 in
+        // Handbook of Applied Cryptography
+        // <http://cacr.uwaterloo.ca/hac/about/chap14.pdf>.
         for (size_t i = 0; i < n; ++i)
         {
             mp_limb_t k = inv * res[i];
-            /* calculate res = res + k * mod * b^i */
+            // calculate res = res + k * mod * b^i
             mp_limb_t carryout = mpn_addmul_1(res+i, modulus.data, n, k);
             carryout = mpn_add_1(res+n+i, res+n+i, n-i, carryout);
             assert(carryout == 0);
@@ -306,7 +302,8 @@ bool Fp_model<n,modulus>::operator!=(const Fp_model& other) const
 template<mp_size_t n, const bigint<n>& modulus>
 bool Fp_model<n,modulus>::is_zero() const
 {
-    return (this->mont_repr.is_zero()); // zero maps to zero
+    // zero maps to zero
+    return (this->mont_repr.is_zero());
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -634,13 +631,14 @@ Fp_model<n,modulus> Fp_model<n,modulus>::squared() const
 {
 #ifdef PROFILE_OP_COUNTS
     this->sqr_cnt++;
-    this->mul_cnt--; // zero out the upcoming mul
+    // zero out the upcoming mul
+    this->mul_cnt--;
 #endif
-    /* stupid pre-processor tricks; beware */
+    // stupid pre-processor tricks; beware
 #if defined(__x86_64__) && defined(USE_ASM)
-    if (n == 3)
-    { // use asm-optimized Comba squaring
-        mp_limb_t res[2*n];
+    // use asm-optimized Comba squaring
+    if (n == 3) {
+        mp_limb_t res[2 * n];
         mp_limb_t c0, c1, c2;
         COMBA_3_BY_3_SQR(c0, c1, c2, res, this->mont_repr.data);
 
@@ -648,7 +646,7 @@ Fp_model<n,modulus> Fp_model<n,modulus>::squared() const
         mp_limb_t tmp1, tmp2, tmp3;
         REDUCE_6_LIMB_PRODUCT(k, tmp1, tmp2, tmp3, inv, res, modulus.data);
 
-        /* subtract t > mod */
+        // subtract t > mod
         __asm__ volatile(                          // Preserve alignment
             "/* check for overflow */        \n\t" //
             MONT_CMP(16)                           //
@@ -685,34 +683,37 @@ Fp_model<n,modulus>& Fp_model<n,modulus>::invert()
 
     assert(!this->is_zero());
 
-    bigint<n> g; /* gp should have room for vn = n limbs */
+    // gp should have room for vn = n limbs
+    bigint<n> g;
 
     mp_limb_t s[n+1]; /* sp should have room for vn+1 limbs */
     mp_size_t sn;
 
-    bigint<n> v = modulus; // both source operands are destroyed by mpn_gcdext
+    // both source operands are destroyed by mpn_gcdext
+    bigint<n> v = modulus;
 
-    /* computes gcd(u, v) = g = u*s + v*t, so s*u will be 1 (mod v) */
+    // computes gcd(u, v) = g = u*s + v*t, so s*u will be 1 (mod v)
     const mp_size_t gn = mpn_gcdext(g.data, s, &sn, this->mont_repr.data, n, v.data, n);
-    assert(gn == 1 && g.data[0] == 1); /* inverse exists */
+    assert(gn == 1 && g.data[0] == 1); // inverse exists
     UNUSED(gn);
 
-    mp_limb_t q; /* division result fits into q, as sn <= n+1 */
-    /* sn < 0 indicates negative sn; will fix up later */
+    // division result fits into q, as sn <= n+1
+    // sn < 0 indicates negative sn; will fix up later
+    mp_limb_t q;
 
     if (std::abs(sn) >= n)
     {
-        /* if sn could require modulus reduction, do it here */
+        // if sn could require modulus reduction, do it here
         mpn_tdiv_qr(&q, this->mont_repr.data, 0, s, std::abs(sn), modulus.data, n);
     }
     else
     {
-        /* otherwise just copy it over */
+        // otherwise just copy it over
         mpn_zero(this->mont_repr.data, n);
         mpn_copyi(this->mont_repr.data, s, std::abs(sn));
     }
 
-    /* fix up the negative sn */
+    // fix up the negative sn
     if (sn < 0)
     {
         const mp_limb_t borrow = mpn_sub_n(this->mont_repr.data, modulus.data, this->mont_repr.data, n);
@@ -731,18 +732,18 @@ Fp_model<n,modulus> Fp_model<n,modulus>::inverse() const
     return (r.invert());
 }
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp_model<n, modulus> Fp_model<n,modulus>::random_element() /// returns random element of Fp_model
+template<mp_size_t n, const bigint<n> &modulus>
+Fp_model<n, modulus> Fp_model<n, modulus>::random_element()
 {
-    /* note that as Montgomery representation is a bijection then
-       selecting a random element of {xR} is the same as selecting a
-       random element of {x} */
+    // note that as Montgomery representation is a bijection then
+    // selecting a random element of {xR} is the same as selecting a
+    // random element of {x}
     Fp_model<n, modulus> r;
     do
     {
         r.mont_repr.randomize();
 
-        /* clear all bits higher than MSB of modulus */
+        // clear all bits higher than MSB of modulus
         size_t bitno = GMP_NUMB_BITS * n - 1;
         while (modulus.test_bit(bitno) == false)
         {
@@ -754,7 +755,7 @@ Fp_model<n, modulus> Fp_model<n,modulus>::random_element() /// returns random el
             bitno--;
         }
     }
-   /* if r.data is still >= modulus -- repeat (rejection sampling) */
+    // if r.data is still >= modulus -- repeat (rejection sampling)
     while (mpn_cmp(r.mont_repr.data, modulus.data, n) >= 0);
 
     return r;
@@ -793,18 +794,19 @@ Fp_model<n,modulus> Fp_model<n,modulus>::sqrt() const
         Fp_model<n,modulus> b2m = b;
         while (b2m != one)
         {
-            /* invariant: b2m = b^(2^m) after entering this loop */
+            // invariant: b2m = b^(2^m) after entering this loop
             b2m = b2m.squared();
             m += 1;
         }
 
-        int j = v-m-1;
+        // w = z^2^(v-m-1)
+        int j = v - m - 1;
         w = z;
         while (j > 0)
         {
             w = w.squared();
             --j;
-        } // w = z^2^(v-m-1)
+        }
 
         z = w.squared();
         b = b * z;
@@ -841,5 +843,6 @@ std::istream& operator>>(std::istream &in, Fp_model<n, modulus> &p)
     return in;
 }
 
-} // libff
+} // namespace libff
+
 #endif // FP_TCC_

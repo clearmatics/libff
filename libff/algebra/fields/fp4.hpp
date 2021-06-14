@@ -47,7 +47,8 @@ public:
     static const size_t tower_extension_degree = 2;
 
     static my_Fp non_residue;
-    static my_Fp Frobenius_coeffs_c1[4]; // non_residue^((modulus^i-1)/4) for i=0,1,2,3
+    // non_residue^((modulus^i-1)/4) for i=0,1,2,3
+    static my_Fp Frobenius_coeffs_c1[4];
 
     my_Fp2 coeffs[2];
     Fp4_model() {};
@@ -104,7 +105,6 @@ Fp_model<n, modulus> Fp4_model<n, modulus>::non_residue;
 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp_model<n, modulus> Fp4_model<n, modulus>::Frobenius_coeffs_c1[4];
-
 
 } // libff
 

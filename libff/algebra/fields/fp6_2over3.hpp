@@ -15,14 +15,13 @@
 
 namespace libff {
 
-/**
- * Arithmetic in the finite field F[(p^3)^2].
- *
- * Let p := modulus. This interface provides arithmetic for the extension field
- * Fp6 = Fp3[Y]/(Y^2-X) where Fp3 = Fp[X]/(X^3-non_residue) and non_residue is in Fp.
- *
- * ASSUMPTION: p = 1 (mod 6)
- */
+/// Arithmetic in the finite field F[(p^3)^2].
+///
+/// Let p := modulus. This interface provides arithmetic for the extension
+/// field Fp6 = Fp3[Y]/(Y^2-X) where Fp3 = Fp[X]/(X^3-non_residue) and
+/// non_residue is in Fp.
+///
+/// ASSUMPTION: p = 1 (mod 6)
 template<mp_size_t n, const bigint<n>& modulus>
 class Fp6_2over3_model;
 
@@ -41,7 +40,8 @@ public:
     typedef my_Fp3 my_Fpe;
 
     static my_Fp non_residue;
-    static my_Fp Frobenius_coeffs_c1[6]; // non_residue^((modulus^i-1)/6)   for i=0,1,2,3,4,5
+    // non_residue^((modulus^i-1)/6)   for i=0,1,2,3,4,5
+    static my_Fp Frobenius_coeffs_c1[6];
 
     static const size_t tower_extension_degree = 2;
 
@@ -107,6 +107,7 @@ template<mp_size_t n, const bigint<n>& modulus>
 Fp_model<n, modulus> Fp6_2over3_model<n, modulus>::Frobenius_coeffs_c1[6];
 
 } // libff
+
 #include <libff/algebra/fields/fp6_2over3.tcc>
 
 #endif // FP6_2OVER3_HPP_

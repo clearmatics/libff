@@ -24,20 +24,18 @@ std::ostream& operator<<(std::ostream &, const Fp_model<n, modulus>&);
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &, Fp_model<n, modulus> &);
 
-/**
- * Arithmetic in the finite field F[p], for prime p of fixed length.
- *
- * This class implements Fp-arithmetic, for a large prime p, using a fixed number
- * of words. It is optimized for tight memory consumption, so the modulus p is
- * passed as a template parameter, to avoid per-element overheads.
- *
- * The implementation is mostly a wrapper around GMP's MPN (constant-size integers).
- * But for the integer sizes of interest for libff (3 to 5 limbs of 64 bits each),
- * we implement performance-critical routines, like addition and multiplication,
- * using hand-optimzied assembly code.
-*/
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp_model {
+/// Arithmetic in the finite field F[p], for prime p of fixed length.
+///
+/// This class implements Fp-arithmetic, for a large prime p, using a fixed
+/// number of words. It is optimized for tight memory consumption, so the
+/// modulus p is passed as a template parameter, to avoid per-element overheads.
+///
+/// The implementation is mostly a wrapper around GMP's MPN (constant-size
+/// integers). But for the integer sizes of interest for libff (3 to 5 limbs of
+/// 64 bits each), we implement performance-critical routines, like addition and
+/// multiplication, using hand-optimzied assembly code.
+template<mp_size_t n, const bigint<n> &modulus> class Fp_model
+{
 public:
     bigint<n> mont_repr;
 
@@ -57,17 +55,28 @@ public:
     static const size_t tower_extension_degree = 1;
 
     static size_t num_bits;
-    static bigint<n> euler; // (modulus-1)/2
-    static size_t s; // modulus = 2^s * t + 1
-    static bigint<n> t; // with t odd
-    static bigint<n> t_minus_1_over_2; // (t-1)/2
-    static Fp_model<n, modulus> nqr; // a quadratic nonresidue
-    static Fp_model<n, modulus> nqr_to_t; // nqr^t
-    static Fp_model<n, modulus> multiplicative_generator; // generator of Fp^*
-    static Fp_model<n, modulus> root_of_unity; // generator^((modulus-1)/2^s)
-    static mp_limb_t inv; // -modulus^(-1) mod W, where W = 2^(word size)
-    static bigint<n> Rsquared; // R^2, where R = W^k, where k = ??
-    static bigint<n> Rcubed;   // R^3
+    // (modulus-1)/2
+    static bigint<n> euler;
+    // modulus = 2^s * t + 1
+    static size_t s;
+    // with t odd
+    static bigint<n> t;
+    // (t-1)/2
+    static bigint<n> t_minus_1_over_2;
+    // a quadratic nonresidue
+    static Fp_model<n, modulus> nqr;
+    // nqr^t
+    static Fp_model<n, modulus> nqr_to_t;
+    // generator of Fp^*
+    static Fp_model<n, modulus> multiplicative_generator;
+    // generator^((modulus-1)/2^s)
+    static Fp_model<n, modulus> root_of_unity;
+    // -modulus^(-1) mod W, where W = 2^(word size)
+    static mp_limb_t inv;
+    // R^2, where R = W^k, where k = ??
+    static bigint<n> Rsquared;
+    // R^3
+    static bigint<n> Rcubed;
 
     static bool modulus_is_valid() { return modulus.data[n-1] != 0; } // mpn inverse assumes that highest limb is non-zero
 
@@ -81,13 +90,13 @@ public:
 
     void clear();
 
-    /* Return the standard (not Montgomery) representation of the
-       Field element's requivalence class. I.e. Fp(2).as_bigint()
-        would return bigint(2) */
+    /// Return the standard (not Montgomery) representation of the Field
+    /// element's requivalence class. I.e. Fp(2).as_bigint() would return
+    /// bigint(2)
     bigint<n> as_bigint() const;
-    /* Return the last limb of the standard representation of the
-       field element. E.g. on 64-bit architectures Fp(123).as_ulong()
-       and Fp(2^64+123).as_ulong() would both return 123. */
+    /// Return the last limb of the standard representation of the field
+    /// element. E.g. on 64-bit architectures Fp(123).as_ulong() and
+    /// Fp(2^64+123).as_ulong() would both return 123.
     unsigned long as_ulong() const;
 
     bool operator==(const Fp_model& other) const;
@@ -124,9 +133,15 @@ public:
 
     static const Fp_model<n, modulus> &zero();
     static const Fp_model<n, modulus> &one();
+
+    /// returns random element of Fp_model
     static Fp_model<n, modulus> random_element();
-    static Fp_model<n, modulus> geometric_generator(); // generator^k, for k = 1 to m, domain size m
-    static Fp_model<n, modulus> arithmetic_generator();// generator++, for k = 1 to m, domain size m
+
+    // generator^k, for k = 1 to m, domain size m
+    static Fp_model<n, modulus> geometric_generator();
+
+    // generator++, for k = 1 to m, domain size m
+    static Fp_model<n, modulus> arithmetic_generator();
 
 protected:
 

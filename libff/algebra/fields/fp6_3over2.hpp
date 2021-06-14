@@ -25,14 +25,12 @@ std::ostream& operator<<(std::ostream &, const Fp6_3over2_model<n, modulus> &);
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &, Fp6_3over2_model<n, modulus> &);
 
-/**
- * Arithmetic in the finite field F[(p^2)^3].
- *
- * Let p := modulus. This interface provides arithmetic for the extension field
- *  Fp6 = Fp2[V]/(V^3-non_residue) where non_residue is in Fp.
- *
- * ASSUMPTION: p = 1 (mod 6)
- */
+/// Arithmetic in the finite field F[(p^2)^3].
+///
+/// Let p := modulus. This interface provides arithmetic for the extension
+/// field Fp6 = Fp2[V]/(V^3-non_residue) where non_residue is in Fp.
+///
+/// ASSUMPTION: p = 1 (mod 6)
 template<mp_size_t n, const bigint<n>& modulus>
 class Fp6_3over2_model {
 public:
@@ -40,8 +38,10 @@ public:
     typedef Fp2_model<n, modulus> my_Fp2;
 
     static my_Fp2 non_residue;
-    static my_Fp2 Frobenius_coeffs_c1[6]; // non_residue^((modulus^i-1)/3)   for i=0,1,2,3,4,5
-    static my_Fp2 Frobenius_coeffs_c2[6]; // non_residue^((2*modulus^i-2)/3) for i=0,1,2,3,4,5
+    // non_residue^((modulus^i-1)/3)   for i=0,1,2,3,4,5
+    static my_Fp2 Frobenius_coeffs_c1[6];
+    // non_residue^((2*modulus^i-2)/3) for i=0,1,2,3,4,5
+    static my_Fp2 Frobenius_coeffs_c2[6];
 
     static const size_t tower_extension_degree = 3;
 
@@ -102,6 +102,7 @@ template<mp_size_t n, const bigint<n>& modulus>
 Fp2_model<n, modulus> Fp6_3over2_model<n, modulus>::Frobenius_coeffs_c2[6];
 
 } // libff
+
 #include <libff/algebra/fields/fp6_3over2.tcc>
 
 #endif // FP6_3OVER2_HPP_

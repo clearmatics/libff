@@ -24,16 +24,14 @@ std::ostream& operator<<(std::ostream &, const Fp2_model<n, modulus> &);
 template<mp_size_t n, const bigint<n>& modulus>
 std::istream& operator>>(std::istream &, Fp2_model<n, modulus> &);
 
-/**
- * Arithmetic in the field F[p^2].
- *
- * Let p := modulus. This interface provides arithmetic for the extension field
- * Fp2 = Fp[U]/(U^2-non_residue), where non_residue is in Fp.
- *
- * ASSUMPTION: p = 1 (mod 6)
- */
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp2_model {
+/// Arithmetic in the field F[p^2].
+///
+/// Let p := modulus. This interface provides arithmetic for the extension
+/// field. Fp2 = Fp[U]/(U^2-non_residue), where non_residue is in Fp.
+///
+/// ASSUMPTION: p = 1 (mod 6)
+template<mp_size_t n, const bigint<n> &modulus> class Fp2_model
+{
 public:
     typedef Fp_model<n, modulus> my_Fp;
 
@@ -43,17 +41,26 @@ public:
     // by invoking the `size()` method on the `coeffs` container.
     static const size_t tower_extension_degree = 2;
 
-    static bigint<2*n> euler; // (modulus^2-1)/2
-    static size_t s;       // modulus^2 = 2^s * t + 1
-    static bigint<2*n> t;  // with t odd
-    static bigint<2*n> t_minus_1_over_2; // (t-1)/2
-    static my_Fp non_residue; // X^4-non_residue irreducible over Fp; used for constructing Fp2 = Fp[X] / (X^2 - non_residue)
-    static Fp2_model<n, modulus> nqr; // a quadratic nonresidue in Fp2
-    static Fp2_model<n, modulus> nqr_to_t; // nqr^t
-    static my_Fp Frobenius_coeffs_c1[2]; // non_residue^((modulus^i-1)/2) for i=0,1
+    // (modulus^2-1)/2
+    static bigint<2 * n> euler;
+    // modulus^2 = 2^s * t + 1
+    static size_t s;
+    // with t odd
+    static bigint<2 * n> t;
+    // (t-1)/2
+    static bigint<2 * n> t_minus_1_over_2;
+    // X^4-non_residue irreducible over Fp; used for constructing Fp2 = Fp[X] /
+    // (X^2 - non_residue)
+    static my_Fp non_residue;
+    // a quadratic nonresidue in Fp2
+    static Fp2_model<n, modulus> nqr;
+    // nqr^t
+    static Fp2_model<n, modulus> nqr_to_t;
+    // non_residue^((modulus^i-1)/2) for i=0,1
+    static my_Fp Frobenius_coeffs_c1[2];
 
     my_Fp coeffs[2];
-    Fp2_model() {};
+    Fp2_model(){};
     //Fp2_model(const my_Fp& c0, const my_Fp& c1) : coeffs(c0, c1) {};
     Fp2_model(const my_Fp& c0, const my_Fp& c1) { this->coeffs[0] = c0; this->coeffs[1] = c1; return; };
 
@@ -72,10 +79,12 @@ public:
     Fp2_model operator-(const Fp2_model &other) const;
     Fp2_model operator*(const Fp2_model &other) const;
     Fp2_model operator-() const;
-    Fp2_model squared() const; // default is squared_complex
+    // default is squared_complex
+    Fp2_model squared() const;
     Fp2_model inverse() const;
     Fp2_model Frobenius_map(unsigned long power) const;
-    Fp2_model sqrt() const; // HAS TO BE A SQUARE (else does not terminate)
+    // HAS TO BE A SQUARE (else does not terminate)
+    Fp2_model sqrt() const;
     Fp2_model squared_karatsuba() const;
     Fp2_model squared_complex() const;
 

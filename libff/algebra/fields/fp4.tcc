@@ -92,7 +92,8 @@ Fp4_model<n, modulus> operator*(const Fp2_model<n, modulus> &lhs, const Fp4_mode
 template<mp_size_t n, const bigint<n>& modulus>
 Fp4_model<n,modulus> Fp4_model<n,modulus>::operator*(const Fp4_model<n,modulus> &other) const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Karatsuba) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 3 (Karatsuba)
 
     const my_Fp2 &B = other.coeffs[1], &A = other.coeffs[0],
         &b = this->coeffs[1], &a = this->coeffs[0];
@@ -107,7 +108,8 @@ Fp4_model<n,modulus> Fp4_model<n,modulus>::operator*(const Fp4_model<n,modulus> 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp4_model<n,modulus> Fp4_model<n,modulus>::mul_by_023(const Fp4_model<n,modulus> &other) const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Karatsuba) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 3 (Karatsuba)
     assert(other.coeffs[0].coeffs[1].is_zero());
 
     const my_Fp2 &B = other.coeffs[1], &A = other.coeffs[0],
@@ -123,14 +125,14 @@ Fp4_model<n,modulus> Fp4_model<n,modulus>::mul_by_023(const Fp4_model<n,modulus>
 template<mp_size_t n, const bigint<n>& modulus>
 Fp4_model<n,modulus> Fp4_model<n,modulus>::operator-() const
 {
-    return Fp4_model<n,modulus>(-this->coeffs[0],
-                                -this->coeffs[1]);
+    return Fp4_model<n,modulus>(-this->coeffs[0], -this->coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp4_model<n,modulus> Fp4_model<n,modulus>::squared() const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Complex) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 3 (Complex)
 
     const my_Fp2 &b = this->coeffs[1], &a = this->coeffs[0];
     const my_Fp2 ab = a * b;
@@ -142,7 +144,8 @@ Fp4_model<n,modulus> Fp4_model<n,modulus>::squared() const
 template<mp_size_t n, const bigint<n>& modulus>
 Fp4_model<n,modulus> Fp4_model<n,modulus>::inverse() const
 {
-    /* From "High-Speed Software Implementation of the Optimal Ate Pairing over Barreto-Naehrig Curves"; Algorithm 8 */
+    // From "High-Speed Software Implementation of the Optimal Ate Pairing over
+    // Barreto-Naehrig Curves"; Algorithm 8
     const my_Fp2 &b = this->coeffs[1], &a = this->coeffs[0];
     const my_Fp2 t1 = b.squared();
     const my_Fp2 t0 = a.squared() - Fp4_model<n,modulus>::mul_by_non_residue(t1);
@@ -171,7 +174,8 @@ Fp4_model<n,modulus> Fp4_model<n,modulus>::cyclotomic_squared() const
     const my_Fp2 A = this->coeffs[1].squared();
     const my_Fp2 B = this->coeffs[1] + this->coeffs[0];
     const my_Fp2 C = B.squared() - A;
-    const my_Fp2 D = Fp4_model<n,modulus>::mul_by_non_residue(A); // Fp2(A.coeffs[1] * non_residue, A.coeffs[0])
+    // Fp2(A.coeffs[1] * non_residue, A.coeffs[0])
+    const my_Fp2 D = Fp4_model<n,modulus>::mul_by_non_residue(A);
     const my_Fp2 E = C - D;
     const my_Fp2 F = D + D + my_Fp2::one();
     const my_Fp2 G = E - my_Fp2::one();

@@ -96,43 +96,46 @@ Fp2_model<n,modulus> Fp2_model<n,modulus>::squared() const
     return squared_complex();
 }
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp2_model<n,modulus> Fp2_model<n,modulus>::squared_karatsuba() const
+template<mp_size_t n, const bigint<n> &modulus>
+Fp2_model<n, modulus> Fp2_model<n, modulus>::squared_karatsuba() const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Karatsuba squaring) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 3 (Karatsuba squaring)
     const my_Fp &a = this->coeffs[0], &b = this->coeffs[1];
     const my_Fp asq = a.squared();
     const my_Fp bsq = b.squared();
 
-    return Fp2_model<n,modulus>(asq + non_residue * bsq,
-                                (a + b).squared() - asq - bsq);
+    return Fp2_model<n, modulus>(
+        asq + non_residue * bsq, (a + b).squared() - asq - bsq);
 }
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp2_model<n,modulus> Fp2_model<n,modulus>::squared_complex() const
+template<mp_size_t n, const bigint<n> &modulus>
+Fp2_model<n, modulus> Fp2_model<n, modulus>::squared_complex() const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Complex squaring) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 3 (Complex squaring)
     const my_Fp &a = this->coeffs[0], &b = this->coeffs[1];
     const my_Fp ab = a * b;
 
-    return Fp2_model<n,modulus>((a + b) * (a + non_residue * b) - ab - non_residue * ab,
-                                ab + ab);
+    return Fp2_model<n, modulus>(
+        (a + b) * (a + non_residue * b) - ab - non_residue * ab, ab + ab);
 }
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp2_model<n,modulus> Fp2_model<n,modulus>::inverse() const
+template<mp_size_t n, const bigint<n> &modulus>
+Fp2_model<n, modulus> Fp2_model<n, modulus>::inverse() const
 {
     const my_Fp &a = this->coeffs[0], &b = this->coeffs[1];
 
-    /* From "High-Speed Software Implementation of the Optimal Ate Pairing over Barreto-Naehrig Curves"; Algorithm 8 */
+    // From "High-Speed Software Implementation of the Optimal Ate Pairing over
+    // Barreto-Naehrig Curves"; Algorithm 8
     const my_Fp t0 = a.squared();
     const my_Fp t1 = b.squared();
     const my_Fp t2 = t0 - non_residue * t1;
     const my_Fp t3 = t2.inverse();
     const my_Fp c0 = a * t3;
-    const my_Fp c1 = - (b * t3);
+    const my_Fp c1 = -(b * t3);
 
-    return Fp2_model<n,modulus>(c0, c1);
+    return Fp2_model<n, modulus>(c0, c1);
 }
 
 template<mp_size_t n, const bigint<n>& modulus>
@@ -142,51 +145,48 @@ Fp2_model<n,modulus> Fp2_model<n,modulus>::Frobenius_map(unsigned long power) co
                                 Frobenius_coeffs_c1[power % 2] * coeffs[1]);
 }
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp2_model<n,modulus> Fp2_model<n,modulus>::sqrt() const
+template<mp_size_t n, const bigint<n> &modulus>
+Fp2_model<n, modulus> Fp2_model<n, modulus>::sqrt() const
 {
-    Fp2_model<n,modulus> one = Fp2_model<n,modulus>::one();
+    Fp2_model<n, modulus> one = Fp2_model<n, modulus>::one();
 
-    size_t v = Fp2_model<n,modulus>::s;
-    Fp2_model<n,modulus> z = Fp2_model<n,modulus>::nqr_to_t;
-    Fp2_model<n,modulus> w = (*this)^Fp2_model<n,modulus>::t_minus_1_over_2;
-    Fp2_model<n,modulus> x = (*this) * w;
-    Fp2_model<n,modulus> b = x * w; // b = (*this)^t
+    size_t v = Fp2_model<n, modulus>::s;
+    Fp2_model<n, modulus> z = Fp2_model<n, modulus>::nqr_to_t;
+    Fp2_model<n, modulus> w = (*this) ^ Fp2_model<n, modulus>::t_minus_1_over_2;
+    Fp2_model<n, modulus> x = (*this) * w;
+    // b = (*this)^t
+    Fp2_model<n, modulus> b = x * w;
 
 #if DEBUG
     // check if square with euler's criterion
-    Fp2_model<n,modulus> check = b;
-    for (size_t i = 0; i < v-1; ++i)
-    {
+    Fp2_model<n, modulus> check = b;
+    for (size_t i = 0; i < v - 1; ++i) {
         check = check.squared();
     }
-    if (check != one)
-    {
+    if (check != one) {
         assert(0);
     }
 #endif
 
-    // compute square root with Tonelli--Shanks
-    // (does not terminate if not a square!)
+    // compute square root with Tonelli--Shanks (does not terminate if not a
+    // square!)
 
-    while (b != one)
-    {
+    while (b != one) {
         size_t m = 0;
-        Fp2_model<n,modulus> b2m = b;
-        while (b2m != one)
-        {
-            /* invariant: b2m = b^(2^m) after entering this loop */
+        Fp2_model<n, modulus> b2m = b;
+        while (b2m != one) {
+            // invariant: b2m = b^(2^m) after entering this loop
             b2m = b2m.squared();
             m += 1;
         }
 
-        int j = v-m-1;
+        // w = z^2^(v-m-1)
+        int j = v - m - 1;
         w = z;
-        while (j > 0)
-        {
+        while (j > 0) {
             w = w.squared();
             --j;
-        } // w = z^2^(v-m-1)
+        }
 
         z = w.squared();
         b = b * z;
@@ -254,4 +254,5 @@ std::istream& operator>>(std::istream& in, std::vector<Fp2_model<n, modulus> > &
 }
 
 } // libff
+
 #endif // FP2_TCC_

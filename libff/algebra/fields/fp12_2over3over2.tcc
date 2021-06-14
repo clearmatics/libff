@@ -90,7 +90,8 @@ Fp12_2over3over2_model<n, modulus> operator*(const Fp6_3over2_model<n, modulus> 
 template<mp_size_t n, const bigint<n>& modulus>
 Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::operator*(const Fp12_2over3over2_model<n,modulus> &other) const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Karatsuba) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 3 (Karatsuba)
 
     const my_Fp6 &A = other.coeffs[0], &B = other.coeffs[1],
         &a = this->coeffs[0], &b = this->coeffs[1];
@@ -117,7 +118,8 @@ Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::squared() c
 template<mp_size_t n, const bigint<n>& modulus>
 Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::squared_karatsuba() const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Karatsuba squaring) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 3 (Karatsuba squaring)
 
     const my_Fp6 &a = this->coeffs[0], &b = this->coeffs[1];
     const my_Fp6 asq = a.squared();
@@ -130,7 +132,8 @@ Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::squared_kar
 template<mp_size_t n, const bigint<n>& modulus>
 Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::squared_complex() const
 {
-    /* Devegili OhEig Scott Dahab --- Multiplication and Squaring on Pairing-Friendly Fields.pdf; Section 3 (Complex squaring) */
+    // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
+    // Pairing-Friendly Fields.pdf; Section 3 (Complex squaring)
 
     const my_Fp6 &a = this->coeffs[0], &b = this->coeffs[1];
     const my_Fp6 ab = a * b;
@@ -142,7 +145,8 @@ Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::squared_com
 template<mp_size_t n, const bigint<n>& modulus>
 Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::inverse() const
 {
-    /* From "High-Speed Software Implementation of the Optimal Ate Pairing over Barreto-Naehrig Curves"; Algorithm 8 */
+    // From "High-Speed Software Implementation of the Optimal Ate Pairing over
+    // Barreto-Naehrig Curves"; Algorithm 8
 
     const my_Fp6 &a = this->coeffs[0], &b = this->coeffs[1];
     const my_Fp6 t0 = a.squared();
@@ -172,9 +176,8 @@ Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::unitary_inv
 template<mp_size_t n, const bigint<n>& modulus>
 Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::cyclotomic_squared() const
 {
-    /* OLD: naive implementation
-       return (*this).squared();
-    */
+    // OLD: naive implementation
+    //   return (*this).squared();
     my_Fp2 z0 = this->coeffs[0].coeffs[0];
     my_Fp2 z4 = this->coeffs[0].coeffs[1];
     my_Fp2 z3 = this->coeffs[0].coeffs[2];
@@ -241,12 +244,13 @@ Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::mul_by_024(
                                                                                 const Fp2_model<n, modulus> &ell_VW,
                                                                                 const Fp2_model<n, modulus> &ell_VV) const
 {
-    /* OLD: naive implementation
-       Fp12_2over3over2_model<n,modulus> a(my_Fp6(ell_0, my_Fp2::zero(), ell_VV),
-       my_Fp6(my_Fp2::zero(), ell_VW, my_Fp2::zero()));
+    // OLD: naive implementation
+    //   Fp12_2over3over2_model<n,modulus> a(
+    //     my_Fp6(ell_0, my_Fp2::zero(), ell_VV),
+    //     my_Fp6(my_Fp2::zero(), ell_VW, my_Fp2::zero())
+    //   );
+    //   return (*this) * a;
 
-       return (*this) * a;
-    */
     const my_Fp2 &z0 = this->coeffs[0].coeffs[0];
     const my_Fp2 &z1 = this->coeffs[0].coeffs[1];
     const my_Fp2 &z2 = this->coeffs[0].coeffs[2];
@@ -397,4 +401,5 @@ std::istream& operator>>(std::istream& in, std::vector<Fp12_2over3over2_model<n,
 }
 
 } // libff
+
 #endif // FP12_2OVER3OVER2_TCC_
