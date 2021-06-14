@@ -7,18 +7,19 @@
 
 #ifndef EDWARDS_G1_HPP_
 #define EDWARDS_G1_HPP_
-#include <vector>
-
 #include <libff/algebra/curves/curve_utils.hpp>
 #include <libff/algebra/curves/edwards/edwards_init.hpp>
+#include <vector>
 
-namespace libff {
+namespace libff
+{
 
 class edwards_G1;
-std::ostream& operator<<(std::ostream &, const edwards_G1&);
-std::istream& operator>>(std::istream &, edwards_G1&);
+std::ostream &operator<<(std::ostream &, const edwards_G1 &);
+std::istream &operator>>(std::istream &, edwards_G1 &);
 
-class edwards_G1 {
+class edwards_G1
+{
 public:
 #ifdef PROFILE_OP_COUNTS
     static long long add_cnt;
@@ -31,14 +32,17 @@ public:
 
     edwards_Fq X, Y, Z;
     edwards_G1();
+
 private:
-    edwards_G1(const edwards_Fq& X, const edwards_Fq& Y, const edwards_Fq& Z) : X(X), Y(Y), Z(Z) {};
+    edwards_G1(const edwards_Fq &X, const edwards_Fq &Y, const edwards_Fq &Z)
+        : X(X), Y(Y), Z(Z){};
 
 public:
     typedef edwards_Fq base_field;
     typedef edwards_Fr scalar_field;
     // using inverted coordinates
-    edwards_G1(const edwards_Fq& X, const edwards_Fq& Y) : X(Y), Y(X), Z(X*Y) {};
+    edwards_G1(const edwards_Fq &X, const edwards_Fq &Y)
+        : X(Y), Y(X), Z(X * Y){};
 
     void print() const;
     void print_coordinates() const;
@@ -67,8 +71,14 @@ public:
     static edwards_G1 random_element();
 
     static size_t size_in_bits() { return edwards_Fq::size_in_bits() + 1; }
-    static bigint<base_field::num_limbs> base_field_char() { return base_field::field_char(); }
-    static bigint<scalar_field::num_limbs> order() { return scalar_field::field_char(); }
+    static bigint<base_field::num_limbs> base_field_char()
+    {
+        return base_field::field_char();
+    }
+    static bigint<scalar_field::num_limbs> order()
+    {
+        return scalar_field::field_char();
+    }
 
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
@@ -84,11 +94,11 @@ edwards_G1 operator*(const bigint<m> &lhs, const edwards_G1 &rhs)
     return scalar_mul<edwards_G1, m>(rhs, lhs);
 }
 
-template<mp_size_t m, const bigint<m>& modulus_p>
-edwards_G1 operator*(const Fp_model<m,modulus_p> &lhs, const edwards_G1 &rhs)
+template<mp_size_t m, const bigint<m> &modulus_p>
+edwards_G1 operator*(const Fp_model<m, modulus_p> &lhs, const edwards_G1 &rhs)
 {
     return scalar_mul<edwards_G1, m>(rhs, lhs.as_bigint());
 }
 
-} // libff
+} // namespace libff
 #endif // EDWARDS_G1_HPP_

@@ -13,7 +13,8 @@
 #ifndef FP_AUX_TCC_
 #define FP_AUX_TCC_
 
-namespace libff {
+namespace libff
+{
 
 // clang-format off
 

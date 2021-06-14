@@ -7,22 +7,24 @@
 
 #ifndef BN128_G1_HPP_
 #define BN128_G1_HPP_
-#include <vector>
-
 #include "depends/ate-pairing/include/bn.h"
 
 #include <libff/algebra/curves/bn128/bn128_init.hpp>
 #include <libff/algebra/curves/curve_utils.hpp>
+#include <vector>
 
-namespace libff {
+namespace libff
+{
 
 class bn128_G1;
-std::ostream& operator<<(std::ostream &, const bn128_G1&);
-std::istream& operator>>(std::istream &, bn128_G1&);
+std::ostream &operator<<(std::ostream &, const bn128_G1 &);
+std::istream &operator>>(std::istream &, bn128_G1 &);
 
-class bn128_G1 {
+class bn128_G1
+{
 private:
     static bn::Fp sqrt(const bn::Fp &el);
+
 public:
 #ifdef PROFILE_OP_COUNTS
     static long long add_cnt;
@@ -38,14 +40,21 @@ public:
 
     // Cofactor
     static const mp_size_t h_bitcount = 1;
-    static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+    static const mp_size_t h_limbs =
+        (h_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
     static bigint<h_limbs> h;
 
     bn::Fp X, Y, Z;
-    void fill_coord(bn::Fp coord[3]) const { coord[0] = this->X; coord[1] = this->Y; coord[2] = this->Z; return; };
+    void fill_coord(bn::Fp coord[3]) const
+    {
+        coord[0] = this->X;
+        coord[1] = this->Y;
+        coord[2] = this->Z;
+        return;
+    };
 
     bn128_G1();
-    bn128_G1(bn::Fp coord[3]) : X(coord[0]), Y(coord[1]), Z(coord[2]) {};
+    bn128_G1(bn::Fp coord[3]) : X(coord[0]), Y(coord[1]), Z(coord[2]){};
 
     void print() const;
     void print_coordinates() const;
@@ -76,8 +85,14 @@ public:
     static bn128_G1 random_element();
 
     static size_t size_in_bits() { return bn128_Fq::size_in_bits() + 1; }
-    static bigint<base_field::num_limbs> base_field_char() { return base_field::field_char(); }
-    static bigint<scalar_field::num_limbs> order() { return scalar_field::field_char(); }
+    static bigint<base_field::num_limbs> base_field_char()
+    {
+        return base_field::field_char();
+    }
+    static bigint<scalar_field::num_limbs> order()
+    {
+        return scalar_field::field_char();
+    }
 
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
@@ -93,11 +108,11 @@ bn128_G1 operator*(const bigint<m> &lhs, const bn128_G1 &rhs)
     return scalar_mul<bn128_G1, m>(rhs, lhs);
 }
 
-template<mp_size_t m, const bigint<m>& modulus_p>
-bn128_G1 operator*(const Fp_model<m,modulus_p> &lhs, const bn128_G1 &rhs)
+template<mp_size_t m, const bigint<m> &modulus_p>
+bn128_G1 operator*(const Fp_model<m, modulus_p> &lhs, const bn128_G1 &rhs)
 {
     return scalar_mul<bn128_G1, m>(rhs, lhs.as_bigint());
 }
 
-} // libff
+} // namespace libff
 #endif // BN128_G1_HPP_

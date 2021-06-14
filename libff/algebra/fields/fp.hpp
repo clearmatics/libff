@@ -1,6 +1,7 @@
 /** @file
  *****************************************************************************
- Declaration of arithmetic in the finite field F[p], for prime p of fixed length.
+ Declaration of arithmetic in the finite field F[p], for prime p of fixed
+ length.
  *****************************************************************************
  * @author     This file is part of libff, developed by SCIPR Lab
  *             and contributors (see AUTHORS).
@@ -13,16 +14,16 @@
 #include <libff/algebra/exponentiation/exponentiation.hpp>
 #include <libff/algebra/fields/bigint.hpp>
 
-namespace libff {
+namespace libff
+{
 
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp_model;
+template<mp_size_t n, const bigint<n> &modulus> class Fp_model;
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::ostream& operator<<(std::ostream &, const Fp_model<n, modulus>&);
+template<mp_size_t n, const bigint<n> &modulus>
+std::ostream &operator<<(std::ostream &, const Fp_model<n, modulus> &);
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::istream& operator>>(std::istream &, Fp_model<n, modulus> &);
+template<mp_size_t n, const bigint<n> &modulus>
+std::istream &operator>>(std::istream &, Fp_model<n, modulus> &);
 
 /// Arithmetic in the finite field F[p], for prime p of fixed length.
 ///
@@ -42,7 +43,7 @@ public:
     static void static_init();
 
     static const mp_size_t num_limbs = n;
-    static const constexpr bigint<n>& mod = modulus;
+    static const constexpr bigint<n> &mod = modulus;
 #ifdef PROFILE_OP_COUNTS
     static long long add_cnt;
     static long long sub_cnt;
@@ -78,11 +79,14 @@ public:
     // R^3
     static bigint<n> Rcubed;
 
-    static bool modulus_is_valid() { return modulus.data[n-1] != 0; } // mpn inverse assumes that highest limb is non-zero
+    static bool modulus_is_valid()
+    {
+        return modulus.data[n - 1] != 0;
+    } // mpn inverse assumes that highest limb is non-zero
 
-    Fp_model() {};
+    Fp_model(){};
     Fp_model(const bigint<n> &b);
-    Fp_model(const long x, const bool is_unsigned=false);
+    Fp_model(const long x, const bool is_unsigned = false);
 
     void set_ulong(const unsigned long x);
 
@@ -99,32 +103,30 @@ public:
     /// Fp(2^64+123).as_ulong() would both return 123.
     unsigned long as_ulong() const;
 
-    bool operator==(const Fp_model& other) const;
-    bool operator!=(const Fp_model& other) const;
+    bool operator==(const Fp_model &other) const;
+    bool operator!=(const Fp_model &other) const;
     bool is_zero() const;
 
     void print() const;
 
-    Fp_model& operator+=(const Fp_model& other);
-    Fp_model& operator-=(const Fp_model& other);
-    Fp_model& operator*=(const Fp_model& other);
-    Fp_model& operator^=(const unsigned long pow);
+    Fp_model &operator+=(const Fp_model &other);
+    Fp_model &operator-=(const Fp_model &other);
+    Fp_model &operator*=(const Fp_model &other);
+    Fp_model &operator^=(const unsigned long pow);
 
-    template<mp_size_t m>
-    Fp_model& operator^=(const bigint<m> &pow);
+    template<mp_size_t m> Fp_model &operator^=(const bigint<m> &pow);
 
-    Fp_model operator+(const Fp_model& other) const;
-    Fp_model operator-(const Fp_model& other) const;
-    Fp_model operator*(const Fp_model& other) const;
+    Fp_model operator+(const Fp_model &other) const;
+    Fp_model operator-(const Fp_model &other) const;
+    Fp_model operator*(const Fp_model &other) const;
     Fp_model operator-() const;
     Fp_model squared() const;
-    Fp_model& invert();
+    Fp_model &invert();
     Fp_model inverse() const;
     Fp_model sqrt() const; // HAS TO BE A SQUARE (else does not terminate)
 
     Fp_model operator^(const unsigned long pow) const;
-    template<mp_size_t m>
-    Fp_model operator^(const bigint<m> &pow) const;
+    template<mp_size_t m> Fp_model operator^(const bigint<m> &pow) const;
 
     static size_t size_in_bits() { return num_bits; }
     static size_t capacity() { return num_bits - 1; }
@@ -144,66 +146,66 @@ public:
     static Fp_model<n, modulus> arithmetic_generator();
 
 protected:
-
     static bool s_initialized;
     static Fp_model<n, modulus> s_zero;
     static Fp_model<n, modulus> s_one;
 
-    friend std::ostream& operator<< <n,modulus>(std::ostream &out, const Fp_model<n, modulus> &p);
-    friend std::istream& operator>> <n,modulus>(std::istream &in, Fp_model<n, modulus> &p);
+    friend std::ostream &operator<<<n, modulus>(
+        std::ostream &out, const Fp_model<n, modulus> &p);
+    friend std::istream &operator>>
+        <n, modulus>(std::istream &in, Fp_model<n, modulus> &p);
 };
 
 #ifdef PROFILE_OP_COUNTS
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 long long Fp_model<n, modulus>::add_cnt = 0;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 long long Fp_model<n, modulus>::sub_cnt = 0;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 long long Fp_model<n, modulus>::mul_cnt = 0;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 long long Fp_model<n, modulus>::sqr_cnt = 0;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 long long Fp_model<n, modulus>::inv_cnt = 0;
 #endif
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 size_t Fp_model<n, modulus>::num_bits;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 bigint<n> Fp_model<n, modulus>::euler;
 
-template<mp_size_t n, const bigint<n>& modulus>
-size_t Fp_model<n, modulus>::s;
+template<mp_size_t n, const bigint<n> &modulus> size_t Fp_model<n, modulus>::s;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 bigint<n> Fp_model<n, modulus>::t;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 bigint<n> Fp_model<n, modulus>::t_minus_1_over_2;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp_model<n, modulus>::nqr;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp_model<n, modulus>::nqr_to_t;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp_model<n, modulus>::multiplicative_generator;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp_model<n, modulus>::root_of_unity;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 mp_limb_t Fp_model<n, modulus>::inv;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 bigint<n> Fp_model<n, modulus>::Rsquared;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 bigint<n> Fp_model<n, modulus>::Rcubed;
 
 } // namespace libff

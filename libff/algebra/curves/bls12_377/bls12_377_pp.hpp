@@ -13,9 +13,11 @@
 #include <libff/algebra/curves/bls12_377/bls12_377_pairing.hpp>
 #include <libff/algebra/curves/public_params.hpp>
 
-namespace libff {
+namespace libff
+{
 
-class bls12_377_pp {
+class bls12_377_pp
+{
 public:
     typedef bls12_377_Fr Fp_type;
     typedef bls12_377_G1 G1_type;
@@ -33,18 +35,18 @@ public:
     static bls12_377_GT final_exponentiation(const bls12_377_Fq12 &elt);
     static bls12_377_G1_precomp precompute_G1(const bls12_377_G1 &P);
     static bls12_377_G2_precomp precompute_G2(const bls12_377_G2 &Q);
-    static bls12_377_Fq12 miller_loop(const bls12_377_G1_precomp &prec_P,
-                                      const bls12_377_G2_precomp &prec_Q);
-    static bls12_377_Fq12 double_miller_loop(const bls12_377_G1_precomp &prec_P1,
-                                             const bls12_377_G2_precomp &prec_Q1,
-                                             const bls12_377_G1_precomp &prec_P2,
-                                             const bls12_377_G2_precomp &prec_Q2);
-    static bls12_377_Fq12 pairing(const bls12_377_G1 &P,
-                                  const bls12_377_G2 &Q);
-    static bls12_377_Fq12 reduced_pairing(const bls12_377_G1 &P,
-                                          const bls12_377_G2 &Q);
+    static bls12_377_Fq12 miller_loop(
+        const bls12_377_G1_precomp &prec_P, const bls12_377_G2_precomp &prec_Q);
+    static bls12_377_Fq12 double_miller_loop(
+        const bls12_377_G1_precomp &prec_P1,
+        const bls12_377_G2_precomp &prec_Q1,
+        const bls12_377_G1_precomp &prec_P2,
+        const bls12_377_G2_precomp &prec_Q2);
+    static bls12_377_Fq12 pairing(const bls12_377_G1 &P, const bls12_377_G2 &Q);
+    static bls12_377_Fq12 reduced_pairing(
+        const bls12_377_G1 &P, const bls12_377_G2 &Q);
 };
 
-} // libff
+} // namespace libff
 
 #endif // BLS12_377_PP_HPP_

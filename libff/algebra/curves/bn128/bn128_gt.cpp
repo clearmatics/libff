@@ -7,20 +7,18 @@
 
 #include <libff/algebra/curves/bn128/bn128_gt.hpp>
 
-namespace libff {
+namespace libff
+{
 
 bn128_GT bn128_GT::GT_one;
-bn128_GT::bn128_GT()
-{
-    this->elem.clear();
-}
+bn128_GT::bn128_GT() { this->elem.clear(); }
 
 bool bn128_GT::operator==(const bn128_GT &other) const
 {
     return (this->elem == other.elem);
 }
 
-bool bn128_GT::operator!=(const bn128_GT& other) const
+bool bn128_GT::operator!=(const bn128_GT &other) const
 {
     return !(operator==(other));
 }
@@ -39,32 +37,29 @@ bn128_GT bn128_GT::unitary_inverse() const
     return result;
 }
 
-bn128_GT bn128_GT::one()
-{
-    return GT_one;
-}
+bn128_GT bn128_GT::one() { return GT_one; }
 
-std::ostream& operator<<(std::ostream &out, const bn128_GT &g)
+std::ostream &operator<<(std::ostream &out, const bn128_GT &g)
 {
 #ifndef BINARY_OUTPUT
     out << g.elem.a_ << OUTPUT_SEPARATOR << g.elem.b_;
 #else
-    out.write((char*) &g.elem.a_, sizeof(g.elem.a_));
-    out.write((char*) &g.elem.b_, sizeof(g.elem.b_));
+    out.write((char *)&g.elem.a_, sizeof(g.elem.a_));
+    out.write((char *)&g.elem.b_, sizeof(g.elem.b_));
 #endif
     return out;
 }
 
-std::istream& operator>>(std::istream &in, bn128_GT &g)
+std::istream &operator>>(std::istream &in, bn128_GT &g)
 {
 #ifndef BINARY_OUTPUT
     in >> g.elem.a_;
     consume_OUTPUT_SEPARATOR(in);
     in >> g.elem.b_;
 #else
-    in.read((char*) &g.elem.a_, sizeof(g.elem.a_));
-    in.read((char*) &g.elem.b_, sizeof(g.elem.b_));
+    in.read((char *)&g.elem.a_, sizeof(g.elem.a_));
+    in.read((char *)&g.elem.b_, sizeof(g.elem.b_));
 #endif
     return in;
 }
-} // libff
+} // namespace libff

@@ -15,36 +15,36 @@
 #define RNG_TCC_
 
 #include <gmp.h>
-#include <openssl/sha.h>
-
 #include <libff/algebra/fields/bigint.hpp>
 #include <libff/common/rng.hpp>
 #include <libff/common/utils.hpp>
+#include <openssl/sha.h>
 
-namespace libff {
-
-template<typename FieldT>
-FieldT SHA512_rng(const uint64_t idx)
+namespace libff
 {
-    assert(GMP_NUMB_BITS == 64); // current Python code cannot handle larger values, so testing here for some assumptions.
+
+template<typename FieldT> FieldT SHA512_rng(const uint64_t idx)
+{
+    assert(
+        GMP_NUMB_BITS == 64); // current Python code cannot handle larger
+                              // values, so testing here for some assumptions.
     assert(is_little_endian());
 
     assert(FieldT::size_in_bits() <= SHA512_DIGEST_LENGTH * 8);
 
     bigint<FieldT::num_limbs> rval;
     uint64_t iter = 0;
-    do
-    {
-        mp_limb_t hash[((SHA512_DIGEST_LENGTH*8) + GMP_NUMB_BITS - 1)/GMP_NUMB_BITS];
+    do {
+        mp_limb_t hash
+            [((SHA512_DIGEST_LENGTH * 8) + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS];
 
         SHA512_CTX sha512;
         SHA512_Init(&sha512);
         SHA512_Update(&sha512, &idx, sizeof(idx));
         SHA512_Update(&sha512, &iter, sizeof(iter));
-        SHA512_Final((unsigned char*)hash, &sha512);
+        SHA512_Final((unsigned char *)hash, &sha512);
 
-        for (mp_size_t i = 0; i < FieldT::num_limbs; ++i)
-        {
+        for (mp_size_t i = 0; i < FieldT::num_limbs; ++i) {
             rval.data[i] = hash[i];
         }
 
@@ -52,12 +52,11 @@ FieldT SHA512_rng(const uint64_t idx)
         size_t bitno = GMP_NUMB_BITS * FieldT::num_limbs - 1;
 
         /* mod is non-zero so the loop will always terminate */
-        while (FieldT::mod.test_bit(bitno) == false)
-        {
-            const std::size_t part = bitno/GMP_NUMB_BITS;
-            const std::size_t bit = bitno - (GMP_NUMB_BITS*part);
+        while (FieldT::mod.test_bit(bitno) == false) {
+            const std::size_t part = bitno / GMP_NUMB_BITS;
+            const std::size_t bit = bitno - (GMP_NUMB_BITS * part);
 
-            rval.data[part] &= ~(1ul<<bit);
+            rval.data[part] &= ~(1ul << bit);
 
             bitno--;
         }
@@ -71,6 +70,6 @@ FieldT SHA512_rng(const uint64_t idx)
     return FieldT(rval);
 }
 
-} // libff
+} // namespace libff
 
 #endif // RNG_TCC_

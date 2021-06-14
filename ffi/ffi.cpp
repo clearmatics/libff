@@ -1,11 +1,15 @@
 #include "ffi.h"
+
 #include "ffi_serialization.hpp"
+
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
 
-namespace libff {
+namespace libff
+{
 
-namespace ffi {
+namespace ffi
+{
 
 // Generic functions to be used by the entry points
 
@@ -21,8 +25,7 @@ bool g1_add(
     libff::G1<ppT> a;
     libff::G1<ppT> b;
     if (group_element_read(a, a_g1, a_g1_size) &&
-        group_element_read(b, b_g1, b_g1_size))
-    {
+        group_element_read(b, b_g1, b_g1_size)) {
         const libff::G1<ppT> output = a + b;
         return group_element_write(output, out_g1, out_g1_size);
     }
@@ -32,15 +35,17 @@ bool g1_add(
 
 template<typename ppT>
 bool g1_mul(
-    const void *p_g1, size_t p_g1_size,
-    const void *s_fr, size_t s_fr_size,
-    void *out_g1, size_t out_g1_size)
+    const void *p_g1,
+    size_t p_g1_size,
+    const void *s_fr,
+    size_t s_fr_size,
+    void *out_g1,
+    size_t out_g1_size)
 {
     libff::G1<ppT> p;
     libff::Fr<ppT> s;
     if (group_element_read(p, p_g1, p_g1_size) &&
-        field_element_read(s, s_fr, s_fr_size))
-    {
+        field_element_read(s, s_fr, s_fr_size)) {
         const libff::G1<ppT> output = s * p;
         return group_element_write(output, out_g1, out_g1_size);
     }
@@ -83,8 +88,7 @@ bool pairing(
         group_element_read(e, e_g1, e_g1_size) &&
         group_element_read(f, f_g2, f_g2_size) &&
         group_element_read(g, g_g1, g_g1_size) &&
-        group_element_read(h, h_g2, h_g2_size))
-    {
+        group_element_read(h, h_g2, h_g2_size)) {
         // Use the double miller loop, to compute the pairing for two
         // pairs at a time, and apply the final_exponentiation to the
         // product.
@@ -103,7 +107,8 @@ bool pairing(
             ppT::precompute_G2(h));
 
         // e(a,b).e(c,d).e(e,f).e(g,h)
-        libff::GT<ppT> product = ppT::final_exponentiation(miller_abcd * miller_efgh);
+        libff::GT<ppT> product =
+            ppT::final_exponentiation(miller_abcd * miller_efgh);
         return libff::GT<ppT>::one() == product;
     }
 

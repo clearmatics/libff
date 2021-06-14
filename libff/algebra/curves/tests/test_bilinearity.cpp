@@ -6,8 +6,6 @@
  *****************************************************************************/
 
 #include <gtest/gtest.h>
-
-
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/common/profiling.hpp>
 #ifdef CURVE_BN128
@@ -21,8 +19,7 @@
 
 using namespace libff;
 
-template<typename ppT>
-void pairing_test()
+template<typename ppT> void pairing_test()
 {
     GT<ppT> GT_one = GT<ppT>::one();
 
@@ -45,7 +42,7 @@ void pairing_test()
     printf("Pairing bilinearity tests (three must match):\n");
     GT<ppT> ans1 = ppT::reduced_pairing(sP, Q);
     GT<ppT> ans2 = ppT::reduced_pairing(P, sQ);
-    GT<ppT> ans3 = ppT::reduced_pairing(P, Q)^s;
+    GT<ppT> ans3 = ppT::reduced_pairing(P, Q) ^ s;
     printf("ans1:\n");
     ans1.print();
     printf("ans2:\n");
@@ -54,16 +51,18 @@ void pairing_test()
     ans3.print();
     ASSERT_EQ(ans1, ans2);
     ASSERT_EQ(ans2, ans3);
-    std::cout << "**** RES (ans1 == ans2) : " << (ans1 == ans2) << " ****" << std::endl;
-    std::cout << "**** RES (ans2 == ans3) : " << (ans2 == ans3) << " ****" << std::endl;
+    std::cout << "**** RES (ans1 == ans2) : " << (ans1 == ans2) << " ****"
+              << std::endl;
+    std::cout << "**** RES (ans2 == ans3) : " << (ans2 == ans3) << " ****"
+              << std::endl;
 
     ASSERT_NE(ans1, GT_one);
-    ASSERT_EQ(ans1^Fr<ppT>::field_char(), GT_one);
+    ASSERT_EQ(ans1 ^ Fr<ppT>::field_char(), GT_one);
     printf("\n\n");
 
     Fr<ppT> r = Fr<ppT>::random_element();
     G1<ppT> rP = r * P;
-    G2<ppT> r_minus_1_Q = (r-1) * Q;
+    G2<ppT> r_minus_1_Q = (r - 1) * Q;
 
     printf("Pairing bilinearity tests (two must NOT match):\n");
     GT<ppT> res1 = ppT::reduced_pairing(rP, Q);
@@ -73,11 +72,11 @@ void pairing_test()
     printf("res2:\n");
     res2.print();
     ASSERT_NE(res1, res2);
-    std::cout << "**** RES (res1 != res2) : " << (res1 != res2) << " ****" << std::endl;
+    std::cout << "**** RES (res1 != res2) : " << (res1 != res2) << " ****"
+              << std::endl;
 }
 
-template<typename ppT>
-void double_miller_loop_test()
+template<typename ppT> void double_miller_loop_test()
 {
     const G1<ppT> P1 = (Fr<ppT>::random_element()) * G1<ppT>::one();
     const G1<ppT> P2 = (Fr<ppT>::random_element()) * G1<ppT>::one();
@@ -91,12 +90,12 @@ void double_miller_loop_test()
 
     const Fqk<ppT> ans_1 = ppT::miller_loop(prec_P1, prec_Q1);
     const Fqk<ppT> ans_2 = ppT::miller_loop(prec_P2, prec_Q2);
-    const Fqk<ppT> ans_12 = ppT::double_miller_loop(prec_P1, prec_Q1, prec_P2, prec_Q2);
+    const Fqk<ppT> ans_12 =
+        ppT::double_miller_loop(prec_P1, prec_Q1, prec_P2, prec_Q2);
     ASSERT_EQ(ans_1 * ans_2, ans_12);
 }
 
-template<typename ppT>
-void affine_pairing_test()
+template<typename ppT> void affine_pairing_test()
 {
     GT<ppT> GT_one = GT<ppT>::one();
 
@@ -116,7 +115,7 @@ void affine_pairing_test()
 
     GT<ppT> ans1 = ppT::affine_reduced_pairing(sP, Q);
     GT<ppT> ans2 = ppT::affine_reduced_pairing(P, sQ);
-    GT<ppT> ans3 = ppT::affine_reduced_pairing(P, Q)^s;
+    GT<ppT> ans3 = ppT::affine_reduced_pairing(P, Q) ^ s;
     ans1.print();
     ans2.print();
     ans3.print();
@@ -124,7 +123,7 @@ void affine_pairing_test()
     ASSERT_EQ(ans2, ans3);
 
     ASSERT_NE(ans1, GT_one);
-    ASSERT_EQ((ans1^Fr<ppT>::field_char()), GT_one);
+    ASSERT_EQ((ans1 ^ Fr<ppT>::field_char()), GT_one);
 }
 
 TEST(TestBiliearity, Edwards)

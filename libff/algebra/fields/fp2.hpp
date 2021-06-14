@@ -9,20 +9,19 @@
 
 #ifndef FP2_HPP_
 #define FP2_HPP_
+#include <libff/algebra/fields/fp.hpp>
 #include <vector>
 
-#include <libff/algebra/fields/fp.hpp>
+namespace libff
+{
 
-namespace libff {
+template<mp_size_t n, const bigint<n> &modulus> class Fp2_model;
 
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp2_model;
+template<mp_size_t n, const bigint<n> &modulus>
+std::ostream &operator<<(std::ostream &, const Fp2_model<n, modulus> &);
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::ostream& operator<<(std::ostream &, const Fp2_model<n, modulus> &);
-
-template<mp_size_t n, const bigint<n>& modulus>
-std::istream& operator>>(std::istream &, Fp2_model<n, modulus> &);
+template<mp_size_t n, const bigint<n> &modulus>
+std::istream &operator>>(std::istream &, Fp2_model<n, modulus> &);
 
 /// Arithmetic in the field F[p^2].
 ///
@@ -61,11 +60,25 @@ public:
 
     my_Fp coeffs[2];
     Fp2_model(){};
-    //Fp2_model(const my_Fp& c0, const my_Fp& c1) : coeffs(c0, c1) {};
-    Fp2_model(const my_Fp& c0, const my_Fp& c1) { this->coeffs[0] = c0; this->coeffs[1] = c1; return; };
+    // Fp2_model(const my_Fp& c0, const my_Fp& c1) : coeffs(c0, c1) {};
+    Fp2_model(const my_Fp &c0, const my_Fp &c1)
+    {
+        this->coeffs[0] = c0;
+        this->coeffs[1] = c1;
+        return;
+    };
 
-    void clear() { coeffs[0].clear(); coeffs[1].clear(); }
-    void print() const { printf("c0/c1:\n"); coeffs[0].print(); coeffs[1].print(); }
+    void clear()
+    {
+        coeffs[0].clear();
+        coeffs[1].clear();
+    }
+    void print() const
+    {
+        printf("c0/c1:\n");
+        coeffs[0].print();
+        coeffs[1].print();
+    }
 
     static Fp2_model<n, modulus> zero();
     static Fp2_model<n, modulus> one();
@@ -88,51 +101,54 @@ public:
     Fp2_model squared_karatsuba() const;
     Fp2_model squared_complex() const;
 
-    template<mp_size_t m>
-    Fp2_model operator^(const bigint<m> &other) const;
+    template<mp_size_t m> Fp2_model operator^(const bigint<m> &other) const;
 
-    static size_t size_in_bits() { return 2*my_Fp::size_in_bits(); }
+    static size_t size_in_bits() { return 2 * my_Fp::size_in_bits(); }
     static bigint<n> base_field_char() { return modulus; }
     static constexpr size_t extension_degree() { return 2; }
 
-    friend std::ostream& operator<< <n, modulus>(std::ostream &out, const Fp2_model<n, modulus> &el);
-    friend std::istream& operator>> <n, modulus>(std::istream &in, Fp2_model<n, modulus> &el);
+    friend std::ostream &operator<<<n, modulus>(
+        std::ostream &out, const Fp2_model<n, modulus> &el);
+    friend std::istream &operator>>
+        <n, modulus>(std::istream &in, Fp2_model<n, modulus> &el);
 };
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::ostream& operator<<(std::ostream& out, const std::vector<Fp2_model<n, modulus> > &v);
+template<mp_size_t n, const bigint<n> &modulus>
+std::ostream &operator<<(
+    std::ostream &out, const std::vector<Fp2_model<n, modulus>> &v);
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::istream& operator>>(std::istream& in, std::vector<Fp2_model<n, modulus> > &v);
+template<mp_size_t n, const bigint<n> &modulus>
+std::istream &operator>>(
+    std::istream &in, std::vector<Fp2_model<n, modulus>> &v);
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp2_model<n, modulus> operator*(const Fp_model<n, modulus> &lhs, const Fp2_model<n, modulus> &rhs);
+template<mp_size_t n, const bigint<n> &modulus>
+Fp2_model<n, modulus> operator*(
+    const Fp_model<n, modulus> &lhs, const Fp2_model<n, modulus> &rhs);
 
-template<mp_size_t n, const bigint<n>& modulus>
-bigint<2*n> Fp2_model<n, modulus>::euler;
+template<mp_size_t n, const bigint<n> &modulus>
+bigint<2 * n> Fp2_model<n, modulus>::euler;
 
-template<mp_size_t n, const bigint<n>& modulus>
-size_t Fp2_model<n, modulus>::s;
+template<mp_size_t n, const bigint<n> &modulus> size_t Fp2_model<n, modulus>::s;
 
-template<mp_size_t n, const bigint<n>& modulus>
-bigint<2*n> Fp2_model<n, modulus>::t;
+template<mp_size_t n, const bigint<n> &modulus>
+bigint<2 * n> Fp2_model<n, modulus>::t;
 
-template<mp_size_t n, const bigint<n>& modulus>
-bigint<2*n> Fp2_model<n, modulus>::t_minus_1_over_2;
+template<mp_size_t n, const bigint<n> &modulus>
+bigint<2 * n> Fp2_model<n, modulus>::t_minus_1_over_2;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp2_model<n, modulus>::non_residue;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp2_model<n, modulus> Fp2_model<n, modulus>::nqr;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp2_model<n, modulus> Fp2_model<n, modulus>::nqr_to_t;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp2_model<n, modulus>::Frobenius_coeffs_c1[2];
 
-} // libff
+} // namespace libff
 #include <libff/algebra/fields/fp2.tcc>
 
 #endif // FP2_HPP_

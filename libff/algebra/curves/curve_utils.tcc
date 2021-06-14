@@ -8,7 +8,8 @@
 #ifndef CURVE_UTILS_TCC_
 #define CURVE_UTILS_TCC_
 
-namespace libff {
+namespace libff
+{
 
 template<typename GroupT, mp_size_t m>
 GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar)
@@ -16,15 +17,12 @@ GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar)
     GroupT result = GroupT::zero();
 
     bool found_one = false;
-    for (long i = static_cast<long>(scalar.max_bits() - 1); i >= 0; --i)
-    {
-        if (found_one)
-        {
+    for (long i = static_cast<long>(scalar.max_bits() - 1); i >= 0; --i) {
+        if (found_one) {
             result = result.dbl();
         }
 
-        if (scalar.test_bit(i))
-        {
+        if (scalar.test_bit(i)) {
             found_one = true;
             result = result + base;
         }
@@ -42,8 +40,7 @@ GroupT g1_curve_point_at_x(const typename GroupT::base_field &x)
         x_cubed + (GroupT::coeff_a * x_squared) + GroupT::coeff_b;
     // Check that y_squared is a quadratic residue (ensuring that sqrt()
     // terminates).
-    if ((y_squared^GroupT::base_field::euler) != GroupT::base_field::one())
-    {
+    if ((y_squared ^ GroupT::base_field::euler) != GroupT::base_field::one()) {
         throw std::runtime_error("curve eqn has no solution at x");
     }
 
@@ -63,5 +60,5 @@ GroupT g2_curve_point_at_x(const typename GroupT::twist_field &x)
     return GroupT(x, y, GroupT::twist_field::one());
 }
 
-} // libff
+} // namespace libff
 #endif // CURVE_UTILS_TCC_

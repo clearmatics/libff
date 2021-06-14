@@ -12,18 +12,19 @@
 #ifndef MNT4_G1_HPP_
 #define MNT4_G1_HPP_
 
-#include <vector>
-
 #include <libff/algebra/curves/curve_utils.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_init.hpp>
+#include <vector>
 
-namespace libff {
+namespace libff
+{
 
 class mnt4_G1;
-std::ostream& operator<<(std::ostream &, const mnt4_G1&);
-std::istream& operator>>(std::istream &, mnt4_G1&);
+std::ostream &operator<<(std::ostream &, const mnt4_G1 &);
+std::istream &operator>>(std::istream &, mnt4_G1 &);
 
-class mnt4_G1 {
+class mnt4_G1
+{
 public:
 #ifdef PROFILE_OP_COUNTS
     static long long add_cnt;
@@ -41,15 +42,22 @@ public:
 
     // Cofactor
     static const mp_size_t h_bitcount = 1;
-    static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+    static const mp_size_t h_limbs =
+        (h_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
     static bigint<h_limbs> h;
 
     mnt4_Fq X, Y, Z;
 
     // using projective coordinates
     mnt4_G1();
-    mnt4_G1(const mnt4_Fq& X, const mnt4_Fq& Y) : X(X), Y(Y), Z(base_field::one()) {}
-    mnt4_G1(const mnt4_Fq& X, const mnt4_Fq& Y, const mnt4_Fq& Z) : X(X), Y(Y), Z(Z) {}
+    mnt4_G1(const mnt4_Fq &X, const mnt4_Fq &Y)
+        : X(X), Y(Y), Z(base_field::one())
+    {
+    }
+    mnt4_G1(const mnt4_Fq &X, const mnt4_Fq &Y, const mnt4_Fq &Z)
+        : X(X), Y(Y), Z(Z)
+    {
+    }
 
     void print() const;
     void print_coordinates() const;
@@ -80,7 +88,10 @@ public:
     static mnt4_G1 random_element();
 
     static size_t size_in_bits() { return mnt4_Fq::size_in_bits() + 1; }
-    static bigint<mnt4_Fq::num_limbs> base_field_char() { return mnt4_Fq::field_char(); }
+    static bigint<mnt4_Fq::num_limbs> base_field_char()
+    {
+        return mnt4_Fq::field_char();
+    }
     static bigint<mnt4_Fr::num_limbs> order() { return mnt4_Fr::field_char(); }
 
     void write_uncompressed(std::ostream &) const;
@@ -97,12 +108,12 @@ mnt4_G1 operator*(const bigint<m> &lhs, const mnt4_G1 &rhs)
     return scalar_mul<mnt4_G1, m>(rhs, lhs);
 }
 
-template<mp_size_t m, const bigint<m>& modulus_p>
-mnt4_G1 operator*(const Fp_model<m,modulus_p> &lhs, const mnt4_G1 &rhs)
+template<mp_size_t m, const bigint<m> &modulus_p>
+mnt4_G1 operator*(const Fp_model<m, modulus_p> &lhs, const mnt4_G1 &rhs)
 {
     return scalar_mul<mnt4_G1, m>(rhs, lhs.as_bigint());
 }
 
-} // libff
+} // namespace libff
 
 #endif // MNT4_G1_HPP_

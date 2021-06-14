@@ -10,23 +10,23 @@
 #ifndef BIGINT_HPP_
 #define BIGINT_HPP_
 #include <cstddef>
-#include <iostream>
-
 #include <gmp.h>
-
+#include <iostream>
 #include <libff/common/serialization.hpp>
 
-namespace libff {
+namespace libff
+{
 
 template<mp_size_t n> class bigint;
-template<mp_size_t n> std::ostream& operator<<(std::ostream &, const bigint<n>&);
-template<mp_size_t n> std::istream& operator>>(std::istream &, bigint<n>&);
+template<mp_size_t n>
+std::ostream &operator<<(std::ostream &, const bigint<n> &);
+template<mp_size_t n> std::istream &operator>>(std::istream &, bigint<n> &);
 
 /// Wrapper class around GMP's MPZ long integers. It supports arithmetic
 /// operations, serialization and randomization. Serialization is fragile, see
 /// common/serialization.hpp.
-template<mp_size_t n>
-class bigint {
+template<mp_size_t n> class bigint
+{
 public:
     static const mp_size_t N = n;
 
@@ -42,8 +42,8 @@ public:
 
     void print() const;
     void print_hex() const;
-    bool operator==(const bigint<n>& other) const;
-    bool operator!=(const bigint<n>& other) const;
+    bool operator==(const bigint<n> &other) const;
+    bool operator!=(const bigint<n> &other) const;
     void clear();
     bool is_zero() const;
 

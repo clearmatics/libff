@@ -9,21 +9,20 @@
 
 #ifndef FP6_3OVER2_HPP_
 #define FP6_3OVER2_HPP_
-#include <vector>
-
 #include <libff/algebra/fields/fp.hpp>
 #include <libff/algebra/fields/fp2.hpp>
+#include <vector>
 
-namespace libff {
+namespace libff
+{
 
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp6_3over2_model;
+template<mp_size_t n, const bigint<n> &modulus> class Fp6_3over2_model;
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::ostream& operator<<(std::ostream &, const Fp6_3over2_model<n, modulus> &);
+template<mp_size_t n, const bigint<n> &modulus>
+std::ostream &operator<<(std::ostream &, const Fp6_3over2_model<n, modulus> &);
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::istream& operator>>(std::istream &, Fp6_3over2_model<n, modulus> &);
+template<mp_size_t n, const bigint<n> &modulus>
+std::istream &operator>>(std::istream &, Fp6_3over2_model<n, modulus> &);
 
 /// Arithmetic in the finite field F[(p^2)^3].
 ///
@@ -31,8 +30,8 @@ std::istream& operator>>(std::istream &, Fp6_3over2_model<n, modulus> &);
 /// field Fp6 = Fp2[V]/(V^3-non_residue) where non_residue is in Fp.
 ///
 /// ASSUMPTION: p = 1 (mod 6)
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp6_3over2_model {
+template<mp_size_t n, const bigint<n> &modulus> class Fp6_3over2_model
+{
 public:
     typedef Fp_model<n, modulus> my_Fp;
     typedef Fp2_model<n, modulus> my_Fp2;
@@ -46,17 +45,38 @@ public:
     static const size_t tower_extension_degree = 3;
 
     my_Fp2 coeffs[3];
-    Fp6_3over2_model() {};
-    Fp6_3over2_model(const my_Fp2& c0, const my_Fp2& c1, const my_Fp2& c2) { this->coeffs[0] = c0; this->coeffs[1] = c1; this->coeffs[2] = c2; return; };
+    Fp6_3over2_model(){};
+    Fp6_3over2_model(const my_Fp2 &c0, const my_Fp2 &c1, const my_Fp2 &c2)
+    {
+        this->coeffs[0] = c0;
+        this->coeffs[1] = c1;
+        this->coeffs[2] = c2;
+        return;
+    };
 
-    void clear() { coeffs[0].clear(); coeffs[1].clear(); coeffs[2].clear(); }
-    void print() const { printf("c0/c1/c2:\n"); coeffs[0].print(); coeffs[1].print(); coeffs[2].print(); }
+    void clear()
+    {
+        coeffs[0].clear();
+        coeffs[1].clear();
+        coeffs[2].clear();
+    }
+    void print() const
+    {
+        printf("c0/c1/c2:\n");
+        coeffs[0].print();
+        coeffs[1].print();
+        coeffs[2].print();
+    }
 
     static Fp6_3over2_model<n, modulus> zero();
     static Fp6_3over2_model<n, modulus> one();
     static Fp6_3over2_model<n, modulus> random_element();
 
-    bool is_zero() const { return coeffs[0].is_zero() && coeffs[1].is_zero() && coeffs[2].is_zero(); }
+    bool is_zero() const
+    {
+        return coeffs[0].is_zero() && coeffs[1].is_zero() &&
+               coeffs[2].is_zero();
+    }
     bool operator==(const Fp6_3over2_model &other) const;
     bool operator!=(const Fp6_3over2_model &other) const;
 
@@ -76,32 +96,38 @@ public:
     static bigint<n> base_field_char() { return modulus; }
     static constexpr size_t extension_degree() { return 6; }
 
-    friend std::ostream& operator<< <n, modulus>(std::ostream &out, const Fp6_3over2_model<n, modulus> &el);
-    friend std::istream& operator>> <n, modulus>(std::istream &in, Fp6_3over2_model<n, modulus> &el);
+    friend std::ostream &operator<<<n, modulus>(
+        std::ostream &out, const Fp6_3over2_model<n, modulus> &el);
+    friend std::istream &operator>>
+        <n, modulus>(std::istream &in, Fp6_3over2_model<n, modulus> &el);
 };
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::ostream& operator<<(std::ostream& out, const std::vector<Fp6_3over2_model<n, modulus> > &v);
+template<mp_size_t n, const bigint<n> &modulus>
+std::ostream &operator<<(
+    std::ostream &out, const std::vector<Fp6_3over2_model<n, modulus>> &v);
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::istream& operator>>(std::istream& in, std::vector<Fp6_3over2_model<n, modulus> > &v);
+template<mp_size_t n, const bigint<n> &modulus>
+std::istream &operator>>(
+    std::istream &in, std::vector<Fp6_3over2_model<n, modulus>> &v);
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp6_3over2_model<n, modulus> operator*(const Fp_model<n, modulus> &lhs, const Fp6_3over2_model<n, modulus> &rhs);
+template<mp_size_t n, const bigint<n> &modulus>
+Fp6_3over2_model<n, modulus> operator*(
+    const Fp_model<n, modulus> &lhs, const Fp6_3over2_model<n, modulus> &rhs);
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp6_3over2_model<n, modulus> operator*(const Fp2_model<n, modulus> &lhs, const Fp6_3over2_model<n, modulus> &rhs);
+template<mp_size_t n, const bigint<n> &modulus>
+Fp6_3over2_model<n, modulus> operator*(
+    const Fp2_model<n, modulus> &lhs, const Fp6_3over2_model<n, modulus> &rhs);
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp2_model<n, modulus> Fp6_3over2_model<n, modulus>::non_residue;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp2_model<n, modulus> Fp6_3over2_model<n, modulus>::Frobenius_coeffs_c1[6];
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp2_model<n, modulus> Fp6_3over2_model<n, modulus>::Frobenius_coeffs_c2[6];
 
-} // libff
+} // namespace libff
 
 #include <libff/algebra/fields/fp6_3over2.tcc>
 

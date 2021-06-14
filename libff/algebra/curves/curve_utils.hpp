@@ -8,11 +8,11 @@
 #ifndef CURVE_UTILS_HPP_
 #define CURVE_UTILS_HPP_
 #include <cstdint>
-
 #include <libff/algebra/curves/public_params.hpp>
 #include <libff/algebra/fields/bigint.hpp>
 
-namespace libff {
+namespace libff
+{
 
 template<typename GroupT, mp_size_t m>
 GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar);
@@ -28,7 +28,7 @@ GroupT g1_curve_point_at_x(const typename GroupT::base_field &x);
 template<typename GroupT>
 GroupT g2_curve_point_at_x(const typename GroupT::twist_field &x);
 
-} // libff
+} // namespace libff
 #include <libff/algebra/curves/curve_utils.tcc>
 
 #endif // CURVE_UTILS_HPP_

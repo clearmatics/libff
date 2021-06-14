@@ -14,9 +14,11 @@
 #include <libff/algebra/curves/bn128/bn128_pairing.hpp>
 #include <libff/algebra/curves/public_params.hpp>
 
-namespace libff {
+namespace libff
+{
 
-class bn128_pp {
+class bn128_pp
+{
 public:
     typedef bn128_Fr Fp_type;
     typedef bn128_G1 G1_type;
@@ -33,19 +35,18 @@ public:
     static bn128_GT final_exponentiation(const bn128_Fq12 &elt);
     static bn128_ate_G1_precomp precompute_G1(const bn128_G1 &P);
     static bn128_ate_G2_precomp precompute_G2(const bn128_G2 &Q);
-    static bn128_Fq12 miller_loop(const bn128_ate_G1_precomp &prec_P,
-                                  const bn128_ate_G2_precomp &prec_Q);
-    static bn128_Fq12 double_miller_loop(const bn128_ate_G1_precomp &prec_P1,
-                                         const bn128_ate_G2_precomp &prec_Q1,
-                                         const bn128_ate_G1_precomp &prec_P2,
-                                         const bn128_ate_G2_precomp &prec_Q2);
+    static bn128_Fq12 miller_loop(
+        const bn128_ate_G1_precomp &prec_P, const bn128_ate_G2_precomp &prec_Q);
+    static bn128_Fq12 double_miller_loop(
+        const bn128_ate_G1_precomp &prec_P1,
+        const bn128_ate_G2_precomp &prec_Q1,
+        const bn128_ate_G1_precomp &prec_P2,
+        const bn128_ate_G2_precomp &prec_Q2);
 
     /* the following are used in test files */
-    static bn128_GT pairing(const bn128_G1 &P,
-                            const bn128_G2 &Q);
-    static bn128_GT reduced_pairing(const bn128_G1 &P,
-                                    const bn128_G2 &Q);
+    static bn128_GT pairing(const bn128_G1 &P, const bn128_G2 &Q);
+    static bn128_GT reduced_pairing(const bn128_G1 &P, const bn128_G2 &Q);
 };
 
-} // libff
+} // namespace libff
 #endif // BN128_PP_HPP_

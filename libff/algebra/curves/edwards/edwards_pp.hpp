@@ -13,9 +13,11 @@
 #include <libff/algebra/curves/edwards/edwards_pairing.hpp>
 #include <libff/algebra/curves/public_params.hpp>
 
-namespace libff {
+namespace libff
+{
 
-class edwards_pp {
+class edwards_pp
+{
 public:
     typedef edwards_Fr Fp_type;
     typedef edwards_G1 G1_type;
@@ -33,18 +35,18 @@ public:
     static edwards_GT final_exponentiation(const edwards_Fq6 &elt);
     static edwards_G1_precomp precompute_G1(const edwards_G1 &P);
     static edwards_G2_precomp precompute_G2(const edwards_G2 &Q);
-    static edwards_Fq6 miller_loop(const edwards_G1_precomp &prec_P,
-                                   const edwards_G2_precomp &prec_Q);
-    static edwards_Fq6 double_miller_loop(const edwards_G1_precomp &prec_P1,
-                                          const edwards_G2_precomp &prec_Q1,
-                                          const edwards_G1_precomp &prec_P2,
-                                          const edwards_G2_precomp &prec_Q2);
+    static edwards_Fq6 miller_loop(
+        const edwards_G1_precomp &prec_P, const edwards_G2_precomp &prec_Q);
+    static edwards_Fq6 double_miller_loop(
+        const edwards_G1_precomp &prec_P1,
+        const edwards_G2_precomp &prec_Q1,
+        const edwards_G1_precomp &prec_P2,
+        const edwards_G2_precomp &prec_Q2);
     /* the following are used in test files */
-    static edwards_Fq6 pairing(const edwards_G1 &P,
-                               const edwards_G2 &Q);
-    static edwards_Fq6 reduced_pairing(const edwards_G1 &P,
-                                       const edwards_G2 &Q);
+    static edwards_Fq6 pairing(const edwards_G1 &P, const edwards_G2 &Q);
+    static edwards_Fq6 reduced_pairing(
+        const edwards_G1 &P, const edwards_G2 &Q);
 };
 
-} // libff
+} // namespace libff
 #endif // EDWARDS_PP_HPP_

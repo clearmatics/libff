@@ -9,20 +9,19 @@
 
 #ifndef FP3_HPP_
 #define FP3_HPP_
+#include <libff/algebra/fields/fp.hpp>
 #include <vector>
 
-#include <libff/algebra/fields/fp.hpp>
+namespace libff
+{
 
-namespace libff {
+template<mp_size_t n, const bigint<n> &modulus> class Fp3_model;
 
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp3_model;
+template<mp_size_t n, const bigint<n> &modulus>
+std::ostream &operator<<(std::ostream &, const Fp3_model<n, modulus> &);
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::ostream& operator<<(std::ostream &, const Fp3_model<n, modulus> &);
-
-template<mp_size_t n, const bigint<n>& modulus>
-std::istream& operator>>(std::istream &, Fp3_model<n, modulus> &);
+template<mp_size_t n, const bigint<n> &modulus>
+std::istream &operator>>(std::istream &, Fp3_model<n, modulus> &);
 
 /// Arithmetic in the field F[p^3].
 ///
@@ -30,8 +29,8 @@ std::istream& operator>>(std::istream &, Fp3_model<n, modulus> &);
 /// Fp3 = Fp[U]/(U^3-non_residue), where non_residue is in Fp.
 ///
 /// ASSUMPTION: p = 1 (mod 6)
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp3_model {
+template<mp_size_t n, const bigint<n> &modulus> class Fp3_model
+{
 public:
     typedef Fp_model<n, modulus> my_Fp;
 
@@ -58,18 +57,40 @@ public:
     static my_Fp Frobenius_coeffs_c2[3];
 
     my_Fp coeffs[3];
-    Fp3_model() {};
-    //Fp3_model(const my_Fp& c0, const my_Fp& c1, const my_Fp& c2) { coeffs = {c0, c1, c2}; };
-    Fp3_model(const my_Fp& c0, const my_Fp& c1, const my_Fp& c2) { this->coeffs[0] = c0; this->coeffs[1] = c1; this->coeffs[2] = c2; return; };
+    Fp3_model(){};
+    // Fp3_model(const my_Fp& c0, const my_Fp& c1, const my_Fp& c2) { coeffs =
+    // {c0, c1, c2}; };
+    Fp3_model(const my_Fp &c0, const my_Fp &c1, const my_Fp &c2)
+    {
+        this->coeffs[0] = c0;
+        this->coeffs[1] = c1;
+        this->coeffs[2] = c2;
+        return;
+    };
 
-    void clear() { coeffs[0].clear(); coeffs[1].clear(); coeffs[2].clear(); }
-    void print() const { printf("c0/c1/c2:\n"); coeffs[0].print(); coeffs[1].print(); coeffs[2].print(); }
+    void clear()
+    {
+        coeffs[0].clear();
+        coeffs[1].clear();
+        coeffs[2].clear();
+    }
+    void print() const
+    {
+        printf("c0/c1/c2:\n");
+        coeffs[0].print();
+        coeffs[1].print();
+        coeffs[2].print();
+    }
 
     static Fp3_model<n, modulus> zero();
     static Fp3_model<n, modulus> one();
     static Fp3_model<n, modulus> random_element();
 
-    bool is_zero() const { return coeffs[0].is_zero() && coeffs[1].is_zero() && coeffs[2].is_zero(); }
+    bool is_zero() const
+    {
+        return coeffs[0].is_zero() && coeffs[1].is_zero() &&
+               coeffs[2].is_zero();
+    }
     bool operator==(const Fp3_model &other) const;
     bool operator!=(const Fp3_model &other) const;
 
@@ -82,54 +103,57 @@ public:
     Fp3_model Frobenius_map(unsigned long power) const;
     Fp3_model sqrt() const; // HAS TO BE A SQUARE (else does not terminate)
 
-    template<mp_size_t m>
-    Fp3_model operator^(const bigint<m> &other) const;
+    template<mp_size_t m> Fp3_model operator^(const bigint<m> &other) const;
 
-    static size_t size_in_bits() { return 3*my_Fp::size_in_bits(); }
+    static size_t size_in_bits() { return 3 * my_Fp::size_in_bits(); }
     static bigint<n> base_field_char() { return modulus; }
     static constexpr size_t extension_degree() { return 3; }
 
-    friend std::ostream& operator<< <n, modulus>(std::ostream &out, const Fp3_model<n, modulus> &el);
-    friend std::istream& operator>> <n, modulus>(std::istream &in, Fp3_model<n, modulus> &el);
+    friend std::ostream &operator<<<n, modulus>(
+        std::ostream &out, const Fp3_model<n, modulus> &el);
+    friend std::istream &operator>>
+        <n, modulus>(std::istream &in, Fp3_model<n, modulus> &el);
 };
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::ostream& operator<<(std::ostream& out, const std::vector<Fp3_model<n, modulus> > &v);
+template<mp_size_t n, const bigint<n> &modulus>
+std::ostream &operator<<(
+    std::ostream &out, const std::vector<Fp3_model<n, modulus>> &v);
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::istream& operator>>(std::istream& in, std::vector<Fp3_model<n, modulus> > &v);
+template<mp_size_t n, const bigint<n> &modulus>
+std::istream &operator>>(
+    std::istream &in, std::vector<Fp3_model<n, modulus>> &v);
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp3_model<n, modulus> operator*(const Fp_model<n, modulus> &lhs, const Fp3_model<n, modulus> &rhs);
+template<mp_size_t n, const bigint<n> &modulus>
+Fp3_model<n, modulus> operator*(
+    const Fp_model<n, modulus> &lhs, const Fp3_model<n, modulus> &rhs);
 
-template<mp_size_t n, const bigint<n>& modulus>
-bigint<3*n> Fp3_model<n, modulus>::euler;
+template<mp_size_t n, const bigint<n> &modulus>
+bigint<3 * n> Fp3_model<n, modulus>::euler;
 
-template<mp_size_t n, const bigint<n>& modulus>
-size_t Fp3_model<n, modulus>::s;
+template<mp_size_t n, const bigint<n> &modulus> size_t Fp3_model<n, modulus>::s;
 
-template<mp_size_t n, const bigint<n>& modulus>
-bigint<3*n> Fp3_model<n, modulus>::t;
+template<mp_size_t n, const bigint<n> &modulus>
+bigint<3 * n> Fp3_model<n, modulus>::t;
 
-template<mp_size_t n, const bigint<n>& modulus>
-bigint<3*n> Fp3_model<n, modulus>::t_minus_1_over_2;
+template<mp_size_t n, const bigint<n> &modulus>
+bigint<3 * n> Fp3_model<n, modulus>::t_minus_1_over_2;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp3_model<n, modulus>::non_residue;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp3_model<n, modulus> Fp3_model<n, modulus>::nqr;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp3_model<n, modulus> Fp3_model<n, modulus>::nqr_to_t;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp3_model<n, modulus>::Frobenius_coeffs_c1[3];
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp3_model<n, modulus>::Frobenius_coeffs_c2[3];
 
-} // libff
+} // namespace libff
 #include <libff/algebra/fields/fp3.tcc>
 
 #endif // FP3_HPP_

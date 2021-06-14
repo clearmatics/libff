@@ -16,7 +16,8 @@
 
 #include <libff/common/utils.hpp>
 
-namespace libff {
+namespace libff
+{
 
 template<typename FieldT, mp_size_t m>
 FieldT power(const FieldT &base, const bigint<m> &exponent)
@@ -25,15 +26,12 @@ FieldT power(const FieldT &base, const bigint<m> &exponent)
 
     bool found_one = false;
 
-    for (long i = exponent.max_bits() - 1; i >= 0; --i)
-    {
-        if (found_one)
-        {
+    for (long i = exponent.max_bits() - 1; i >= 0; --i) {
+        if (found_one) {
             result = result * result;
         }
 
-        if (exponent.test_bit(i))
-        {
+        if (exponent.test_bit(i)) {
             found_one = true;
             result = result * base;
         }
@@ -48,6 +46,6 @@ FieldT power(const FieldT &base, const unsigned long exponent)
     return power<FieldT>(base, bigint<1>(exponent));
 }
 
-} // libff
+} // namespace libff
 
 #endif // EXPONENTIATION_TCC_

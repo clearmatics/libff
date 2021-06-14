@@ -12,13 +12,16 @@
 #include <libff/algebra/fields/fp3.hpp>
 #include <libff/algebra/fields/fp6_2over3.hpp>
 
-namespace libff {
+namespace libff
+{
 
 const mp_size_t edwards_r_bitcount = 181;
 const mp_size_t edwards_q_bitcount = 183;
 
-const mp_size_t edwards_r_limbs = (edwards_r_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
-const mp_size_t edwards_q_limbs = (edwards_q_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+const mp_size_t edwards_r_limbs =
+    (edwards_r_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
+const mp_size_t edwards_q_limbs =
+    (edwards_q_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
 
 extern bigint<edwards_r_limbs> edwards_modulus_r;
 extern bigint<edwards_q_limbs> edwards_modulus_q;
@@ -47,7 +50,7 @@ extern edwards_Fq edwards_twist_mul_by_q_Z;
 
 // parameters for pairing
 extern bigint<edwards_q_limbs> edwards_ate_loop_count;
-extern bigint<6*edwards_q_limbs> edwards_final_exponent;
+extern bigint<6 * edwards_q_limbs> edwards_final_exponent;
 extern bigint<edwards_q_limbs> edwards_final_exponent_last_chunk_abs_of_w0;
 extern bool edwards_final_exponent_last_chunk_is_w0_neg;
 extern bigint<edwards_q_limbs> edwards_final_exponent_last_chunk_w1;
@@ -57,5 +60,5 @@ void init_edwards_params();
 class edwards_G1;
 class edwards_G2;
 
-} // libff
+} // namespace libff
 #endif // EDWARDS_INIT_HPP_

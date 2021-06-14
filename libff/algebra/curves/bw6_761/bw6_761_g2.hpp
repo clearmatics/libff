@@ -1,18 +1,19 @@
 #ifndef BW6_761_G2_HPP_
 #define BW6_761_G2_HPP_
 
+#include <libff/algebra/curves/bw6_761/bw6_761_init.hpp>
+#include <libff/algebra/curves/curve_utils.hpp>
 #include <vector>
 
-#include <libff/algebra/curves/curve_utils.hpp>
-#include <libff/algebra/curves/bw6_761/bw6_761_init.hpp>
-
-namespace libff {
+namespace libff
+{
 
 class bw6_761_G2;
-std::ostream& operator<<(std::ostream &, const bw6_761_G2&);
-std::istream& operator>>(std::istream &, bw6_761_G2&);
+std::ostream &operator<<(std::ostream &, const bw6_761_G2 &);
+std::istream &operator>>(std::istream &, bw6_761_G2 &);
 
-class bw6_761_G2 {
+class bw6_761_G2
+{
 public:
 #ifdef PROFILE_OP_COUNTS
     static long long add_cnt;
@@ -31,14 +32,18 @@ public:
 
     // Cofactor
     static const mp_size_t h_bitcount = 384;
-    static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+    static const mp_size_t h_limbs =
+        (h_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
     static bigint<h_limbs> h;
 
     bw6_761_Fq X, Y, Z;
 
     // using projective coordinates
     bw6_761_G2();
-    bw6_761_G2(const bw6_761_Fq& X, const bw6_761_Fq& Y, const bw6_761_Fq& Z) : X(X), Y(Y), Z(Z) {}
+    bw6_761_G2(const bw6_761_Fq &X, const bw6_761_Fq &Y, const bw6_761_Fq &Z)
+        : X(X), Y(Y), Z(Z)
+    {
+    }
 
     static bw6_761_Fq mul_by_b(const bw6_761_Fq &elt);
 
@@ -72,8 +77,14 @@ public:
     static bw6_761_G2 random_element();
 
     static size_t size_in_bits() { return twist_field::size_in_bits() + 1; }
-    static bigint<base_field::num_limbs> base_field_char() { return base_field::field_char(); }
-    static bigint<scalar_field::num_limbs> order() { return scalar_field::field_char(); }
+    static bigint<base_field::num_limbs> base_field_char()
+    {
+        return base_field::field_char();
+    }
+    static bigint<scalar_field::num_limbs> order()
+    {
+        return scalar_field::field_char();
+    }
 
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
@@ -89,12 +100,12 @@ bw6_761_G2 operator*(const bigint<m> &lhs, const bw6_761_G2 &rhs)
     return scalar_mul<bw6_761_G2, m>(rhs, lhs);
 }
 
-template<mp_size_t m, const bigint<m>& modulus_p>
-bw6_761_G2 operator*(const Fp_model<m,modulus_p> &lhs, const bw6_761_G2 &rhs)
+template<mp_size_t m, const bigint<m> &modulus_p>
+bw6_761_G2 operator*(const Fp_model<m, modulus_p> &lhs, const bw6_761_G2 &rhs)
 {
     return scalar_mul<bw6_761_G2, m>(rhs, lhs.as_bigint());
 }
 
-} // libff
+} // namespace libff
 
 #endif // BW6_761_G2_HPP_
