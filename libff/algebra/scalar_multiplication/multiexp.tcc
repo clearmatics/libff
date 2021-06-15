@@ -32,7 +32,7 @@ namespace libff
 namespace internal
 {
 
-size_t pippenger_optimal_c(const size_t num_elements)
+inline size_t pippenger_optimal_c(const size_t num_elements)
 {
     // empirically, this seems to be a decent estimate of the optimal value of c
     const size_t log2_num_elements = log2(num_elements);
@@ -559,7 +559,7 @@ public:
 
         const size_t num_entries = bases_end - bases;
         assert(exponents_end - exponents == (ssize_t)num_entries);
-        const size_t c = internal::pippenger_optimal_c(num_entries) + 1;
+        const size_t c = bdlo12_signed_optimal_c(num_entries);
         assert(c > 0);
 
         // Pre-compute the bigint values
@@ -621,6 +621,12 @@ public:
 };
 
 } // namespace internal
+
+static inline size_t bdlo12_signed_optimal_c(size_t num_entries)
+{
+    // For now, this seems like a good estimate in most cases.
+    return internal::pippenger_optimal_c(num_entries) + 1;
+}
 
 template<
     typename GroupT,
