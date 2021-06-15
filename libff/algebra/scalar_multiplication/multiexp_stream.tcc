@@ -89,10 +89,11 @@ GroupT multi_exp_base_elements_from_fifo_all_rounds(
     }
 
     // For each digit, sum the buckets and accumulate the total
-    GroupT result = multiexp_accumulate_buckets(
-        round_buckets[num_digits - 1],
-        round_bucket_hit[num_digits - 1],
-        num_buckets);
+    GroupT result = internal::
+        multiexp_accumulate_buckets<GroupT, multi_exp_base_form_normal>(
+            round_buckets[num_digits - 1],
+            round_bucket_hit[num_digits - 1],
+            num_buckets);
     round_buckets[num_digits - 1].clear();
     round_bucket_hit[num_digits - 1].clear();
 
@@ -102,8 +103,11 @@ GroupT multi_exp_base_elements_from_fifo_all_rounds(
             result = result.dbl();
         }
 
-        const GroupT digit_sum = multiexp_accumulate_buckets(
-            round_buckets[digit_idx], round_bucket_hit[digit_idx], num_buckets);
+        const GroupT digit_sum = internal::
+            multiexp_accumulate_buckets<GroupT, multi_exp_base_form_normal>(
+                round_buckets[digit_idx],
+                round_bucket_hit[digit_idx],
+                num_buckets);
         round_buckets[digit_idx].clear();
         round_bucket_hit[digit_idx].clear();
 
