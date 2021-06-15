@@ -70,7 +70,9 @@ T multi_exp(
 
 /// A variant of multi_exp that takes advantage of the method mixed_add
 /// (instead of the operator '+'). Assumes input is in special form, and
-/// includes special pre-processing for scalars equal to 0 or 1.
+/// includes special pre-processing step to skip zeros, and sum up base
+/// elements where scalar == 1, using mixed_add. Remaining values are processed
+/// as usual via multi_exp.
 template<typename T, typename FieldT, multi_exp_method Method>
 T multi_exp_with_mixed_addition(
     typename std::vector<T>::const_iterator vec_start,

@@ -8,7 +8,7 @@ using namespace libff;
 namespace
 {
 
-template<typename GroupT>
+template<typename GroupT, multi_exp_base_form BaseForm>
 void test_multiexp_accumulate_buckets(const size_t num_buckets)
 {
     using FieldT = typename GroupT::scalar_field;
@@ -32,9 +32,14 @@ void test_multiexp_accumulate_buckets(const size_t num_buckets)
         }
     }
 
+    if (BaseForm == multi_exp_base_form_special) {
+        batch_to_special(values);
+    }
+
     // Actual value
     const GroupT actual =
-        internal::multiexp_accumulate_buckets(values, value_hit, num_buckets);
+        internal::multiexp_accumulate_buckets<GroupT, BaseForm>(
+            values, value_hit, num_buckets);
 
     ASSERT_EQ(expected, actual);
 }
@@ -151,9 +156,18 @@ void test_multiexp_inner()
 
 TEST(MultiExpTest, TestMultiExpAccumulateBuckets)
 {
-    test_multiexp_accumulate_buckets<alt_bn128_G1>(4);
-    test_multiexp_accumulate_buckets<alt_bn128_G1>(16);
-    test_multiexp_accumulate_buckets<alt_bn128_G1>(128);
+    test_multiexp_accumulate_buckets<alt_bn128_G1, multi_exp_base_form_normal>(
+        4);
+    test_multiexp_accumulate_buckets<alt_bn128_G1, multi_exp_base_form_normal>(
+        16);
+    test_multiexp_accumulate_buckets<alt_bn128_G1, multi_exp_base_form_normal>(
+        128);
+    test_multiexp_accumulate_buckets<alt_bn128_G1, multi_exp_base_form_special>(
+        4);
+    test_multiexp_accumulate_buckets<alt_bn128_G1, multi_exp_base_form_special>(
+        16);
+    test_multiexp_accumulate_buckets<alt_bn128_G1, multi_exp_base_form_special>(
+        128);
 }
 
 TEST(MultiExpTest, TestMultiExpSignedDigitsRound)
