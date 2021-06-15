@@ -123,13 +123,11 @@ GroupT multi_exp_stream(
 {
     static const size_t FIFO_SIZE = 1024;
     const size_t num_entries = exponents.size();
+    const size_t c = bdlo12_signed_optimal_c(num_entries);
+    assert(c > 0);
 
     // Fifo for streaming
     concurrent_fifo_spsc<GroupT> fifo(FIFO_SIZE);
-
-    // TODO: Better estimate of optimal c
-    const size_t c = internal::pippenger_optimal_c(num_entries) + 1;
-    assert(c > 0);
 
     // Launch the reading thread
     std::thread producer([&base_elements_in, &fifo, num_entries]() {
