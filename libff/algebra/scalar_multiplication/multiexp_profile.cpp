@@ -86,12 +86,16 @@ test_instances_t<FieldT> generate_scalars(size_t num_elements)
 
 template<form_t Form, compression_t Comp>
 std::string base_elements_filename(
-    const std::string &tag, const size_t num_elements)
+    const std::string &tag,
+    const size_t num_elements,
+    const size_t precompute_c = 0)
 {
     return std::string("multiexp_base_elements_") + tag +
            ((Form == form_plain) ? "_plain_" : "_montgomery_") +
            ((Comp == compression_on) ? "compressed_" : "uncompressed_") +
-           std::to_string(num_elements) + ".bin";
+           std::to_string(num_elements) +
+           ((precompute_c) ? "" : ("_" + std::to_string(precompute_c))) +
+           ".bin";
 }
 
 template<form_t Form, compression_t Comp, typename GroupT>
@@ -114,6 +118,38 @@ void create_base_element_file_for_config(
     std::cout << " DONE\n";
 }
 
+template<form_t Form, compression_t Comp, typename GroupT>
+void create_precompute_file_for_config(
+    const std::string &tag, const test_instances_t<GroupT> &base_elements)
+{
+    using Field = typename GroupT::scalar_field;
+    const size_t c = bdlo12_signed_optimal_c(base_elements.size());
+    const size_t entries_per_base_element = (Field::num_bits + c - 1) / c;
+
+    const std::string filename =
+        base_elements_filename<Form, Comp>(tag, base_elements.size(), c);
+
+    std::cout << "Writing file '" << filename << "' ...";
+    std::flush(std::cout);
+
+    std::ofstream out_s(
+        filename.c_str(), std::ios_base::out | std::ios_base::binary);
+    for (GroupT el : base_elements) {
+        // Write the base element itself, followed by each factor
+        group_write<encoding_binary, Form, Comp>(el, out_s);
+        for (size_t i = 0; i < entries_per_base_element - 1; ++i) {
+            // Multiply the base element by 2^c, and write
+            for (size_t j = 0; j < c; ++j) {
+                el = el.dbl();
+            }
+            group_write<encoding_binary, Form, Comp>(el, out_s);
+        }
+    }
+    out_s.close();
+
+    std::cout << " DONE\n";
+}
+
 template<typename GroupT>
 void create_base_element_files(
     const std::string &tag, const size_t num_elements)
@@ -121,6 +157,7 @@ void create_base_element_files(
     test_instances_t<GroupT> base_elements =
         generate_group_elements<GroupT>(num_elements);
     create_base_element_file_for_config<FORM, COMP>(tag, base_elements);
+    create_precompute_file_for_config<FORM, COMP>(tag, base_elements);
 }
 
 template<typename GroupT>
@@ -195,6 +232,40 @@ run_result_t<GroupT> profile_multiexp_stream(
     for (size_t iter = 0; iter < NUM_ITERATIONS; ++iter) {
         in_s.seekg(0llu);
         answer = multi_exp_stream<Form, Comp, GroupT, FieldT>(in_s, scalars);
+    }
+
+    long long time_delta = get_nsec_time() - start_time;
+
+    return run_result_t<GroupT>(time_delta, answer);
+}
+
+template<form_t Form, compression_t Comp, typename GroupT, typename FieldT>
+run_result_t<GroupT> profile_multiexp_stream_with_precompute(
+    const std::string &tag, const std::vector<FieldT> &scalars)
+{
+    const size_t num_elements = scalars.size();
+    const size_t c = bdlo12_signed_optimal_c(num_elements);
+    const std::string filename =
+        base_elements_filename<Form, Comp>(tag, num_elements, c);
+
+    struct stat s;
+    if (stat(filename.c_str(), &s)) {
+        throw std::runtime_error("no file: " + filename);
+    }
+
+    std::ifstream in_s(
+        filename.c_str(), std::ios_base::in | std::ios_base::binary);
+    in_s.exceptions(
+        std::ios_base::eofbit | std::ios_base::badbit | std::ios_base::failbit);
+
+    GroupT answer;
+
+    long long start_time = get_nsec_time();
+
+    for (size_t iter = 0; iter < NUM_ITERATIONS; ++iter) {
+        in_s.seekg(0llu);
+        answer = multi_exp_stream_with_precompute<Form, Comp, GroupT, FieldT>(
+            in_s, scalars, c);
     }
 
     long long time_delta = get_nsec_time() - start_time;
@@ -286,6 +357,18 @@ void print_performance_csv(
             (result_djb_signed_mixed.second != result_stream.second)) {
             fprintf(
                 stderr, "Answers NOT MATCHING (djb_signed_mixed != stream)\n");
+        }
+
+        run_result_t<GroupT> result_stream_precomp =
+            profile_multiexp_stream_with_precompute<FORM, COMP, GroupT, FieldT>(
+                tag, scalars);
+        printf("\t%16lld", result_stream_precomp.first);
+        fflush(stdout);
+
+        if (compare_answers &&
+            (result_stream.second != result_stream_precomp.second)) {
+            fprintf(
+                stderr, "Answers NOT MATCHING (stream != stream_precomp)\n");
         }
 
         if (expn <= expn_end_naive) {

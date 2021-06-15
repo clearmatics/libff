@@ -146,6 +146,15 @@ GroupT multi_exp_stream(
     return result;
 }
 
+template<form_t Form, compression_t Comp, typename GroupT, typename FieldT>
+GroupT multi_exp_stream_with_precompute(
+    std::istream &base_elements_in,
+    const std::vector<FieldT> &exponents,
+    const size_t precompute_c)
+{
+    return GroupT::zero();
+}
+
 } // namespace libff
 
 #endif // MULTIEXP_STREAM_TCC_

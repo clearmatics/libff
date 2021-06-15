@@ -26,6 +26,21 @@ template<form_t Form, compression_t Comp, typename GroupT, typename FieldT>
 GroupT multi_exp_stream(
     std::istream &base_elements_in, const std::vector<FieldT> &exponents);
 
+/// Perform optimal multiexp using precomputed elements from a stream. The
+/// stream is expected to be formatted as follows:
+///   For each original base element e_i:
+///     e_i, [2^c] e_i, [2^2c] e_i, .... [2^(b-1)c] e_i
+/// where c is the digit size (in bits) to be used in the BDLO12_signed
+/// algorithm, and b = (FieldT::num_bits + c - 1) / c is the number of digits
+/// required to fully represent a scalar value.
+///
+/// Optimal c can be computed with bdlo12_signed_optimal_c().
+template<form_t Form, compression_t Comp, typename GroupT, typename FieldT>
+GroupT multi_exp_stream_with_precompute(
+    std::istream &precomputed_elements_in,
+    const std::vector<FieldT> &exponents,
+    const size_t precompute_c);
+
 } // namespace libff
 
 #include "libff/algebra/scalar_multiplication/multiexp_stream.tcc"
