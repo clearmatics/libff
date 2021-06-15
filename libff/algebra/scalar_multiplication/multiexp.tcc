@@ -46,7 +46,7 @@ size_t pippenger_optimal_c(const size_t num_elements)
 ///
 /// Caller must ensure that at least one bucket is not empty (i.e.
 /// bucket_hit[i] == true for at least one i).
-template<typename GroupT>
+template<typename GroupT, multi_exp_base_form Form>
 GroupT multiexp_accumulate_buckets(
     std::vector<GroupT> &buckets,
     std::vector<bool> &bucket_hit,
@@ -71,7 +71,11 @@ GroupT multiexp_accumulate_buckets(
     while (i > 0) {
         --i;
         if (bucket_hit[i]) {
-            accumulator = accumulator + buckets[i];
+            if (Form == multi_exp_base_form_special) {
+                accumulator = accumulator.mixed_add(buckets[i]);
+            } else {
+                accumulator = accumulator + buckets[i];
+            }
         }
         sum = sum + accumulator;
     }
@@ -539,7 +543,10 @@ public:
             return GroupT::zero();
         }
 
-        return multiexp_accumulate_buckets(buckets, bucket_hit, num_buckets);
+        // TODO: consider converting buckets to special form
+
+        return multiexp_accumulate_buckets<GroupT, multi_exp_base_form_normal>(
+            buckets, bucket_hit, num_buckets);
     }
 
     static GroupT multi_exp_inner(
