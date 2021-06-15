@@ -10,6 +10,7 @@
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
+#include <libff/algebra/fields/field_utils.hpp>
 #include <libff/common/profiling.hpp>
 #ifdef CURVE_BN128
 #include <libff/algebra/curves/bn128/bn128_pp.hpp>
@@ -277,6 +278,118 @@ template<typename Fp12T> void test_Fp12_2over3over2_mul_by_024()
     ASSERT_EQ(result_slow, result_mul_024);
 }
 
+void test_field_get_digit_alt_bn128()
+{
+    using FieldT = Fr<alt_bn128_pp>;
+
+    {
+        // 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000
+        const auto value = FieldT(-1).as_bigint();
+
+        // 127 -> 0, 126 -> 3, 125 -> 0
+        ASSERT_EQ(0, field_get_digit(value, 2, 127));
+        ASSERT_EQ(3, field_get_digit(value, 2, 126));
+        ASSERT_EQ(0, field_get_digit(value, 2, 125));
+    }
+
+    {
+        // 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000
+        const auto value = FieldT(-1).as_bigint();
+
+        ASSERT_EQ(0x3064, field_get_digit(value, 16, 15));
+        ASSERT_EQ(0x4e72, field_get_digit(value, 16, 14));
+        ASSERT_EQ(0xe131, field_get_digit(value, 16, 13));
+        ASSERT_EQ(0xa029, field_get_digit(value, 16, 12));
+        ASSERT_EQ(0xb850, field_get_digit(value, 16, 11));
+        ASSERT_EQ(0x45b6, field_get_digit(value, 16, 10));
+        ASSERT_EQ(0x8181, field_get_digit(value, 16, 9));
+        ASSERT_EQ(0x585d, field_get_digit(value, 16, 8));
+        ASSERT_EQ(0x2833, field_get_digit(value, 16, 7));
+        ASSERT_EQ(0xe848, field_get_digit(value, 16, 6));
+        ASSERT_EQ(0x79b9, field_get_digit(value, 16, 5));
+        ASSERT_EQ(0x7091, field_get_digit(value, 16, 4));
+        ASSERT_EQ(0x43e1, field_get_digit(value, 16, 3));
+        ASSERT_EQ(0xf593, field_get_digit(value, 16, 2));
+        ASSERT_EQ(0xf000, field_get_digit(value, 16, 1));
+        ASSERT_EQ(0x0000, field_get_digit(value, 16, 0));
+    }
+
+    {
+        // 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000
+        const auto value = FieldT(-1).as_bigint();
+
+        ASSERT_EQ(0x003, field_get_digit(value, 12, 21));
+        ASSERT_EQ(0x064, field_get_digit(value, 12, 20));
+        ASSERT_EQ(0x4e7, field_get_digit(value, 12, 19));
+        ASSERT_EQ(0x2e1, field_get_digit(value, 12, 18));
+        ASSERT_EQ(0x31a, field_get_digit(value, 12, 17));
+        ASSERT_EQ(0x029, field_get_digit(value, 12, 16));
+        ASSERT_EQ(0xb85, field_get_digit(value, 12, 15));
+        ASSERT_EQ(0x045, field_get_digit(value, 12, 14));
+        ASSERT_EQ(0xb68, field_get_digit(value, 12, 13));
+        ASSERT_EQ(0x181, field_get_digit(value, 12, 12));
+        ASSERT_EQ(0x585, field_get_digit(value, 12, 11));
+        ASSERT_EQ(0xd28, field_get_digit(value, 12, 10));
+        ASSERT_EQ(0x33e, field_get_digit(value, 12, 9));
+        ASSERT_EQ(0x848, field_get_digit(value, 12, 8));
+        ASSERT_EQ(0x79b, field_get_digit(value, 12, 7));
+        ASSERT_EQ(0x970, field_get_digit(value, 12, 6));
+        ASSERT_EQ(0x914, field_get_digit(value, 12, 5));
+        ASSERT_EQ(0x3e1, field_get_digit(value, 12, 4));
+        ASSERT_EQ(0xf59, field_get_digit(value, 12, 3));
+        ASSERT_EQ(0x3f0, field_get_digit(value, 12, 2));
+        ASSERT_EQ(0x000, field_get_digit(value, 12, 1));
+        ASSERT_EQ(0x000, field_get_digit(value, 12, 0));
+    }
+}
+
+template<typename FieldT>
+void do_test_signed_digits(const FieldT &value, const size_t digit_size)
+{
+    // The digits should satisfy:
+    //   -2^{digit_size - 1} \leq digit \lt 2^{digit_size - 1}.
+    const ssize_t digit_max = 1 << (digit_size - 1);
+    const ssize_t digit_min = -digit_max;
+
+    // Num digits must include an extra bit for overflow.
+    const size_t num_digits =
+        (FieldT::num_bits + 1 + digit_size - 1) / digit_size;
+
+    const auto v = value.as_bigint();
+
+    // Compute
+    //   \sum_{i=0}^{n-1} 2^{c * i} * d_i
+    // where
+    //   n = num_digits,
+    //   c = digit size and
+    //   d_i = i-th signed digit of size c
+    FieldT accum = FieldT::zero();
+    for (size_t i = 0; i < num_digits; ++i) {
+        accum = accum * FieldT((long)1 << digit_size);
+        ssize_t digit =
+            field_get_signed_digit(v, digit_size, num_digits - 1 - i);
+        accum = accum + FieldT((long)digit);
+
+        // Assert digit value range
+        ASSERT_LE(digit_min, digit);
+        ASSERT_LT(digit, digit_max);
+
+        if (digit < 0) {
+            digit = -digit;
+        }
+    }
+
+    ASSERT_EQ(v, accum.as_bigint());
+}
+
+template<typename FieldT> void test_signed_digits()
+{
+    for (size_t i = 2; i < 22; ++i) {
+        do_test_signed_digits(FieldT(-1), i);
+        do_test_signed_digits(FieldT(-2), i);
+    }
+}
+
 TEST(FieldsTest, Edwards)
 {
     edwards_pp::init_public_params();
@@ -307,6 +420,9 @@ TEST(FieldsTest, ALT_BN128)
     test_Frobenius<alt_bn128_Fq6>();
     test_all_fields<alt_bn128_pp>();
     test_Fp12_2over3over2_mul_by_024<alt_bn128_Fq12>();
+    test_signed_digits<alt_bn128_Fr>();
+
+    test_field_get_digit_alt_bn128();
 }
 
 TEST(FieldsTest, BLS12_377)
@@ -315,6 +431,7 @@ TEST(FieldsTest, BLS12_377)
     test_field<bls12_377_Fq6>();
     test_all_fields<bls12_377_pp>();
     test_Fp12_2over3over2_mul_by_024<bls12_377_Fq12>();
+    test_signed_digits<bls12_377_Fr>();
 }
 
 #ifdef CURVE_BN128 // BN128 has fancy dependencies so it may be disabled
