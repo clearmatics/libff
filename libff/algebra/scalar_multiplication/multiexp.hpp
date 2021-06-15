@@ -50,6 +50,12 @@ enum multi_exp_base_form {
     multi_exp_base_form_special,
 };
 
+/// Optimal value of digit size (commonly refered to as c here) for
+/// BDLO12-style algorithms which use signed digits. In general, this is used
+/// internally by the routines here, but is useful externally in some cases
+/// (for example where precomputing must be performed).
+static inline size_t bdlo12_signed_optimal_c(size_t num_entries);
+
 /// Computes the sum:
 ///   \sum_i scalar_start[i] * vec_start[i]
 /// using the selected method. Input is split into the given number of chunks,
