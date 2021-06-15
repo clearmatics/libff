@@ -53,7 +53,7 @@ GroupT multi_exp_base_elements_from_fifo_all_rounds(
     // Process each element
     for (size_t el_idx = 0; el_idx < num_entries; ++el_idx) {
         // Decompose the scalar, and wait for an element from the fifo
-        fixed_wnaf_digits(digits, exponents[el_idx], c, num_digits);
+        field_get_signed_digits(digits, exponents[el_idx], c, num_digits);
         const GroupT &group_element = *(fifo.dequeue_begin_wait());
 
         // Process all digits
