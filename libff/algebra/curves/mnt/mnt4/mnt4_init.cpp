@@ -151,6 +151,7 @@ void init_mnt4_params()
     mnt4_Fq2::Frobenius_coeffs_c1[1] =
         mnt4_Fq("47592228616926132575334924965304845154512487924269472539555512"
                 "8576210262817955800483758080");
+    mnt4_Fq2::static_init();
 
     /* parameters for Fq4 */
     mnt4_Fq4::non_residue = mnt4_Fq("17");

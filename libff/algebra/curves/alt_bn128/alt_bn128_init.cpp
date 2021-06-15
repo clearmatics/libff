@@ -148,6 +148,7 @@ void init_alt_bn128_params()
     alt_bn128_Fq2::Frobenius_coeffs_c1[1] =
         alt_bn128_Fq("218882428718392752222464057452572750886963111572978236626"
                      "89037894645226208582");
+    alt_bn128_Fq2::static_init();
 
     /* parameters for Fq6 */
     alt_bn128_Fq6::non_residue =

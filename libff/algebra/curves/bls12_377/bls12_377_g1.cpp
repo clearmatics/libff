@@ -408,9 +408,9 @@ bls12_377_G1 bls12_377_G1::proof_of_safe_subgroup() const
                bls12_377_Fq::one());
 }
 
-bls12_377_G1 bls12_377_G1::zero() { return G1_zero; }
+const bls12_377_G1 &bls12_377_G1::zero() { return G1_zero; }
 
-bls12_377_G1 bls12_377_G1::one() { return G1_one; }
+const bls12_377_G1 &bls12_377_G1::one() { return G1_one; }
 
 bls12_377_G1 bls12_377_G1::random_element()
 {

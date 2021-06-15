@@ -66,8 +66,8 @@ public:
 
     bool is_well_formed() const;
 
-    static edwards_G1 zero();
-    static edwards_G1 one();
+    static const edwards_G1 &zero();
+    static const edwards_G1 &one();
     static edwards_G1 random_element();
 
     static size_t size_in_bits() { return edwards_Fq::size_in_bits() + 1; }

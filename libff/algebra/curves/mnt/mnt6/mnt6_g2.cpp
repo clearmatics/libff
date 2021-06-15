@@ -470,9 +470,9 @@ bool mnt6_G2::is_in_safe_subgroup() const
     return zero() == scalar_field::mod * (*this);
 }
 
-mnt6_G2 mnt6_G2::zero() { return G2_zero; }
+const mnt6_G2 &mnt6_G2::zero() { return G2_zero; }
 
-mnt6_G2 mnt6_G2::one() { return G2_one; }
+const mnt6_G2 &mnt6_G2::one() { return G2_one; }
 
 mnt6_G2 mnt6_G2::random_element()
 {

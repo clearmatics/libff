@@ -40,6 +40,8 @@ public:
     // by invoking the `size()` method on the `coeffs` container.
     static const size_t tower_extension_degree = 2;
 
+    static void static_init();
+
     // (modulus^2-1)/2
     static bigint<2 * n> euler;
     // modulus^2 = 2^s * t + 1
@@ -80,8 +82,8 @@ public:
         coeffs[1].print();
     }
 
-    static Fp2_model<n, modulus> zero();
-    static Fp2_model<n, modulus> one();
+    static const Fp2_model<n, modulus> &zero();
+    static const Fp2_model<n, modulus> &one();
     static Fp2_model<n, modulus> random_element();
 
     bool is_zero() const { return coeffs[0].is_zero() && coeffs[1].is_zero(); }
@@ -106,6 +108,11 @@ public:
     static size_t size_in_bits() { return 2 * my_Fp::size_in_bits(); }
     static bigint<n> base_field_char() { return modulus; }
     static constexpr size_t extension_degree() { return 2; }
+
+protected:
+    static bool s_initialized;
+    static Fp2_model<n, modulus> s_zero;
+    static Fp2_model<n, modulus> s_one;
 
     friend std::ostream &operator<<<n, modulus>(
         std::ostream &out, const Fp2_model<n, modulus> &el);

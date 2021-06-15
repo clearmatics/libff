@@ -16,15 +16,39 @@ namespace libff
 {
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp2_model<n, modulus> Fp2_model<n, modulus>::zero()
+bool Fp2_model<n, modulus>::s_initialized = false;
+
+template<mp_size_t n, const bigint<n> &modulus>
+Fp2_model<n, modulus> Fp2_model<n, modulus>::s_zero;
+
+template<mp_size_t n, const bigint<n> &modulus>
+Fp2_model<n, modulus> Fp2_model<n, modulus>::s_one;
+
+template<mp_size_t n, const bigint<n> &modulus>
+void Fp2_model<n, modulus>::static_init()
 {
-    return Fp2_model<n, modulus>(my_Fp::zero(), my_Fp::zero());
+    // This function may be entered several times, in particular where an
+    // individual field is shread between curves.
+    if (s_initialized) {
+        return;
+    }
+
+    // Initialize s_zero and s_one
+    s_zero = Fp2_model<n, modulus>(my_Fp::zero(), my_Fp::zero());
+    s_one = Fp2_model<n, modulus>(my_Fp::one(), my_Fp::zero());
+    s_initialized = true;
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp2_model<n, modulus> Fp2_model<n, modulus>::one()
+const Fp2_model<n, modulus> &Fp2_model<n, modulus>::zero()
 {
-    return Fp2_model<n, modulus>(my_Fp::one(), my_Fp::zero());
+    return s_zero;
+}
+
+template<mp_size_t n, const bigint<n> &modulus>
+const Fp2_model<n, modulus> &Fp2_model<n, modulus>::one()
+{
+    return s_one;
 }
 
 template<mp_size_t n, const bigint<n> &modulus>

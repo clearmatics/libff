@@ -424,9 +424,9 @@ bool mnt4_G1::is_well_formed() const
 
 bool mnt4_G1::is_in_safe_subgroup() const { return true; }
 
-mnt4_G1 mnt4_G1::zero() { return G1_zero; }
+const mnt4_G1 &mnt4_G1::zero() { return G1_zero; }
 
-mnt4_G1 mnt4_G1::one() { return G1_one; }
+const mnt4_G1 &mnt4_G1::one() { return G1_one; }
 
 mnt4_G1 mnt4_G1::random_element()
 {
