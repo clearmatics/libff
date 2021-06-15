@@ -64,7 +64,7 @@ template<
     typename T,
     typename FieldT,
     multi_exp_method Method,
-    multi_exp_base_form BaseForm>
+    multi_exp_base_form BaseForm = multi_exp_base_form_normal>
 T multi_exp(
     typename std::vector<T>::const_iterator vec_start,
     typename std::vector<T>::const_iterator vec_end,
