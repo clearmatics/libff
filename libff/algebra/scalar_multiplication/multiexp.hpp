@@ -72,13 +72,15 @@ T multi_exp(
     typename std::vector<FieldT>::const_iterator scalar_end,
     const size_t chunks);
 
-/// A variant of multi_exp that takes advantage of the method mixed_add
-/// (instead of the operator '+'). Assumes input is in special form, and
-/// includes special pre-processing step to skip zeros, and sum up base
-/// elements where scalar == 1, using mixed_add. Remaining values are processed
-/// as usual via multi_exp.
-template<typename T, typename FieldT, multi_exp_method Method>
-T multi_exp_with_mixed_addition(
+/// A variant of multi_exp which includes special pre-processing step to skip
+/// zeros, and directly sum base elements with factor 1. Remaining values are
+/// processed as usual via multi_exp.
+template<
+    typename T,
+    typename FieldT,
+    multi_exp_method Method,
+    multi_exp_base_form BaseForm = multi_exp_base_form_normal>
+T multi_exp_filter_one_zero(
     typename std::vector<T>::const_iterator vec_start,
     typename std::vector<T>::const_iterator vec_end,
     typename std::vector<FieldT>::const_iterator scalar_start,
