@@ -30,6 +30,8 @@ public:
     concurrent_fifo_spsc(size_t capacity);
     ~concurrent_fifo_spsc();
 
+    size_t capacity() const;
+
     /// Producer must call this until it succeeds (returns a non-null pointer),
     /// and then write values at the returned address before calling
     /// enqueue_end().

@@ -16,18 +16,16 @@ using namespace libff;
 namespace
 {
 
-TEST(CommonTests, ConcurrentFifoTest)
+static void test_concurrent_fifo(
+    const size_t queue_size, const size_t total_num_values)
 {
-    static const size_t QUEUE_SIZE = 1024;
-    static const size_t TOTAL_NUM_VALUES = 32 * 1024 * 1024;
-
-    concurrent_fifo_spsc<size_t> fifo(QUEUE_SIZE);
+    concurrent_fifo_spsc<size_t> fifo(queue_size);
     size_t producer_blocks = 0;
     size_t consumer_blocks = 0;
 
     // thread to enqueue values in sequence
-    auto fill_fn = [&fifo, &producer_blocks]() {
-        for (size_t i = 0; i < TOTAL_NUM_VALUES; ++i) {
+    auto fill_fn = [&fifo, &producer_blocks, total_num_values]() {
+        for (size_t i = 0; i < total_num_values; ++i) {
             size_t *dest = fifo.try_enqueue_begin();
             if (!dest) {
                 ++producer_blocks;
@@ -44,7 +42,7 @@ TEST(CommonTests, ConcurrentFifoTest)
 
     std::thread filler(fill_fn);
 
-    for (size_t i = 0; i < TOTAL_NUM_VALUES; ++i) {
+    for (size_t i = 0; i < total_num_values; ++i) {
         const size_t *src = fifo.try_dequeue_begin();
         if (!src) {
             ++consumer_blocks;
@@ -60,8 +58,18 @@ TEST(CommonTests, ConcurrentFifoTest)
 
     filler.join();
 
-    std::cout << "producer_blocks: " << producer_blocks
-              << ", consumer_blocks: " << consumer_blocks << "\n";
+    // Uncomment to print contention stats
+    // std::cout << "producer_blocks: " << producer_blocks
+    //           << ", consumer_blocks: " << consumer_blocks << "\n";
+}
+
+TEST(CommonTests, ConcurrentFifoTest)
+{
+    // Many values, high contention
+    test_concurrent_fifo(2, 1024 * 1024);
+
+    // Larger queue, high throughpu
+    test_concurrent_fifo(32, 8 * 1024 * 1024);
 }
 
 } // namespace
