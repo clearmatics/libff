@@ -18,6 +18,8 @@
 namespace libff
 {
 
+// concurrent_fifo_spsc
+
 template<typename T>
 concurrent_fifo_spsc<T>::concurrent_fifo_spsc(size_t capacity)
     : _capacity(capacity)
@@ -32,6 +34,11 @@ concurrent_fifo_spsc<T>::concurrent_fifo_spsc(size_t capacity)
 template<typename T> concurrent_fifo_spsc<T>::~concurrent_fifo_spsc()
 {
     free(_buffer);
+}
+
+template<typename T> size_t concurrent_fifo_spsc<T>::capacity() const
+{
+    return _capacity;
 }
 
 template<typename T> T *concurrent_fifo_spsc<T>::try_enqueue_begin()
