@@ -676,8 +676,12 @@ GroupT multi_exp(
     return final;
 }
 
-template<typename GroupT, typename FieldT, multi_exp_method Method>
-GroupT multi_exp_with_mixed_addition(
+template<
+    typename GroupT,
+    typename FieldT,
+    multi_exp_method Method,
+    multi_exp_base_form BaseForm>
+GroupT multi_exp_filter_one_zero(
     typename std::vector<GroupT>::const_iterator vec_start,
     typename std::vector<GroupT>::const_iterator vec_end,
     typename std::vector<FieldT>::const_iterator scalar_start,
@@ -692,8 +696,6 @@ GroupT multi_exp_with_mixed_addition(
     auto value_it = vec_start;
     auto scalar_it = scalar_start;
 
-    const FieldT zero = FieldT::zero();
-    const FieldT one = FieldT::one();
     std::vector<FieldT> p;
     std::vector<GroupT> g;
 
@@ -704,15 +706,15 @@ GroupT multi_exp_with_mixed_addition(
     size_t num_other = 0;
 
     for (; scalar_it != scalar_end; ++scalar_it, ++value_it) {
-        if (*scalar_it == zero) {
+        if (scalar_it->is_zero()) {
             // do nothing
             ++num_skip;
-        } else if (*scalar_it == one) {
-#ifdef USE_MIXED_ADDITION
-            acc = acc.mixed_add(*value_it);
-#else
-            acc = acc + (*value_it);
-#endif
+        } else if (*scalar_it == FieldT::one()) {
+            if (BaseForm == multi_exp_base_form_special) {
+                acc = acc.mixed_add(*value_it);
+            } else {
+                acc = acc + (*value_it);
+            }
             ++num_add;
         } else {
             p.emplace_back(*scalar_it);
@@ -720,6 +722,7 @@ GroupT multi_exp_with_mixed_addition(
             ++num_other;
         }
     }
+
     print_indent();
     printf(
         "* Elements of w skipped: %zu (%0.2f%%)\n",
@@ -738,7 +741,7 @@ GroupT multi_exp_with_mixed_addition(
 
     leave_block("Process scalar vector");
 
-    return acc + multi_exp<GroupT, FieldT, Method, multi_exp_base_form_special>(
+    return acc + multi_exp<GroupT, FieldT, Method, BaseForm>(
                      g.begin(), g.end(), p.begin(), p.end(), chunks);
 }
 
