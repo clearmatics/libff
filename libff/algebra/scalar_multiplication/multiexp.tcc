@@ -39,6 +39,47 @@ inline size_t pippenger_optimal_c(const size_t num_elements)
     return log2_num_elements - (log2_num_elements / 3 - 2);
 }
 
+/// Add/subtract base_element to/from the correct bucket, based on a signed
+/// digit, using and updating the bucket_hit flags. Supports regular / mixed
+/// addition, based on base element form.
+template<typename GroupT, multi_exp_base_form BaseForm>
+void multi_exp_add_element_to_bucket_with_signed_digit(
+    std::vector<GroupT> &buckets,
+    std::vector<bool> &bucket_hit,
+    const GroupT &base_element,
+    ssize_t digit)
+{
+    if (digit < 0) {
+        const size_t bucket_idx = (-digit) - 1;
+        assert(bucket_idx < buckets.size());
+        if (bucket_hit[bucket_idx]) {
+            if (BaseForm == multi_exp_base_form_special) {
+                buckets[bucket_idx] =
+                    buckets[bucket_idx].mixed_add(-base_element);
+            } else {
+                buckets[bucket_idx] = buckets[bucket_idx].add(-base_element);
+            }
+        } else {
+            buckets[bucket_idx] = -base_element;
+            bucket_hit[bucket_idx] = true;
+        }
+    } else if (digit > 0) {
+        const size_t bucket_idx = digit - 1;
+        assert(bucket_idx < buckets.size());
+        if (bucket_hit[bucket_idx]) {
+            if (BaseForm == multi_exp_base_form_special) {
+                buckets[bucket_idx] =
+                    buckets[bucket_idx].mixed_add(base_element);
+            } else {
+                buckets[bucket_idx] = buckets[bucket_idx].add(base_element);
+            }
+        } else {
+            buckets[bucket_idx] = base_element;
+            bucket_hit[bucket_idx] = true;
+        }
+    }
+}
+
 /// Compute:
 ///   \sum_{i=1}^{num_buckets} [i] B_i
 /// where
@@ -495,7 +536,7 @@ public:
         bucket_hit.assign(num_buckets, false);
 
         // For each scalar, element pair ...
-        size_t num_buckets_initialized = 0;
+        size_t non_zero = 0;
         for (size_t i = 0; i < num_entries; ++i) {
             const ssize_t digit =
                 field_get_signed_digit(exponents[i], c, digit_idx);
@@ -503,43 +544,13 @@ public:
                 continue;
             }
 
-            // Unroll each branch, to avoid copying the group elements.
-            if (digit < 0) {
-                const size_t bucket_idx = (-digit) - 1;
-                assert(bucket_idx < num_buckets);
-                if (bucket_hit[bucket_idx]) {
-                    if (BaseForm == multi_exp_base_form_special) {
-                        buckets[bucket_idx] =
-                            buckets[bucket_idx].mixed_add(-bases[i]);
-                    } else {
-                        buckets[bucket_idx] =
-                            buckets[bucket_idx].add(-bases[i]);
-                    }
-                } else {
-                    buckets[bucket_idx] = -bases[i];
-                    bucket_hit[bucket_idx] = true;
-                    ++num_buckets_initialized;
-                }
-            } else {
-                const size_t bucket_idx = digit - 1;
-                assert(bucket_idx < num_buckets);
-                if (bucket_hit[bucket_idx]) {
-                    if (BaseForm == multi_exp_base_form_special) {
-                        buckets[bucket_idx] =
-                            buckets[bucket_idx].mixed_add(bases[i]);
-                    } else {
-                        buckets[bucket_idx] = buckets[bucket_idx].add(bases[i]);
-                    }
-                } else {
-                    buckets[bucket_idx] = bases[i];
-                    bucket_hit[bucket_idx] = true;
-                    ++num_buckets_initialized;
-                }
-            }
+            multi_exp_add_element_to_bucket_with_signed_digit<GroupT, BaseForm>(
+                buckets, bucket_hit, bases[i], digit);
+            ++non_zero;
         }
 
         // Check up-front for the edge-case where no buckets have been touched.
-        if (num_buckets_initialized == 0) {
+        if (non_zero == 0) {
             return GroupT::zero();
         }
 
