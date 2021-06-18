@@ -14,35 +14,6 @@
 namespace libff
 {
 
-// TODO: parameterize by base element form and use everywhere.
-template<typename GroupT>
-void mixed_add_element_to_bucket_with_signed_digit(
-    std::vector<GroupT> &buckets,
-    std::vector<bool> &bucket_hit,
-    const GroupT &base_element,
-    ssize_t digit)
-{
-    if (digit < 0) {
-        const size_t bucket_idx = (-digit) - 1;
-        assert(bucket_idx < buckets.size());
-        if (bucket_hit[bucket_idx]) {
-            buckets[bucket_idx] = buckets[bucket_idx].mixed_add(-base_element);
-        } else {
-            buckets[bucket_idx] = -base_element;
-            bucket_hit[bucket_idx] = true;
-        }
-    } else if (digit > 0) {
-        const size_t bucket_idx = digit - 1;
-        assert(bucket_idx < buckets.size());
-        if (bucket_hit[bucket_idx]) {
-            buckets[bucket_idx] = buckets[bucket_idx].mixed_add(base_element);
-        } else {
-            buckets[bucket_idx] = base_element;
-            bucket_hit[bucket_idx] = true;
-        }
-    }
-}
-
 template<form_t Form, compression_t Comp, typename GroupT>
 void elements_from_stream_producer(
     std::istream &in_s,
@@ -112,27 +83,10 @@ GroupT multi_exp_base_elements_from_fifo_all_rounds(
             std::vector<bool> &bucket_hit = round_bucket_hit[digit_idx];
             const ssize_t digit = digits[digit_idx];
 
-            if (digit < 0) {
-                const size_t bucket_idx = (-digit) - 1;
-                assert(bucket_idx < num_buckets);
-                if (bucket_hit[bucket_idx]) {
-                    buckets[bucket_idx] =
-                        buckets[bucket_idx].mixed_add(-group_element);
-                } else {
-                    buckets[bucket_idx] = -group_element;
-                    bucket_hit[bucket_idx] = true;
-                }
-            } else if (digit > 0) {
-                const size_t bucket_idx = digit - 1;
-                assert(bucket_idx < num_buckets);
-                if (bucket_hit[bucket_idx]) {
-                    buckets[bucket_idx] =
-                        buckets[bucket_idx].mixed_add(group_element);
-                } else {
-                    buckets[bucket_idx] = group_element;
-                    bucket_hit[bucket_idx] = true;
-                }
-            }
+            internal::multi_exp_add_element_to_bucket_with_signed_digit<
+                GroupT,
+                multi_exp_base_form_special>(
+                buckets, bucket_hit, group_element, digit);
         }
 
         fifo.dequeue_end();
@@ -192,7 +146,9 @@ GroupT multi_exp_precompute_from_fifo(
 
         // Process all digits, using the preceomputed data
         for (size_t digit_idx = 0; digit_idx < num_digits; ++digit_idx) {
-            mixed_add_element_to_bucket_with_signed_digit(
+            internal::multi_exp_add_element_to_bucket_with_signed_digit<
+                GroupT,
+                multi_exp_base_form_special>(
                 buckets, bucket_hit, precomputed[digit_idx], digits[digit_idx]);
         }
 
