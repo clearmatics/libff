@@ -7,6 +7,7 @@
 #include <exception>
 #include <fcntl.h>
 #include <fstream>
+#include <map>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <thread>
@@ -68,7 +69,8 @@ template<
     typename GroupT,
     form_t Form = form_montgomery,
     compression_t Comp = compression_off>
-bool profile_group_read_sequential_uncompressed(const std::string &identifier)
+void profile_group_read_sequential_uncompressed(
+    const std::string &identifier, const size_t)
 {
     const std::string filename = get_filename(identifier);
 
@@ -96,8 +98,6 @@ bool profile_group_read_sequential_uncompressed(const std::string &identifier)
 
         in_s.close();
     }
-
-    return true;
 }
 
 template<
@@ -153,7 +153,7 @@ template<
     form_t Form = form_montgomery,
     compression_t Comp = compression_off>
 void profile_group_read_random_seek_ordered_uncompressed(
-    const std::string &identifier)
+    const std::string &identifier, const size_t interval)
 {
     const std::string filename = get_filename(identifier);
 
@@ -172,8 +172,7 @@ void profile_group_read_random_seek_ordered_uncompressed(
             std::ios_base::failbit);
 
         const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
-        const size_t element_interval_bytes =
-            element_size_on_disk * NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ;
+        const size_t element_interval_bytes = element_size_on_disk * interval;
         {
             enter_block("Read group elements profiling");
             for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
@@ -191,7 +190,7 @@ void profile_group_read_random_seek_ordered_uncompressed(
 
 template<typename GroupT>
 void profile_group_read_random_seek_fd_uncompressed(
-    const std::string &identifier)
+    const std::string &identifier, const size_t)
 {
     const std::string filename = get_filename(identifier);
 
@@ -238,7 +237,7 @@ void profile_group_read_random_seek_fd_uncompressed(
 
 template<typename GroupT>
 void profile_group_read_random_seek_fd_ordered_uncompressed(
-    const std::string &identifier)
+    const std::string &identifier, const size_t)
 {
     const std::string filename = get_filename(identifier);
 
@@ -277,70 +276,62 @@ void profile_group_read_random_seek_fd_ordered_uncompressed(
 
 template<typename GroupT>
 void profile_group_read_random_seek_mmap_ordered_uncompressed(
-    const std::string &identifier)
+    const std::string &identifier, const size_t interval)
 {
     const std::string filename = get_filename(identifier);
 
     // Read sparse elements from a mem-mapped file, ensuring we always proceed
     // forwards.
 
-    for (size_t interval = 1; interval < MAX_SPARSE_ELEMENT_INTERVAL;
-         interval *= 2) {
+    // Measure time taken to read the file
+    std::cout << "  Random Access MMap (Ordered) '" << filename.c_str() << "' ("
+              << NUM_ELEMENTS_TO_READ << " elements, interval: " << interval
+              << ") ...\n";
+    {
+        std::vector<GroupT> elements;
+        elements.resize(NUM_DIFFERENT_ELEMENTS);
 
-        // Measure time taken to read the file
-        std::cout << "  Random Access MMap (Ordered) '" << filename.c_str()
-                  << "' (" << NUM_ELEMENTS_TO_READ << " elements of "
-                  << (interval * NUM_ELEMENTS_TO_READ) << ") ...\n";
-        {
-            std::vector<GroupT> elements;
-            elements.resize(NUM_DIFFERENT_ELEMENTS);
+        const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
+        const size_t file_size = NUM_ELEMENTS_IN_FILE * element_size_on_disk;
 
-            const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
-            const size_t file_size =
-                NUM_ELEMENTS_IN_FILE * element_size_on_disk;
-
-            int fd = open(filename.c_str(), O_RDONLY);
-            if (fd < 0) {
-                throw std::runtime_error("failed to open " + filename);
-            }
-
-            const void *file_base = mmap(
-                nullptr,
-                file_size,
-                PROT_READ,
-                MAP_PRIVATE /* | MAP_NOCACHE */,
-                fd,
-                0);
-            if (MAP_FAILED == file_base) {
-                throw std::runtime_error(
-                    std::string("mmap failed: ") + strerror(errno));
-            }
-
-            const size_t element_interval_bytes =
-                element_size_on_disk * interval;
-
-            {
-                enter_block("Read group elements profiling");
-                for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
-                    const size_t different_element_idx =
-                        i % NUM_DIFFERENT_ELEMENTS;
-                    const size_t offset = i * element_interval_bytes;
-                    GroupT &dest_element = elements[different_element_idx];
-                    const GroupT *src =
-                        (const GroupT *)(const void
-                                             *)((size_t)file_base + offset);
-
-                    dest_element.X = src->X;
-                    dest_element.Y = src->Y;
-                }
-                leave_block("Read group elements profiling");
-            }
-
-            if (0 != munmap((void *)file_base, file_size)) {
-                throw std::runtime_error("munmap failed");
-            }
-            close(fd);
+        int fd = open(filename.c_str(), O_RDONLY);
+        if (fd < 0) {
+            throw std::runtime_error("failed to open " + filename);
         }
+
+        const void *file_base = mmap(
+            nullptr,
+            file_size,
+            PROT_READ,
+            MAP_PRIVATE /* | MAP_NOCACHE */,
+            fd,
+            0);
+        if (MAP_FAILED == file_base) {
+            throw std::runtime_error(
+                std::string("mmap failed: ") + strerror(errno));
+        }
+
+        const size_t element_interval_bytes = element_size_on_disk * interval;
+
+        {
+            enter_block("Read group elements profiling");
+            for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
+                const size_t different_element_idx = i % NUM_DIFFERENT_ELEMENTS;
+                const size_t offset = i * element_interval_bytes;
+                GroupT &dest_element = elements[different_element_idx];
+                const GroupT *src =
+                    (const GroupT *)(const void *)((size_t)file_base + offset);
+
+                dest_element.X = src->X;
+                dest_element.Y = src->Y;
+            }
+            leave_block("Read group elements profiling");
+        }
+
+        if (0 != munmap((void *)file_base, file_size)) {
+            throw std::runtime_error("munmap failed");
+        }
+        close(fd);
     }
 }
 
@@ -398,8 +389,8 @@ ssize_t cb_wait(aiocb *cb)
 }
 
 template<typename GroupT>
-void profile_group_read_random_aio_ordered_uncompressed(
-    const std::string &identifier)
+void profile_group_read_random_aio_ordered_uncompressedw(
+    const std::string &identifier, const size_t interval)
 {
     const std::string filename = get_filename(identifier);
 
@@ -407,7 +398,7 @@ void profile_group_read_random_aio_ordered_uncompressed(
     // size NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ, reading from a ranadom
     // offset within each group.
 
-    const size_t GROUP_SIZE = NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ;
+    const size_t GROUP_SIZE = interval;
 
     // Read from group_offset[i] in i-th group, i.e. global offset:
     //   GROUP_SIZE * i + group_offset[i]
@@ -564,7 +555,7 @@ protected:
 /// more aio requests in-flight at the same time.
 template<typename GroupT>
 void profile_group_read_random_batch_aio_ordered_uncompressed(
-    const std::string &identifier)
+    const std::string &identifier, const size_t interval)
 {
     const std::string filename = get_filename(identifier);
 
@@ -572,7 +563,7 @@ void profile_group_read_random_batch_aio_ordered_uncompressed(
     // size NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ, reading from a ranadom
     // offset within each group.
 
-    const size_t GROUP_SIZE = NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ;
+    const size_t GROUP_SIZE = interval;
 
     // Read from group_offset[i] in i-th group, i.e. global offset:
     //   GROUP_SIZE * i + group_offset[i]
@@ -643,39 +634,96 @@ void profile_group_read_random_batch_aio_ordered_uncompressed(
     }
 }
 
-template<typename GroupT> void run_profile(const std::string &identifier)
+typedef void (*profile_fn)(const std::string &, const size_t);
+
+template<typename GroupT> class profile_selector
 {
-    std::cout << " profile: " << identifier << "\n";
-    if (!ensure_group_elements_file_uncompressed<GroupT>(identifier)) {
-        std::cout << "  Purge disk cache and re-run to profile.\n";
+public:
+    std::map<std::string, profile_fn> s_profile_functions = {
+        {std::string("sequential"),
+         profile_group_read_sequential_uncompressed<GroupT>},
+        {std::string("stream"),
+         profile_group_read_random_seek_ordered_uncompressed<GroupT>},
+        {std::string("fd"),
+         profile_group_read_random_seek_fd_ordered_uncompressed<GroupT>},
+        {std::string("mmap"),
+         profile_group_read_random_seek_mmap_ordered_uncompressed<GroupT>},
+        {std::string("aio"),
+         profile_group_read_random_batch_aio_ordered_uncompressed<GroupT>},
+        {std::string("aio-batched"),
+         profile_group_read_random_batch_aio_ordered_uncompressed<GroupT>},
+    };
+};
+
+void usage(const char *const argv0)
+{
+    std::cout << "Usage: " << argv0 << " [flags]\n"
+              << "\n"
+              << "Flags:\n"
+              << "  --interval <interval>       Use sparse interval (default "
+              << MAX_SPARSE_ELEMENT_INTERVAL << ")\n"
+              << "  --profile <profile name>    Run a specific profile "
+                 "(default \"all\")\n";
+}
+
+template<typename GroupT>
+void run_profile(
+    const std::string &profile,
+    const std::string &identifier,
+    const size_t interval)
+{
+    std::cout << "profile: " << profile << "\n";
+    std::cout << "identifier: " << identifier << "\n";
+
+    class profile_selector<GroupT> p;
+
+    if (profile == "all") {
+        for (const auto &pair : p.s_profile_functions) {
+            run_profile<GroupT>(pair.first, identifier, interval);
+        }
         return;
     }
 
-    profile_group_read_sequential_uncompressed<GroupT>(identifier);
-    // profile_group_read_random_seek_uncompressed<GroupT>(identifier);
-    // profile_group_read_random_seek_ordered_uncompressed<GroupT>(identifier);
-    // profile_group_read_random_seek_fd_uncompressed<GroupT>(identifier);
-    // profile_group_read_random_seek_fd_ordered_uncompressed<GroupT>(identifier);
-    profile_group_read_random_seek_mmap_ordered_uncompressed<GroupT>(
-        identifier);
-    // profile_group_read_random_aio_ordered_uncompressed<GroupT>(identifier);
-    // profile_group_read_random_batch_aio_ordered_uncompressed<GroupT>(
-    //     identifier);
+    auto it = p.s_profile_functions.find(profile);
+    if (it == p.s_profile_functions.end()) {
+        throw std::runtime_error(std::string("no such profile: ") + profile);
+    }
+
+    it->second(identifier, interval);
 }
 
-int main(void)
+int main(const int argc, char const *const *const argv)
 {
+    std::string profile = "all";
+    size_t sparse_interval = MAX_SPARSE_ELEMENT_INTERVAL;
+
+    for (size_t i = 1; i < (size_t)argc; ++i) {
+        const char *const arg = argv[i];
+        if (!strcmp(arg, "--interval")) {
+            sparse_interval = std::stoi(std::string(argv[++i]));
+        } else if (!strcmp(arg, "--profile")) {
+            profile = argv[++i];
+        } else {
+            usage(argv[0]);
+            return 1;
+        }
+    }
+
+    if (sparse_interval > MAX_SPARSE_ELEMENT_INTERVAL) {
+        throw std::runtime_error("invalid interval");
+    }
+
     // Some configurations are disabled for now.
 
     std::cout << "alt_bn128_pp\n";
     alt_bn128_pp::init_public_params();
-    run_profile<alt_bn128_G1>("alt_bn128_G1");
-    run_profile<alt_bn128_G2>("alt_bn128_G2");
+    run_profile<alt_bn128_G1>(profile, "alt_bn128_G1", sparse_interval);
+    run_profile<alt_bn128_G2>(profile, "alt_bn128_G2", sparse_interval);
 
-    std::cout << "bls12_377_pp\n";
-    bls12_377_pp::init_public_params();
-    run_profile<bls12_377_G1>("bls12_377_G1");
-    run_profile<bls12_377_G2>("bls12_377_G2");
+    // std::cout << "bls12_377_pp\n";
+    // bls12_377_pp::init_public_params();
+    // run_profile<bls12_377_G1>("bls12_377_G1");
+    // run_profile<bls12_377_G2>("bls12_377_G2");
 
     return 0;
 }
