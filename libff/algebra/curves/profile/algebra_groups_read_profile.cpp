@@ -17,6 +17,8 @@ using namespace libff;
 static const size_t NUM_DIFFERENT_ELEMENTS = 1024;
 static const size_t NUM_ELEMENTS_TO_READ = 1024 * 1024;
 static const size_t NUM_ELEMENTS_IN_FILE = 256 * NUM_ELEMENTS_TO_READ;
+static const size_t MAX_SPARSE_ELEMENT_INTERVAL =
+    NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ;
 
 std::string get_filename(const std::string &identifier)
 {
@@ -282,58 +284,63 @@ void profile_group_read_random_seek_mmap_ordered_uncompressed(
     // Read sparse elements from a mem-mapped file, ensuring we always proceed
     // forwards.
 
-    // Measure time taken to read the file
-    std::cout << "  Random Access MMap (Ordered) '" << filename.c_str() << "' ("
-              << std::to_string(NUM_ELEMENTS_TO_READ) << " of "
-              << std::to_string(NUM_ELEMENTS_IN_FILE) << " elements ...\n";
-    {
-        std::vector<GroupT> elements;
-        elements.resize(NUM_DIFFERENT_ELEMENTS);
+    for (size_t interval = 1; interval < MAX_SPARSE_ELEMENT_INTERVAL;
+         interval *= 2) {
 
-        const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
-        const size_t file_size = NUM_ELEMENTS_IN_FILE * element_size_on_disk;
-
-        int fd = open(filename.c_str(), O_RDONLY);
-        if (fd < 0) {
-            throw std::runtime_error("failed to open " + filename);
-        }
-
-        const void *file_base = mmap(
-            nullptr,
-            file_size,
-            PROT_READ,
-            MAP_PRIVATE /* | MAP_NOCACHE */,
-            fd,
-            0);
-        if (MAP_FAILED == file_base) {
-            throw std::runtime_error(
-                std::string("mmap failed: ") + strerror(errno));
-        }
-
-        const size_t element_interval_bytes =
-            element_size_on_disk * NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ;
-        // const size_t element_interval_bytes = element_size_on_disk * 2;
+        // Measure time taken to read the file
+        std::cout << "  Random Access MMap (Ordered) '" << filename.c_str()
+                  << "' (" << NUM_ELEMENTS_TO_READ << " elements of "
+                  << (interval * NUM_ELEMENTS_TO_READ) << ") ...\n";
         {
-            enter_block("Read group elements profiling");
-            for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
-                const size_t different_element_idx = i % NUM_DIFFERENT_ELEMENTS;
-                // const size_t idx = (indices[different_element_idx] + i) %
-                // NUM_ELEMENTS_IN_FILE;
-                const size_t offset = i * element_interval_bytes;
-                GroupT &dest_element = elements[different_element_idx];
-                const GroupT *src =
-                    (const GroupT *)(const void *)((size_t)file_base + offset);
+            std::vector<GroupT> elements;
+            elements.resize(NUM_DIFFERENT_ELEMENTS);
 
-                dest_element.X = src->X;
-                dest_element.Y = src->Y;
+            const size_t element_size_on_disk = 2 * sizeof(elements[0].X);
+            const size_t file_size =
+                NUM_ELEMENTS_IN_FILE * element_size_on_disk;
+
+            int fd = open(filename.c_str(), O_RDONLY);
+            if (fd < 0) {
+                throw std::runtime_error("failed to open " + filename);
             }
-            leave_block("Read group elements profiling");
-        }
 
-        if (0 != munmap((void *)file_base, file_size)) {
-            throw std::runtime_error("munmap failed");
+            const void *file_base = mmap(
+                nullptr,
+                file_size,
+                PROT_READ,
+                MAP_PRIVATE /* | MAP_NOCACHE */,
+                fd,
+                0);
+            if (MAP_FAILED == file_base) {
+                throw std::runtime_error(
+                    std::string("mmap failed: ") + strerror(errno));
+            }
+
+            const size_t element_interval_bytes =
+                element_size_on_disk * interval;
+
+            {
+                enter_block("Read group elements profiling");
+                for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
+                    const size_t different_element_idx =
+                        i % NUM_DIFFERENT_ELEMENTS;
+                    const size_t offset = i * element_interval_bytes;
+                    GroupT &dest_element = elements[different_element_idx];
+                    const GroupT *src =
+                        (const GroupT *)(const void
+                                             *)((size_t)file_base + offset);
+
+                    dest_element.X = src->X;
+                    dest_element.Y = src->Y;
+                }
+                leave_block("Read group elements profiling");
+            }
+
+            if (0 != munmap((void *)file_base, file_size)) {
+                throw std::runtime_error("munmap failed");
+            }
+            close(fd);
         }
-        close(fd);
     }
 }
 
@@ -645,15 +652,15 @@ template<typename GroupT> void run_profile(const std::string &identifier)
     }
 
     profile_group_read_sequential_uncompressed<GroupT>(identifier);
-    profile_group_read_random_seek_uncompressed<GroupT>(identifier);
-    profile_group_read_random_seek_ordered_uncompressed<GroupT>(identifier);
-    profile_group_read_random_seek_fd_uncompressed<GroupT>(identifier);
-    profile_group_read_random_seek_fd_ordered_uncompressed<GroupT>(identifier);
+    // profile_group_read_random_seek_uncompressed<GroupT>(identifier);
+    // profile_group_read_random_seek_ordered_uncompressed<GroupT>(identifier);
+    // profile_group_read_random_seek_fd_uncompressed<GroupT>(identifier);
+    // profile_group_read_random_seek_fd_ordered_uncompressed<GroupT>(identifier);
     profile_group_read_random_seek_mmap_ordered_uncompressed<GroupT>(
         identifier);
-    profile_group_read_random_aio_ordered_uncompressed<GroupT>(identifier);
-    profile_group_read_random_batch_aio_ordered_uncompressed<GroupT>(
-        identifier);
+    // profile_group_read_random_aio_ordered_uncompressed<GroupT>(identifier);
+    // profile_group_read_random_batch_aio_ordered_uncompressed<GroupT>(
+    //     identifier);
 }
 
 int main(void)
@@ -663,12 +670,12 @@ int main(void)
     std::cout << "alt_bn128_pp\n";
     alt_bn128_pp::init_public_params();
     run_profile<alt_bn128_G1>("alt_bn128_G1");
-    // run_profile<alt_bn128_G2>("alt_bn128_G2");
+    run_profile<alt_bn128_G2>("alt_bn128_G2");
 
-    // std::cout << "bls12_377_pp\n";
-    // bls12_377_pp::init_public_params();
-    // run_profile<bls12_377_G1>("bls12_377_G1");
-    // run_profile<bls12_377_G2>("bls12_377_G2");
+    std::cout << "bls12_377_pp\n";
+    bls12_377_pp::init_public_params();
+    run_profile<bls12_377_G1>("bls12_377_G1");
+    run_profile<bls12_377_G2>("bls12_377_G2");
 
     return 0;
 }
