@@ -675,6 +675,10 @@ void run_profile(
     std::cout << "profile: " << profile << "\n";
     std::cout << "identifier: " << identifier << "\n";
 
+    if (!ensure_group_elements_file_uncompressed<GroupT>(identifier)) {
+        return;
+    }
+
     class profile_selector<GroupT> p;
 
     if (profile == "all") {
