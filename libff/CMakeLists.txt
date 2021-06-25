@@ -24,6 +24,10 @@ file(
   GLOB_RECURSE
   LIBFF_SOURCE
 
+  algebra/serialization.?pp
+  algebra/serialization.tcc
+  algebra/fields/field_serialization.?pp
+  algebra/fields/field_serialization.tcc
   algebra/curves/alt_bn128/*.?pp
   algebra/curves/alt_bn128/*.tcc
   algebra/curves/edwards/*.?pp

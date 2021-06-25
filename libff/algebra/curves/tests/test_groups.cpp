@@ -15,6 +15,7 @@
 #include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
+#include <libff/algebra/curves/curve_serialization.hpp>
 #include <libff/algebra/curves/curve_utils.hpp>
 #include <sstream>
 
@@ -151,6 +152,74 @@ template<typename GroupT> void test_output()
     }
 }
 
+template<
+    encoding_t Enc = encoding_binary,
+    form_t Form = form_plain,
+    compression_t Comp = compression_on,
+    typename GroupT>
+void test_serialize_group_config(const GroupT &v)
+{
+    GroupT v_aff(v);
+    v_aff.to_affine_coordinates();
+
+    std::string buffer;
+    {
+        std::ostringstream ss;
+        group_write<Enc, Form, Comp>(v, ss);
+        buffer = ss.str();
+    }
+
+    GroupT v_dec;
+    {
+        std::istringstream ss(buffer);
+        group_read<Enc, Form, Comp>(v_dec, ss);
+    }
+
+    ASSERT_EQ(v, v_dec);
+}
+
+template<typename GroupT> void test_serialize_group_element(const GroupT &v)
+{
+    // Missing combinations are unsupported.
+
+    test_serialize_group_config<encoding_binary, form_plain, compression_on>(v);
+    test_serialize_group_config<encoding_binary, form_plain, compression_off>(
+        v);
+    test_serialize_group_config<
+        encoding_binary,
+        form_montgomery,
+        compression_on>(v);
+    test_serialize_group_config<
+        encoding_binary,
+        form_montgomery,
+        compression_off>(v);
+
+    test_serialize_group_config<encoding_json, form_plain, compression_off>(v);
+    test_serialize_group_config<
+        encoding_json,
+        form_montgomery,
+        compression_off>(v);
+}
+
+template<typename GroupT> void test_serialize_group()
+{
+    test_serialize_group_element(GroupT::zero());
+    test_serialize_group_element(GroupT::one());
+    test_serialize_group_element(GroupT::zero() - GroupT::one());
+    test_serialize_group_element(
+        GroupT::zero() - GroupT::one() - GroupT::one());
+    test_serialize_group_element(GroupT::random_element());
+    test_serialize_group_element(GroupT::random_element());
+    test_serialize_group_element(GroupT::random_element());
+    test_serialize_group_element(GroupT::random_element());
+}
+
+template<typename ppT> void test_serialize()
+{
+    test_serialize_group<G1<ppT>>();
+    test_serialize_group<G2<ppT>>();
+}
+
 template<typename GroupT> void test_group_membership_valid()
 {
     for (size_t i = 0; i < 1000; ++i) {
@@ -265,6 +334,7 @@ TEST(TestGroups, Mnt4)
     test_output<G1<mnt4_pp>>();
     test_group<G2<mnt4_pp>>();
     test_output<G2<mnt4_pp>>();
+    test_serialize<mnt4_pp>();
     test_mul_by_q<G2<mnt4_pp>>();
     test_check_membership<mnt4_pp>();
     test_mul_by_cofactor<G1<mnt4_pp>>();
@@ -278,6 +348,7 @@ TEST(TestGroups, Mnt6)
     test_output<G1<mnt6_pp>>();
     test_group<G2<mnt6_pp>>();
     test_output<G2<mnt6_pp>>();
+    test_serialize<mnt6_pp>();
     test_mul_by_q<G2<mnt6_pp>>();
     test_check_membership<mnt6_pp>();
     test_mul_by_cofactor<G1<mnt6_pp>>();
@@ -291,6 +362,7 @@ TEST(TestGroups, Alt_BN128)
     test_output<G1<alt_bn128_pp>>();
     test_group<G2<alt_bn128_pp>>();
     test_output<G2<alt_bn128_pp>>();
+    test_serialize<alt_bn128_pp>();
     test_mul_by_q<G2<alt_bn128_pp>>();
     test_check_membership<alt_bn128_pp>();
     test_mul_by_cofactor<G1<alt_bn128_pp>>();
@@ -299,13 +371,13 @@ TEST(TestGroups, Alt_BN128)
 
 TEST(TestGroups, BLS12_377)
 {
-    // Make sure that added curves pass the libff tests
     bls12_377_pp::init_public_params();
     test_bls12_377();
     test_group<G1<bls12_377_pp>>();
     test_output<G1<bls12_377_pp>>();
     test_group<G2<bls12_377_pp>>();
     test_output<G2<bls12_377_pp>>();
+    test_serialize<bls12_377_pp>();
     test_mul_by_q<G2<bls12_377_pp>>();
     test_check_membership<bls12_377_pp>();
     test_mul_by_cofactor<G1<bls12_377_pp>>();
@@ -319,6 +391,7 @@ TEST(TestGroups, BW6_761)
     test_output<G1<bw6_761_pp>>();
     test_group<G2<bw6_761_pp>>();
     test_output<G2<bw6_761_pp>>();
+    test_serialize<bw6_761_pp>();
     test_mul_by_q<G2<bw6_761_pp>>();
     test_check_membership<bw6_761_pp>();
     test_mul_by_cofactor<G1<bw6_761_pp>>();

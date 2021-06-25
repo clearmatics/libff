@@ -10,6 +10,7 @@
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
+#include <libff/algebra/fields/field_serialization.hpp>
 #include <libff/algebra/fields/field_utils.hpp>
 #include <libff/common/profiling.hpp>
 #ifdef CURVE_BN128
@@ -390,9 +391,55 @@ template<typename FieldT> void test_signed_digits()
     }
 }
 
+template<typename FieldT, encoding_t Enc, form_t Form>
+void test_field_serialization_config()
+{
+    const FieldT a = FieldT::random_element();
+    const FieldT b = FieldT::random_element();
+    const FieldT c = FieldT::random_element();
+
+    std::string buffer;
+    {
+        std::ostringstream ss;
+        field_write<Enc, Form>(a, ss);
+        field_write<Enc, Form>(b, ss);
+        field_write<Enc, Form>(c, ss);
+        buffer = ss.str();
+    }
+
+    FieldT a_dec;
+    FieldT b_dec;
+    FieldT c_dec;
+    std::istringstream ss(buffer);
+    field_read<Enc, Form>(a_dec, ss);
+    field_read<Enc, Form>(b_dec, ss);
+    field_read<Enc, Form>(c_dec, ss);
+
+    ASSERT_EQ(a, a_dec);
+    ASSERT_EQ(b, b_dec);
+    ASSERT_EQ(c, c_dec);
+}
+
+template<typename FieldT> void test_field_serialization_all_configs()
+{
+    test_field_serialization_config<FieldT, encoding_json, form_plain>();
+    test_field_serialization_config<FieldT, encoding_json, form_montgomery>();
+    test_field_serialization_config<FieldT, encoding_binary, form_plain>();
+    test_field_serialization_config<FieldT, encoding_binary, form_montgomery>();
+}
+
+template<typename ppT> void test_serialization()
+{
+    test_field_serialization_all_configs<Fr<ppT>>();
+    test_field_serialization_all_configs<Fq<ppT>>();
+    test_field_serialization_all_configs<Fqe<ppT>>();
+    test_field_serialization_all_configs<Fqk<ppT>>();
+}
+
 TEST(FieldsTest, Edwards)
 {
     edwards_pp::init_public_params();
+    test_serialization<edwards_pp>();
     test_all_fields<edwards_pp>();
     test_cyclotomic_squaring<Fqk<edwards_pp>>();
 }
@@ -400,6 +447,7 @@ TEST(FieldsTest, Edwards)
 TEST(FieldsTest, MNT4)
 {
     mnt4_pp::init_public_params();
+    test_serialization<mnt4_pp>();
     test_all_fields<mnt4_pp>();
     test_Fp4_tom_cook<mnt4_Fq4>();
     test_two_squarings<Fqe<mnt4_pp>>();
@@ -409,6 +457,7 @@ TEST(FieldsTest, MNT4)
 TEST(FieldsTest, MNT6)
 {
     mnt6_pp::init_public_params();
+    test_serialization<mnt6_pp>();
     test_all_fields<mnt6_pp>();
     test_cyclotomic_squaring<Fqk<mnt6_pp>>();
 }
@@ -416,6 +465,7 @@ TEST(FieldsTest, MNT6)
 TEST(FieldsTest, ALT_BN128)
 {
     alt_bn128_pp::init_public_params();
+    test_serialization<alt_bn128_pp>();
     test_field<alt_bn128_Fq6>();
     test_Frobenius<alt_bn128_Fq6>();
     test_all_fields<alt_bn128_pp>();
@@ -428,6 +478,7 @@ TEST(FieldsTest, ALT_BN128)
 TEST(FieldsTest, BLS12_377)
 {
     bls12_377_pp::init_public_params();
+    test_serialization<bls12_377_pp>();
     test_field<bls12_377_Fq6>();
     test_all_fields<bls12_377_pp>();
     test_Fp12_2over3over2_mul_by_024<bls12_377_Fq12>();
@@ -438,6 +489,9 @@ TEST(FieldsTest, BLS12_377)
 TEST(FieldsTest, BN128)
 {
     bn128_pp::init_public_params();
+    // TODO: Specialize the serialization test to compile for bn128_pp
+    // (currently expects Fpe type).
+    // test_serialization<bn128_pp>();
     test_field<Fr<bn128_pp>>();
     test_field<Fq<bn128_pp>>();
 }
