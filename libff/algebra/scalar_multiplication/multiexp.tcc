@@ -581,8 +581,9 @@ public:
             num_bits = std::max(num_bits, bi_exponents[i].num_bits());
         }
 
-        // Allow sufficient rounds for num_bits + 1, to accomodate overflows.
-        const size_t num_rounds = (num_bits + 1 + c - 1) / c;
+        // Allow sufficient rounds for num_bits + 2, to accomodate overflow +
+        // negative final digit.
+        const size_t num_rounds = (num_bits + 2 + c - 1) / c;
 
         // Digits have values between -(2^{c-1}) and 2^{c-1} - 1. Negative
         // values are negated (to make them positive since we have cheap

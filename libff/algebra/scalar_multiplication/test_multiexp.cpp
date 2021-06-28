@@ -268,29 +268,29 @@ template<typename GroupT> void test_multi_exp()
     test_multi_exp_group_method<GroupT, multi_exp_method_BDLO12_signed>();
 }
 
-TEST(MultiExpTest, TestMultiExpAccumulateBucketsAltBN128)
-{
-    test_multiexp_accumulate_buckets<alt_bn128_G1>();
-    test_multiexp_accumulate_buckets<alt_bn128_G2>();
-}
+// TEST(MultiExpTest, TestMultiExpAccumulateBucketsAltBN128)
+// {
+//     test_multiexp_accumulate_buckets<alt_bn128_G1>();
+//     test_multiexp_accumulate_buckets<alt_bn128_G2>();
+// }
 
-TEST(MultiExpTest, TestMultiExpAccumulateBucketsBLS12_377)
-{
-    test_multiexp_accumulate_buckets<bls12_377_G1>();
-    test_multiexp_accumulate_buckets<bls12_377_G2>();
-}
+// TEST(MultiExpTest, TestMultiExpAccumulateBucketsBLS12_377)
+// {
+//     test_multiexp_accumulate_buckets<bls12_377_G1>();
+//     test_multiexp_accumulate_buckets<bls12_377_G2>();
+// }
 
-TEST(MultiExpTest, TestMultiExpSignedDigitsRoundAltBN128)
-{
-    test_multiexp_signed_digits_round<alt_bn128_G1>();
-    test_multiexp_signed_digits_round<alt_bn128_G2>();
-}
+// TEST(MultiExpTest, TestMultiExpSignedDigitsRoundAltBN128)
+// {
+//     test_multiexp_signed_digits_round<alt_bn128_G1>();
+//     test_multiexp_signed_digits_round<alt_bn128_G2>();
+// }
 
-TEST(MultiExpTest, TestMultiExpSignedDigitsRoundBLS12_377)
-{
-    test_multiexp_signed_digits_round<bls12_377_G1>();
-    test_multiexp_signed_digits_round<bls12_377_G2>();
-}
+// TEST(MultiExpTest, TestMultiExpSignedDigitsRoundBLS12_377)
+// {
+//     test_multiexp_signed_digits_round<bls12_377_G1>();
+//     test_multiexp_signed_digits_round<bls12_377_G2>();
+// }
 
 TEST(MultiExpTest, TestMultiExpAltBN128)
 {
@@ -298,10 +298,74 @@ TEST(MultiExpTest, TestMultiExpAltBN128)
     test_multi_exp<alt_bn128_G2>();
 }
 
-TEST(MultiExpTest, TestMultiExpBLS12_377)
+// TEST(MultiExpTest, TestMultiExpBLS12_377)
+// {
+//     test_multi_exp<bls12_377_G1>();
+//     test_multi_exp<bls12_377_G2>();
+// }
+
+alt_bn128_Fr fr_from_string(const std::string &str)
 {
-    test_multi_exp<bls12_377_G1>();
-    test_multi_exp<bls12_377_G2>();
+    std::istringstream ss(str);
+    alt_bn128_Fr v;
+    field_read<encoding_json, form_plain>(v, ss);
+    return v;
+}
+
+alt_bn128_G1 g1_from_string(const std::string &str)
+{
+    std::istringstream ss(str);
+    alt_bn128_G1 v;
+    group_read<encoding_json, form_plain, compression_off>(v, ss);
+    return v;
+}
+
+TEST(MultiExpTest, TestEdgeCase1)
+{
+    // Shows up an edge case in which the highest-order digit of the scalar is
+    // negative, AND must accomodate an overflow from a lower-order digit (i.e.
+    // the number of digits must cover 2 more bits than the original scalar)
+
+    std::vector<alt_bn128_Fr> scalars{{
+        fr_from_string("\"00000000000000000000000000000000000000000000000000000"
+                       "00000000001\""),
+        fr_from_string("\"00000000000000000000000000000000000000000000000000000"
+                       "00000079d69\""),
+    }};
+
+    std::vector<alt_bn128_G1> base_elements{{
+        g1_from_string("[\"157cbb5c3e5ff87af54877aefd2b3f95393ee3004a91c59c5c50"
+                       "23ca85aee7d0\","
+                       "\"162bb95fdd346c7276bb20ad526863d63c0eca0776fb57c71b76b"
+                       "d02dab6c554\"]"),
+        g1_from_string("[\"277a1d218ecc7a3ea26cec72b46c4f13b8b6594fcc080fa6d8ae"
+                       "61d43c34e084\","
+                       "\"13c48130e8519a34162bdc018409e98ca81683c23556314401a3a"
+                       "cad24b1b9bc\"]"),
+    }};
+
+    const alt_bn128_G1 expect = multi_exp<
+        alt_bn128_G1,
+        alt_bn128_Fr,
+        multi_exp_method_naive,
+        multi_exp_base_form_normal>(
+        base_elements.begin(),
+        base_elements.end(),
+        scalars.begin(),
+        scalars.end(),
+        2);
+    const alt_bn128_G1 actual = internal::multi_exp_implementation<
+        alt_bn128_G1,
+        alt_bn128_Fr,
+        multi_exp_method_BDLO12_signed,
+        multi_exp_base_form_normal>::
+        multi_exp_inner(
+            base_elements.begin(),
+            base_elements.end(),
+            scalars.begin(),
+            scalars.end());
+
+    ASSERT_EQ(expect, actual);
 }
 
 } // namespace
