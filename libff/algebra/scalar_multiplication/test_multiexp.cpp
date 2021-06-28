@@ -253,10 +253,20 @@ void test_multi_exp_config(size_t num_elements)
 template<typename GroupT, multi_exp_method Method>
 void test_multi_exp_group_method()
 {
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_normal>(1);
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_normal>(2);
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_normal>(3);
     test_multi_exp_config<GroupT, Method, multi_exp_base_form_normal>(4);
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_normal>(5);
     test_multi_exp_config<GroupT, Method, multi_exp_base_form_normal>(256);
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_normal>(257);
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_special>(1);
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_special>(2);
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_special>(3);
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_special>(4);
     test_multi_exp_config<GroupT, Method, multi_exp_base_form_special>(4);
     test_multi_exp_config<GroupT, Method, multi_exp_base_form_special>(256);
+    test_multi_exp_config<GroupT, Method, multi_exp_base_form_special>(257);
 }
 
 template<typename GroupT> void test_multi_exp()
