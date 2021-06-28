@@ -659,7 +659,7 @@ GroupT multi_exp(
                 multi_exp_inner(vec_start, vec_end, scalar_start, scalar_end);
     }
 
-    const size_t one = total / chunks;
+    const size_t one = (total + chunks - 1) / chunks;
 
     std::vector<GroupT> partial(chunks, GroupT::zero());
 
