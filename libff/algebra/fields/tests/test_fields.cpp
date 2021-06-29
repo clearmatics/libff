@@ -439,6 +439,61 @@ template<typename ppT> void test_serialization()
     test_field_serialization_all_configs<Fqk<ppT>>();
 }
 
+TEST(FieldsTest, BigInt)
+{
+    const std::string a_str("0");
+    const std::string b_str("1234567890123456789012345678901234567890");
+    const std::string c_str("1");
+    const std::string d_str("1000000000000000000000000000000000000000");
+
+    const std::string a_hex(
+        "0000000000000000000000000000000000000000000000000000000000000000");
+    const std::string b_hex(
+        "00000000000000000000000000000003a0c92075c0dbf3b8acbc5f96ce3f0ad2");
+    const std::string c_hex(
+        "0000000000000000000000000000000000000000000000000000000000000001");
+    const std::string d_hex(
+        "00000000000000000000000000000002f050fe938943acc45f65568000000000");
+
+    bigint<4> a(a_str.c_str());
+    bigint<4> b(b_str.c_str());
+    bigint<4> c(c_str.c_str());
+    bigint<4> d(d_str.c_str());
+    bigint<4> a_2;
+    bigint<4> b_2;
+    bigint<4> c_2;
+    bigint<4> d_2;
+
+    // Serialization
+    ASSERT_EQ(a_str, bigint_to_dec(a));
+    ASSERT_EQ(b_str, bigint_to_dec(b));
+    ASSERT_EQ(c_str, bigint_to_dec(c));
+    ASSERT_EQ(d_str, bigint_to_dec(d));
+
+    bigint_from_dec(a_2, a_str);
+    ASSERT_EQ(a, a_2);
+    bigint_from_dec(b_2, b_str);
+    ASSERT_EQ(b, b_2);
+    bigint_from_dec(c_2, c_str);
+    ASSERT_EQ(c, c_2);
+    bigint_from_dec(d_2, d_str);
+    ASSERT_EQ(d, d_2);
+
+    ASSERT_EQ(a_hex, bigint_to_hex(a));
+    ASSERT_EQ(b_hex, bigint_to_hex(b));
+    ASSERT_EQ(c_hex, bigint_to_hex(c));
+    ASSERT_EQ(d_hex, bigint_to_hex(d));
+
+    bigint_from_hex(a_2, a_hex);
+    ASSERT_EQ(a, a_2);
+    bigint_from_hex(b_2, b_hex);
+    ASSERT_EQ(b, b_2);
+    bigint_from_hex(c_2, c_hex);
+    ASSERT_EQ(c, c_2);
+    bigint_from_hex(d_2, d_hex);
+    ASSERT_EQ(d, d_2);
+}
+
 TEST(FieldsTest, Edwards)
 {
     edwards_pp::init_public_params();
