@@ -279,6 +279,23 @@ template<typename BigIntT> std::string bigint_to_hex(const BigIntT &v)
     return bytes_to_hex_reversed(&v.data[0], sizeof(v.data));
 }
 
+template<typename BigIntT>
+void bigint_from_dec(BigIntT &v, const std::string &dec)
+{
+    v = BigIntT(dec.c_str());
+}
+
+template<typename BigIntT> std::string bigint_to_dec(const BigIntT &v)
+{
+    const char *const fmt = "%Nd";
+    const size_t num_chars = gmp_snprintf(nullptr, 0, fmt, v.data, BigIntT::N);
+    std::string result(num_chars, '0');
+    // num_chars holds the number of characters, excluding the null terminator,
+    // but gmp_snprintf requires the number INCLUDING the terminator.
+    gmp_snprintf(&result[0], num_chars + 1, fmt, v.data, BigIntT::N);
+    return result;
+}
+
 template<encoding_t Enc, form_t Form, typename FieldT>
 void field_read(FieldT &v, std::istream &in_s)
 {
