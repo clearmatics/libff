@@ -16,16 +16,13 @@
 namespace libff
 {
 
-template<mp_size_t n>
-bigint<n>::bigint(const unsigned long x) /// Initalize from a small integer
+template<mp_size_t n> bigint<n>::bigint(const unsigned long x)
 {
     assert(8 * sizeof(x) <= GMP_NUMB_BITS);
     this->data[0] = x;
 }
 
-template<mp_size_t n>
-bigint<n>::bigint(const char *s) /// Initialize from a string containing an
-                                 /// integer in decimal notation
+template<mp_size_t n> bigint<n>::bigint(const char *s)
 {
     size_t l = strlen(s);
     unsigned char *s_copy = new unsigned char[l];
@@ -42,8 +39,7 @@ bigint<n>::bigint(const char *s) /// Initialize from a string containing an
     delete[] s_copy;
 }
 
-template<mp_size_t n>
-bigint<n>::bigint(const mpz_t r) /// Initialize from MPZ element
+template<mp_size_t n> bigint<n>::bigint(const mpz_t r)
 {
     mpz_t k;
     mpz_init_set(k, r);
