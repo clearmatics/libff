@@ -93,9 +93,9 @@ public:
     static void write(const Field &field_el, std::ostream &out_s)
     {
         if (Form == form_plain) {
-            out_s << '"' << bigint_to_hex(field_el.as_bigint()) << '"';
+            out_s << '"' << bigint_to_hex(field_el.as_bigint(), true) << '"';
         } else {
-            out_s << '"' << bigint_to_hex(field_el.mont_repr) << '"';
+            out_s << '"' << bigint_to_hex(field_el.mont_repr, true) << '"';
         }
     };
     static void read(Field &field_el, std::istream &in_s)
@@ -274,9 +274,10 @@ void bigint_from_hex(BigIntT &v, const std::string &hex)
     hex_to_bytes_reversed(hex, &v.data[0], sizeof(v.data));
 }
 
-template<typename BigIntT> std::string bigint_to_hex(const BigIntT &v)
+template<typename BigIntT>
+std::string bigint_to_hex(const BigIntT &v, bool prefix)
 {
-    return bytes_to_hex_reversed(&v.data[0], sizeof(v.data));
+    return bytes_to_hex_reversed(&v.data[0], sizeof(v.data), prefix);
 }
 
 template<typename BigIntT>
