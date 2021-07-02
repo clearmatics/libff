@@ -64,8 +64,8 @@ template<typename T> T *concurrent_fifo_spsc<T>::enqueue_begin_wait()
 
 template<typename T> void concurrent_fifo_spsc<T>::enqueue_end()
 {
-    // Caller is expected to only call this if try_enqueue_begin returned true.
-    // No need to check consumer state.
+    // Caller is expected to only call this if try_enqueue_begin succeeded. No
+    // need to check consumer state.
 
     _producer_next_idx = (_producer_next_idx + 1) % _capacity;
     const size_t producer_num_produced =

@@ -12,6 +12,9 @@ namespace
 template<typename GroupT, multi_exp_base_form BaseForm>
 void test_multiexp_accumulate_buckets_group(const size_t num_buckets)
 {
+    // num_buckets > 1 ensures that at least one value is "hit" via the (i & 1)
+    // in the loop below.
+    assert(num_buckets > 1);
     using FieldT = typename GroupT::scalar_field;
 
     // Prepare values
@@ -20,6 +23,7 @@ void test_multiexp_accumulate_buckets_group(const size_t num_buckets)
     std::vector<bool> value_hit;
     value_hit.reserve(num_buckets);
     for (size_t i = 0; i < num_buckets; ++i) {
+        // Set values_hit randomly, ensuring that at least one value is hit.
         const bool hit = (i & 1) || rand() % 2;
         value_hit.push_back(hit);
         values.push_back(GroupT::random_element());
@@ -207,8 +211,8 @@ void test_multi_exp_config(size_t num_elements)
     std::vector<Field> scalars;
     scalars.reserve(num_elements);
 
-    // Create values for sum [n]*[1]_G + [n-1]*[2]_G + ... + [1]*[n]_G
-    // where [x]_G is encoding of x in G. The result should then be
+    // Create values for sum n*[1]_G + (n-1)*[2]_G + ... + 1*[n]_G where [x]_G
+    // is encoding of x in G, computing the expected result as a scalar.
     GroupT g = GroupT::one();
     size_t expect_scalar = 0;
     for (size_t i = 0; i < num_elements; ++i) {

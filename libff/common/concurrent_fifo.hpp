@@ -15,7 +15,7 @@
 namespace libff
 {
 
-/// Simple lock-less singled-producer, single-consumer fifo buffer. Exposes the
+/// Simple lock-less single-producer, single-consumer fifo buffer. Exposes the
 /// raw read/write location directly, in way that the producer can know if the
 /// destination memory is available BEFORE he begins data production. In
 /// particular, if T = void *, say, the producer can recycle the buffer pointed

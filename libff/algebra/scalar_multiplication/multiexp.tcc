@@ -154,7 +154,7 @@ public:
     }
 };
 
-// Class holding the specialized multi exp implementations. Must implment a
+// Class holding the specialized multi exp implementations. Must implement a
 // public static method of the form:
 //   static GroupT multi_exp_inner(
 //       typename std::vector<GroupT>::const_iterator bases,
@@ -252,12 +252,12 @@ public:
 
         const mp_size_t exp_num_limbs =
             std::remove_reference<decltype(*exponents)>::type::num_limbs;
-        std::vector<bigint<exp_num_limbs>> bn_exponents(length);
+        std::vector<bigint<exp_num_limbs>> bi_exponents(length);
         size_t num_bits = 0;
 
         for (size_t i = 0; i < length; i++) {
-            bn_exponents[i] = exponents[i].as_bigint();
-            num_bits = std::max(num_bits, bn_exponents[i].num_bits());
+            bi_exponents[i] = exponents[i].as_bigint();
+            num_bits = std::max(num_bits, bi_exponents[i].num_bits());
         }
 
         const size_t num_groups = (num_bits + c - 1) / c;
@@ -276,11 +276,11 @@ public:
             std::vector<bool> bucket_nonzero(1 << c);
 
             for (size_t i = 0; i < length; i++) {
-                // id = k-th "digit" of bn_exponents[i], radix 2^c
-                //    = (bn_exponents[i] >> (c*k)) & (2^c - 1)
+                // id = k-th "digit" of bi_exponents[i], radix 2^c
+                //    = (bi_exponents[i] >> (c*k)) & (2^c - 1)
                 size_t id = 0;
                 for (size_t j = 0; j < c; j++) {
-                    if (bn_exponents[i].test_bit(k * c + j)) {
+                    if (bi_exponents[i].test_bit(k * c + j)) {
                         id |= 1 << j;
                     }
                 }
@@ -474,7 +474,7 @@ public:
     using BigInt =
         typename std::decay<decltype(((FieldT *)nullptr)->mont_repr)>::type;
 
-    /// buckets and bucket_hit should have at least 2^{c-1] entries.
+    /// buckets and bucket_hit should have at least 2^{c-1} entries.
     static GroupT signed_digits_round(
         typename std::vector<GroupT>::const_iterator bases,
         typename std::vector<GroupT>::const_iterator bases_end,
