@@ -18,7 +18,8 @@ namespace libff
 template<typename BigIntT>
 void bigint_from_hex(BigIntT &v, const std::string &hex);
 
-template<typename BigIntT> std::string bigint_to_hex(const BigIntT &v);
+template<typename BigIntT>
+std::string bigint_to_hex(const BigIntT &v, bool prefix = false);
 
 template<
     encoding_t Enc = encoding_binary,

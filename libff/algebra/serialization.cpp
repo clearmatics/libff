@@ -84,14 +84,21 @@ void hex_to_bytes_reversed(const std::string &hex, void *dest, size_t bytes)
     } while (dest_bytes > dest_bytes_end);
 }
 
-std::string bytes_to_hex_reversed(const void *bytes, size_t num_bytes)
+std::string bytes_to_hex_reversed(
+    const void *bytes, size_t num_bytes, bool prefix)
 {
     if (num_bytes == 0) {
         return "";
     }
 
     std::string out;
-    out.reserve(num_bytes * 2);
+    if (prefix) {
+        out.reserve(num_bytes * 2 + 2);
+        out.push_back('0');
+        out.push_back('x');
+    } else {
+        out.reserve(num_bytes * 2);
+    }
 
     const uint8_t *const src_bytes_end = (const uint8_t *)bytes;
     const uint8_t *src_bytes = src_bytes_end + num_bytes;

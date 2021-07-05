@@ -35,7 +35,9 @@ enum compression_t : uint8_t {
 
 void hex_to_bytes_reversed(const std::string &hex, void *dest, size_t bytes);
 
-std::string bytes_to_hex_reversed(const void *bytes, size_t num_bytes);
+/// "prefix" here refers to "0x"
+std::string bytes_to_hex_reversed(
+    const void *bytes, size_t num_bytes, bool prefix = false);
 
 // TODO: These exist to make the operator<< and operator>> continue to work.
 // When those operators are removed, these can retired, along with the macros.
