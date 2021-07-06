@@ -14,6 +14,12 @@
 namespace libff
 {
 
+// The field element (base or extension field) type for the coordinates of any
+// group.
+template<typename GroupT>
+using group_coord_type =
+    typename std::decay<decltype(((GroupT *)nullptr)->X)>::type;
+
 template<typename GroupT, mp_size_t m>
 GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar);
 
@@ -21,12 +27,11 @@ GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar);
 // the given x coordinate. This function does not check whether E(Fq) has a
 // solution at x, and will hang indefinitely if it does not.
 template<typename GroupT>
-decltype(((GroupT *)nullptr)->X) curve_point_y_at_x(
-    const decltype(((GroupT *)nullptr)->X) &x);
+group_coord_type<GroupT> curve_point_y_at_x(const group_coord_type<GroupT> &x);
 
 // Utility function to compute a point on the curve E(Fq) with the given x
-// coordinate. If the curve has no solution, this function throws an
-// exception.
+// coordinate. If the curve has no solution at the given x, this function
+// throws an exception.
 template<typename GroupT>
 GroupT g1_curve_point_at_x(const typename GroupT::base_field &x);
 

@@ -32,8 +32,7 @@ GroupT scalar_mul(const GroupT &base, const bigint<m> &scalar)
 }
 
 template<typename GroupT>
-decltype(((GroupT *)nullptr)->X) curve_point_y_at_x(
-    const decltype(((GroupT *)nullptr)->X) &x)
+group_coord_type<GroupT> curve_point_y_at_x(const group_coord_type<GroupT> &x)
 {
     using base_field = decltype(((GroupT *)nullptr)->X);
     const base_field x_squared = x * x;
