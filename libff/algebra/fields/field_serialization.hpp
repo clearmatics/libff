@@ -21,6 +21,13 @@ void bigint_from_hex(BigIntT &v, const std::string &hex);
 template<typename BigIntT>
 std::string bigint_to_hex(const BigIntT &v, bool prefix = false);
 
+template<typename BigIntT>
+void bigint_from_dec(BigIntT &v, const std::string &dec);
+
+template<typename BigIntT> std::string bigint_to_dec(const BigIntT &v);
+
+template<typename FieldT> constexpr size_t field_binary_size();
+
 template<
     encoding_t Enc = encoding_binary,
     form_t Form = form_plain,

@@ -410,6 +410,10 @@ void test_field_serialization_config()
         buffer = ss.str();
     }
 
+    if (Enc == encoding_binary) {
+        ASSERT_EQ(3 * field_binary_size<FieldT>(), buffer.size());
+    }
+
     FieldT a_dec;
     FieldT b_dec;
     FieldT c_dec;

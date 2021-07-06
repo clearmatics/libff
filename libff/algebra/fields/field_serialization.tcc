@@ -26,13 +26,15 @@ class field_element_codec;
 template<typename FieldT, form_t Form>
 class field_element_codec<encoding_json, Form, FieldT>
 {
+protected:
+    // The type of any the base field on which this extension is defiend.
+    using base_field_t =
+        typename std::decay<decltype(((FieldT *)nullptr)->coeffs[0])>::type;
+
 public:
     // Convert a field element to JSON
     static void write(const FieldT &field_el, std::ostream &out_s)
     {
-        using base_field_t =
-            typename std::decay<decltype(field_el.coeffs[0])>::type;
-
         // Note that we write components of extension fields
         // highest-order-first.
         out_s << '[';
@@ -51,9 +53,6 @@ public:
     // Read a field element from JSON
     static void read(FieldT &field_el, std::istream &in_s)
     {
-        using base_field_t =
-            typename std::decay<decltype(field_el.coeffs[0])>::type;
-
         // Read opening '[' char, then each component (highest-order-first)
         // separated by ',' char, then a closing ']' char.
 
@@ -90,6 +89,7 @@ class field_element_codec<encoding_json, Form, libff::Fp_model<n, modulus>>
 {
 public:
     using Field = libff::Fp_model<n, modulus>;
+
     static void write(const Field &field_el, std::ostream &out_s)
     {
         if (Form == form_plain) {
@@ -98,6 +98,7 @@ public:
             out_s << '"' << bigint_to_hex(field_el.mont_repr, true) << '"';
         }
     };
+
     static void read(Field &field_el, std::istream &in_s)
     {
         char quote;
@@ -126,20 +127,29 @@ public:
 template<typename FieldT, form_t Form>
 class field_element_codec<encoding_binary, Form, FieldT>
 {
+protected:
+    // The type of any the base field on which this extension is defiend.
+    using base_field_t =
+        typename std::decay<decltype(((FieldT *)nullptr)->coeffs[0])>::type;
+
 public:
+    // The size of this field element when serialized. Note that this only
+    // appears on field_element_codec when specialized for encoding_binary.
+    static constexpr size_t serialized_size =
+        FieldT::tower_extension_degree *
+        field_element_codec<encoding_binary, Form, base_field_t>::
+            serialized_size;
+
     static void write(const FieldT &field_el, std::ostream &out_s)
     {
-        using base_field_t =
-            typename std::decay<decltype(field_el.coeffs[0])>::type;
         for (size_t i = 0; i < FieldT::tower_extension_degree; ++i) {
             field_element_codec<encoding_binary, Form, base_field_t>::write(
                 field_el.coeffs[i], out_s);
         }
     }
+
     static void read(FieldT &field_el, std::istream &in_s)
     {
-        using base_field_t =
-            typename std::decay<decltype(field_el.coeffs[0])>::type;
         for (size_t i = 0; i < FieldT::tower_extension_degree; ++i) {
             field_element_codec<encoding_binary, Form, base_field_t>::read(
                 field_el.coeffs[i], in_s);
@@ -148,8 +158,6 @@ public:
     static void write_with_flags(
         const FieldT &field_el, const mp_limb_t flags, std::ostream &out_s)
     {
-        using base_field_t =
-            typename std::decay<decltype(field_el.coeffs[0])>::type;
         // Write first component with flags, then all remaining components as
         // normal.
         field_element_codec<encoding_binary, Form, base_field_t>::
@@ -162,8 +170,6 @@ public:
     static void read_with_flags(
         FieldT &field_el, mp_limb_t &flags, std::istream &in_s)
     {
-        using base_field_t =
-            typename std::decay<decltype(field_el.coeffs[0])>::type;
         // Read first component with flags, then all remaining components as
         // normal.
         field_element_codec<encoding_binary, Form, base_field_t>::
@@ -183,6 +189,8 @@ class field_element_codec<encoding_binary, Form, libff::Fp_model<n, modulus>>
 public:
     using Field = libff::Fp_model<n, modulus>;
 
+    static constexpr size_t serialized_size = sizeof(libff::bigint<n>);
+
     static constexpr size_t NUM_FLAG_BITS = 2;
     static constexpr size_t FLAG_SHIFT =
         (8 * sizeof(mp_limb_t)) - NUM_FLAG_BITS;
@@ -194,6 +202,7 @@ public:
         const size_t field_size_on_disk = 8 * sizeof(Field);
         return (field_size_on_disk - field_bits) >= NUM_FLAG_BITS;
     }
+
     static void write(const Field &field_el, std::ostream &out_s)
     {
         // Convert to bigint, reverse bytes in-place, and write to stream.
@@ -206,6 +215,7 @@ public:
         std::reverse((char *)(&bi), (char *)(&bi + 1));
         out_s.write((const char *)(&bi.data[0]), sizeof(bi));
     }
+
     static void read(Field &field_el, std::istream &in_s)
     {
         // Read bigint from stream, reverse bytes in-place and convert to field
@@ -221,6 +231,7 @@ public:
             std::reverse((char *)(&res), (char *)(&res + 1));
         }
     }
+
     static void write_with_flags(
         const Field &field_el, const mp_limb_t flags, std::ostream &out_s)
     {
@@ -239,6 +250,7 @@ public:
         std::reverse((char *)(&bi), (char *)(&bi + 1));
         out_s.write((const char *)(&bi.data[0]), sizeof(bi));
     }
+
     static void read_with_flags(
         Field &field_el, mp_limb_t &flags, std::istream &in_s)
     {
@@ -295,6 +307,14 @@ template<typename BigIntT> std::string bigint_to_dec(const BigIntT &v)
     // but gmp_snprintf requires the number INCLUDING the terminator.
     gmp_snprintf(&result[0], num_chars + 1, fmt, v.data, BigIntT::N);
     return result;
+}
+
+template<typename FieldT> constexpr size_t field_binary_size()
+{
+    return internal::field_element_codec<
+        encoding_binary,
+        form_montgomery,
+        FieldT>::serialized_size;
 }
 
 template<encoding_t Enc, form_t Form, typename FieldT>
