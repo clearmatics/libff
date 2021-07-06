@@ -148,6 +148,30 @@ public:
 
 } // namespace internal
 
+template<form_t Form, typename GroupT>
+void group_decompress(
+    GroupT &v,
+    const uint8_t buffer[field_binary_size<group_coord_type<GroupT>>()])
+{
+    using CoordT = group_coord_type<GroupT>;
+
+    mp_limb_t flags;
+    field_read_with_flags<Form>(v.X, flags, buffer);
+    if (0 == (flags & 0x2)) {
+        v.Y = curve_point_y_at_x<GroupT>(v.X);
+
+        const mp_limb_t Y_lsb =
+            field_get_component_0(v.Y).mont_repr.data[0] & 1;
+        if ((flags & 1) != Y_lsb) {
+            v.Y = -v.Y;
+        }
+
+        v.Z = CoordT::one();
+    } else {
+        v = GroupT::zero();
+    }
+}
+
 template<encoding_t Enc, form_t Form, compression_t Comp, typename GroupT>
 void group_read(GroupT &v, std::istream &in_s)
 {

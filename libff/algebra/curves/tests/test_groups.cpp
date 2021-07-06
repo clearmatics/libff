@@ -176,6 +176,14 @@ void test_serialize_group_config(const GroupT &v)
     }
 
     ASSERT_EQ(v, v_dec);
+
+    // If the group element was written in compressed form, test the
+    // group_decompress function.
+    if (Comp == compression_on) {
+        GroupT v_dec_mem;
+        group_decompress<Form>(v_dec_mem, (const uint8_t *)(buffer.data()));
+        ASSERT_EQ(v, v_dec_mem);
+    }
 }
 
 template<typename GroupT> void test_serialize_group_element(const GroupT &v)
