@@ -40,6 +40,21 @@ template<
     typename FieldT>
 void field_write(const FieldT &v, std::ostream &out_s);
 
+/// Read a field element with flags (2 bits) embedded in it.
+template<form_t Form, typename FieldT>
+void field_read_with_flags(FieldT &v, mp_limb_t &flags, std::istream &in_s);
+
+/// Similar to the stream version, but extract from an in-memory buffer
+template<form_t Form, typename FieldT>
+void field_read_with_flags(
+    FieldT &v,
+    mp_limb_t &flags,
+    const uint8_t buffer[field_binary_size<FieldT>()]);
+
+template<form_t Form, typename FieldT>
+void field_write_with_flags(
+    const FieldT &v, mp_limb_t flags, std::ostream &out_s);
+
 } // namespace libff
 
 #include "libff/algebra/fields/field_serialization.tcc"

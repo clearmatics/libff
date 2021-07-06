@@ -118,20 +118,18 @@ public:
 
             const mp_limb_t flags =
                 field_get_component_0(affine.Y).mont_repr.data[0] & 1;
-            field_write_with_flags<encoding_binary, Form>(
-                affine.X, flags, out_s);
+            field_write_with_flags<Form>(affine.X, flags, out_s);
         } else {
             // Use Montgomery encoding, to avoid wasting time reducing.
-            field_write_with_flags<encoding_binary, form_montgomery>(
-                group_el.X, 0x2, out_s);
+            field_write_with_flags<form_montgomery>(group_el.X, 0x2, out_s);
         }
     }
     static void read(GroupT &group_el, std::istream &in_s)
     {
-        using Fq = typename std::decay<decltype(group_el.X)>::type;
+        using CoordT = group_coord_type<GroupT>;
 
         mp_limb_t flags;
-        field_read_with_flags<encoding_binary, Form>(group_el.X, flags, in_s);
+        field_read_with_flags<Form>(group_el.X, flags, in_s);
         if (0 == (flags & 0x2)) {
             group_el.Y = curve_point_y_at_x<GroupT>(group_el.X);
 
@@ -141,7 +139,7 @@ public:
                 group_el.Y = -group_el.Y;
             }
 
-            group_el.Z = Fq::one();
+            group_el.Z = CoordT::one();
         } else {
             group_el = GroupT::zero();
         }

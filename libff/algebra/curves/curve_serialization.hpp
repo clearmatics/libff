@@ -16,6 +16,8 @@
 namespace libff
 {
 
+/// In-memory decompression (where we wish to separate the streaming of
+/// compressed data, and decompression into a full group element.
 template<form_t Form, typename GroupT>
 void group_decompress(
     GroupT &v,
