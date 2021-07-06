@@ -11,7 +11,6 @@
 
 #include "libff/algebra/curves/curve_serialization.hpp"
 #include "libff/algebra/curves/curve_utils.hpp"
-#include "libff/algebra/fields/field_serialization.hpp"
 
 namespace libff
 {
