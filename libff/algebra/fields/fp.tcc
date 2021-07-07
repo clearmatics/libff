@@ -31,6 +31,9 @@ template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp_model<n, modulus>::s_one;
 
 template<mp_size_t n, const bigint<n> &modulus>
+std::vector<Fp_model<n, modulus>> Fp_model<n, modulus>::s_nqr_to_t_pow_2;
+
+template<mp_size_t n, const bigint<n> &modulus>
 void Fp_model<n, modulus>::static_init()
 {
     // This function may be entered several times, in particular where an
@@ -43,6 +46,20 @@ void Fp_model<n, modulus>::static_init()
 
     s_one.mont_repr.data[0] = 1;
     s_one.mul_reduce(Rsquared);
+
+    // Initialize entries of s_nqr_to_t_pow_2
+    {
+        s_nqr_to_t_pow_2.resize(s);
+        Fp_model<n, modulus> z = nqr_to_t;
+
+        // z satisfies z^(2^(s-1)) = -1, so is the last entry.
+        s_nqr_to_t_pow_2[s - 1] = z;
+        for (size_t i = s - 2; i < s; --i) {
+            z = z.squared();
+            s_nqr_to_t_pow_2[i] = z;
+        }
+        assert(s_nqr_to_t_pow_2[0] == -one());
+    }
 
     s_initialized = true;
 }
@@ -345,6 +362,15 @@ Fp_model<n, modulus> Fp_model<n, modulus>::arithmetic_generator()
     res.mont_repr.data[0] = 1;
     res.mul_reduce(Rsquared);
     return res;
+}
+
+template<mp_size_t n, const bigint<n> &modulus>
+const Fp_model<n, modulus> &Fp_model<n, modulus>::root_minus_one(
+    size_t order_log_2)
+{
+    // s_nqr_to_t_pow_2[i-1] has order 2^i.
+    assert(0 <= order_log_2 && order_log_2 < s);
+    return s_nqr_to_t_pow_2[order_log_2];
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
@@ -763,10 +789,23 @@ Fp_model<n, modulus> Fp_model<n, modulus>::random_element()
 template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp_model<n, modulus>::sqrt() const
 {
-    Fp_model<n, modulus> one = Fp_model<n, modulus>::one();
+    const Fp_model<n, modulus> &one = Fp_model<n, modulus>::one();
 
+    // v, w, z are maintained s.t
+    //   z^{2^v} = (w^2)^{2^v} = -1
+    //
+    // Initially, for p-1 = t*2^s, set z = (non_residue)^t, v = s-1, because
+    // z^{2^s} = -1 by Euler criterion. w is set using z (see the loop below).
+    //
+    // b, x maintained s.t.
+    //   x^2 = (*this)*b
+    // where x is initialized to (*this)^{(t+1)/2}, and therefore b initialized
+    // to (*this)^t.
+
+#if 0
     size_t v = Fp_model<n, modulus>::s;
     Fp_model<n, modulus> z = Fp_model<n, modulus>::nqr_to_t;
+#endif
     Fp_model<n, modulus> w = (*this) ^ Fp_model<n, modulus>::t_minus_1_over_2;
     Fp_model<n, modulus> x = (*this) * w;
     Fp_model<n, modulus> b = x * w; // b = (*this)^t
@@ -782,11 +821,44 @@ Fp_model<n, modulus> Fp_model<n, modulus>::sqrt() const
     }
 #endif
 
-    // compute square root with Tonelli--Shanks
-    // (does not terminate if not a square!)
+    // Compute square root with Tonelli--Shanks (does not terminate if not a
+    // square!):
+    //
+    // Search for x st. x^2 = *this
+    //
+    // Starting with candidate:
+    //   x <- (*this)^{(t+1)/2}
+    // we have:
+    //
+    //   x^2 = (*this) * (*this)^t
+    //       = (*this) * b
+    //
+    // for b = (*this)^t where b must be a 2^m-th root of 1 (since p-1=t*2^s),
+    // for some smallest m).
+    //
+    // If b = 1, we're done. Otherwise, find x' and b' s.t.
+    //   (x')^2 = (*this) * b'
+    // where b' is a 2^{m-1}-th root.  Continue until b' = 1.
+    //
+    // Using some factor w, for candidate x' = x*w, we have:
+    //
+    //   (x')^2 = (*this) * b * w^2
+    //
+    // hence we want b*w^2 to be a 2^{m-1}-th root of 1. Note that
+    //
+    //   b^{2^{m-1}} = -1
+    //
+    // since m is minimal by assumption. If z = w^2 is also a 2^{m-1}-th root of
+    // -1 (i.e. w is a 2^m-th root of -1), then
+    //
+    //   (b*w^2)^{2^{m-1}} = (-1) * (-1) = 1
+    //
+    // and setting x' = x * w, b' = b * z satisfies the requirements.
 
     while (b != one) {
         size_t m = 0;
+
+        // Find m where $b^{2^m} = 1$. I.e. b is 2^m-th root of 1
         Fp_model<n, modulus> b2m = b;
         while (b2m != one) {
             // invariant: b2m = b^(2^m) after entering this loop
@@ -794,18 +866,29 @@ Fp_model<n, modulus> Fp_model<n, modulus>::sqrt() const
             m += 1;
         }
 
-        // w = z^2^(v-m-1)
+#if 0
+        // As above, b^{2^{m-1}} = -1, and we we want w' s.t.
+        //
+        //   ((w')^2)^{2^{m-1}} = -1, i.e. (w')^{2^m} = -1.
+        //
+        // w already satisfies (w^2)^{2^{v-1}} = -1, so set:
+        //
+        //   w' = w^{2^{v-m}} = z^{2^{v-m-1}}
+
         int j = v - m - 1;
         w = z;
         while (j > 0) {
             w = w.squared();
             --j;
         }
-
         z = w.squared();
+        v = m;
         b = b * z;
         x = x * w;
-        v = m;
+#else
+        b = b * root_minus_one(m - 1);
+        x = x * root_minus_one(m);
+#endif
     }
 
     return x;

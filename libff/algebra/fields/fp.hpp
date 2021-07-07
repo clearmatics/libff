@@ -147,10 +147,17 @@ public:
     // generator++, for k = 1 to m, domain size m
     static Fp_model<n, modulus> arithmetic_generator();
 
+    // Return an 2^order_log_2-th root z of -1, s.t. z^(2^order_log_2) = -1, for
+    // order_log_2 = 1, ..., s-1.
+    static const Fp_model<n, modulus> &root_minus_one(size_t order_log_2);
+
 protected:
     static bool s_initialized;
     static Fp_model<n, modulus> s_zero;
     static Fp_model<n, modulus> s_one;
+
+    // Elements satisfy s_nqr_to_t_pow_2[i]^(2^(i)) = -1, for i = 0,...,s-1.
+    static std::vector<Fp_model<n, modulus>> s_nqr_to_t_pow_2;
 
     friend std::ostream &operator<<<n, modulus>(
         std::ostream &out, const Fp_model<n, modulus> &p);

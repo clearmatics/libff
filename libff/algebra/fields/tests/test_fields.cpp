@@ -60,6 +60,15 @@ template<typename FieldT> void test_field()
         (a + b) * c.inverse(), a * c.inverse() + (b.inverse() * c).inverse());
 }
 
+template<typename FieldT> void test_root_minus_one()
+{
+    const FieldT minus_one = -FieldT::one();
+    for (size_t i = 0; i < FieldT::s; ++i) {
+        const FieldT root_minus_one_2_pow_i = FieldT::root_minus_one(i);
+        ASSERT_EQ(minus_one, root_minus_one_2_pow_i ^ (1ull << i));
+    }
+}
+
 template<typename FieldT> void test_sqrt()
 {
     for (size_t i = 0; i < 100; ++i) {
@@ -143,6 +152,9 @@ template<typename ppT> void test_all_fields()
     test_field<Fq<ppT>>();
     test_field<Fqe<ppT>>();
     test_field<Fqk<ppT>>();
+
+    test_root_minus_one<Fr<ppT>>();
+    test_root_minus_one<Fq<ppT>>();
 
     test_sqrt<Fr<ppT>>();
     test_sqrt<Fq<ppT>>();
