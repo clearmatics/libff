@@ -136,6 +136,7 @@ template<typename GroupT> bool profile_group_decompress()
             throw std::runtime_error("decompression failed");
         }
     }
+    leave_block("group decompress profiling");
 
     return true;
 }
