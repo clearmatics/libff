@@ -30,6 +30,8 @@ public:
     concurrent_fifo_spsc(size_t capacity);
     ~concurrent_fifo_spsc();
 
+    size_t capacity() const;
+
     /// Producer must call this until it succeeds (returns a non-null pointer),
     /// and then write values at the returned address before calling
     /// enqueue_end().
@@ -62,6 +64,46 @@ protected:
 
     size_t _consumer_next_idx;
     std::atomic<size_t> _consumer_num_consumed;
+};
+
+/// Similar semantics as concurrent_fifo_spsc, but entries are pre-allocated
+/// flat arrays of some runtime-determined size. Can be used to reduce
+/// contention on the fifo (en/dequeue chunks) or to operate on logical units.
+template<typename T> class concurrent_buffer_fifo_spsc
+{
+public:
+    concurrent_buffer_fifo_spsc() = delete;
+    concurrent_buffer_fifo_spsc(const concurrent_buffer_fifo_spsc &) = delete;
+    concurrent_buffer_fifo_spsc &operator=(
+        const concurrent_buffer_fifo_spsc &) = delete;
+
+    concurrent_buffer_fifo_spsc(
+        size_t num_buffers, size_t num_entries_per_buffer);
+    ~concurrent_buffer_fifo_spsc();
+
+    /// Similar to concurrent_fifo_spsc::try_enqueue_begin(), except that the
+    /// returned value points to an array of num_entries_per_buffer.
+    T *try_enqueue_begin();
+
+    T *enqueue_begin_wait();
+
+    void enqueue_end();
+
+    /// Similar to concurrent_fifo_spsc::try_dequeue_begin(), except that the
+    /// returned value points to an array of num_entries_per_buffer.
+    const T *try_dequeue_begin();
+
+    const T *dequeue_begin_wait();
+
+    void dequeue_end();
+
+protected:
+    T *enqueue_next_buffer(T **const buffer_ptr);
+
+    concurrent_fifo_spsc<T *> _queue;
+    const size_t _entries_per_buffer;
+    T **const _buffers;
+    size_t _next_buffer_idx;
 };
 
 } // namespace libff
