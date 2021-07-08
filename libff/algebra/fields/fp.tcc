@@ -806,7 +806,7 @@ Fp_model<n, modulus> Fp_model<n, modulus>::sqrt() const
     size_t v = Fp_model<n, modulus>::s;
     Fp_model<n, modulus> z = Fp_model<n, modulus>::nqr_to_t;
 #endif
-    Fp_model<n, modulus> w = (*this) ^ Fp_model<n, modulus>::t_minus_1_over_2;
+    Fp_model<n, modulus> w = (*this) ^ t_minus_1_over_2;
     Fp_model<n, modulus> x = (*this) * w;
     Fp_model<n, modulus> b = x * w; // b = (*this)^t
 
