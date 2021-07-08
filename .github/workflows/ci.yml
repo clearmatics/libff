@@ -32,6 +32,6 @@ jobs:
         CXX: ${{ matrix.compiler }}
       run: mkdir build && cd build && cmake ..
     - name: build
-      run: cd build && make
+      run: cd build && make all profile
     - name: test
-      run: cd build && make check
+      run: cd build && CTEST_OUTPUT_ON_FAILURE=1 make check

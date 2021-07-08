@@ -1,95 +1,238 @@
+#include "libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp"
+#include "libff/algebra/curves/curve_serialization.hpp"
+#include "libff/algebra/scalar_multiplication/multiexp.hpp"
+#include "libff/algebra/scalar_multiplication/multiexp_stream.hpp"
+#include "libff/common/profiling.hpp"
+#include "libff/common/rng.hpp"
+
 #include <cstdio>
-#include <libff/algebra/curves/bn128/bn128_pp.hpp>
-#include <libff/algebra/scalar_multiplication/multiexp.hpp>
-#include <libff/common/profiling.hpp>
-#include <libff/common/rng.hpp>
+#include <fstream>
+#include <sys/stat.h>
 #include <vector>
 
 using namespace libff;
 
-template<typename GroupT>
-using run_result_t = std::pair<long long, std::vector<GroupT>>;
+constexpr size_t NUM_ITERATIONS = 10;
+constexpr size_t NUM_DIFFERENT_ELEMENTS = 32;
 
-template<typename T> using test_instances_t = std::vector<std::vector<T>>;
+constexpr form_t FORM = form_montgomery;
+constexpr compression_t COMP = compression_off;
+
+template<typename GroupT> using run_result_t = std::pair<long long, GroupT>;
+
+template<typename T> using test_instances_t = std::vector<T>;
 
 template<typename GroupT>
-test_instances_t<GroupT> generate_group_elements(size_t count, size_t size)
+test_instances_t<GroupT> generate_group_elements(size_t num_elements)
 {
-    // generating a random group element is expensive,
-    // so for now we only generate a single one and repeat it
-    test_instances_t<GroupT> result(count);
+    test_instances_t<GroupT> result;
+    result.reserve(num_elements);
+    assert(result.size() == 0);
 
-    for (size_t i = 0; i < count; i++) {
+    // Generating a random group element is expensive, so for now we only
+    // generate NUM_DIFFERENT_ELEMENTS, and repeat them. Note, some methods
+    // require input to be in special form.
+
+    size_t i;
+    for (i = 0; i < NUM_DIFFERENT_ELEMENTS; ++i) {
         GroupT x = GroupT::random_element();
-        x.to_special(); // djb requires input to be in special form
-        for (size_t j = 0; j < size; j++) {
-            result[i].push_back(x);
-            // result[i].push_back(GroupT::random_element());
-        }
+        x.to_special();
+        result.push_back(x);
+    }
+    assert(result.size() == NUM_DIFFERENT_ELEMENTS);
+
+    for (; i < num_elements; ++i) {
+        assert(result.size() == i);
+        result.push_back(result[i % NUM_DIFFERENT_ELEMENTS]);
     }
 
+    assert(result.size() == num_elements);
     return result;
 }
 
 template<typename FieldT>
-test_instances_t<FieldT> generate_scalars(size_t count, size_t size)
+test_instances_t<FieldT> generate_scalars(size_t num_elements)
 {
-    // we use SHA512_rng because it is much faster than
-    // FieldT::random_element()
-    test_instances_t<FieldT> result(count);
-
-    for (size_t i = 0; i < count; i++) {
-        for (size_t j = 0; j < size; j++) {
-            result[i].push_back(SHA512_rng<FieldT>(i * size + j));
-        }
+    // Use SHA512_rng because it is much faster than FieldT::random_element()
+    test_instances_t<FieldT> result;
+    result.reserve(num_elements);
+    for (size_t i = 0; i < num_elements; i++) {
+        result.push_back(SHA512_rng<FieldT>(i));
     }
 
+    assert(result.size() == num_elements);
     return result;
 }
 
-template<typename GroupT, typename FieldT, multi_exp_method Method>
+// template<typename GroupT, typename FieldT>
+// run_result_t<GroupT> profile_multiexp(
+//     test_instances_t<GroupT> group_elements,
+//     test_instances_t<FieldT> scalars)
+// {
+//     long long start_time = get_nsec_time();
+
+//     std::vector<GroupT> answers;
+//     for (size_t i = 0; i < group_elements.size(); i++) {
+//         answers.push_back(multi_exp<GroupT, FieldT, Method>(
+//             group_elements[i].cbegin(), group_elements[i].cend(),
+//             scalars[i].cbegin(), scalars[i].cend(),
+//             1));
+//     }
+
+//     long long time_delta = get_nsec_time() - start_time;
+
+//     return run_result_t<GroupT>(time_delta, answers);
+// }
+
+template<form_t Form, compression_t Comp>
+std::string base_elements_filename(
+    const std::string &tag, const size_t num_elements)
+{
+    return std::string("multiexp_base_elements_") + tag +
+           ((Form == form_plain) ? "_plain_" : "_montgomery_") +
+           ((Comp == compression_on) ? "compressed_" : "uncompressed_") +
+           std::to_string(num_elements) + ".bin";
+}
+
+template<form_t Form, compression_t Comp, typename GroupT>
+void create_base_element_file_for_config(
+    const std::string &tag, const test_instances_t<GroupT> &base_elements)
+{
+    const std::string filename =
+        base_elements_filename<Form, Comp>(tag, base_elements.size());
+
+    std::cout << "Writing file '" << filename << "' ...";
+    std::flush(std::cout);
+
+    std::ofstream out_s(
+        filename.c_str(), std::ios_base::out | std::ios_base::binary);
+    for (const GroupT &el : base_elements) {
+        group_write<encoding_binary, Form, Comp>(el, out_s);
+    }
+    out_s.close();
+
+    std::cout << " DONE\n";
+}
+
+template<typename GroupT>
+void create_base_element_files(
+    const std::string &tag, const size_t num_elements)
+{
+    test_instances_t<GroupT> base_elements =
+        generate_group_elements<GroupT>(num_elements);
+    create_base_element_file_for_config<FORM, COMP>(tag, base_elements);
+}
+
+template<typename GroupT>
+test_instances_t<GroupT> read_group_elements(
+    const std::string &tag, const size_t num_elements)
+{
+    const std::string filename =
+        base_elements_filename<FORM, COMP>(tag, num_elements);
+
+    test_instances_t<GroupT> elements;
+    elements.reserve(num_elements);
+
+    std::ifstream in_s;
+    in_s.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+    in_s.open(filename, std::ios_base::in | std::ios_base::binary);
+    for (size_t i = 0; i < num_elements; ++i) {
+        GroupT v;
+        group_read<encoding_binary, FORM, COMP>(v, in_s);
+        elements.push_back(v);
+    }
+
+    return elements;
+}
+
+template<
+    typename GroupT,
+    typename FieldT,
+    multi_exp_method Method,
+    multi_exp_base_form BaseForm = multi_exp_base_form_normal>
 run_result_t<GroupT> profile_multiexp(
     test_instances_t<GroupT> group_elements, test_instances_t<FieldT> scalars)
 {
     long long start_time = get_nsec_time();
 
-    std::vector<GroupT> answers;
-    for (size_t i = 0; i < group_elements.size(); i++) {
-        answers.push_back(multi_exp<GroupT, FieldT, Method>(
-            group_elements[i].cbegin(),
-            group_elements[i].cend(),
-            scalars[i].cbegin(),
-            scalars[i].cend(),
-            1));
+    GroupT answer;
+    for (size_t iter = 0; iter < NUM_ITERATIONS; ++iter) {
+        answer = multi_exp<GroupT, FieldT, Method, BaseForm>(
+            group_elements.cbegin(),
+            group_elements.cend(),
+            scalars.cbegin(),
+            scalars.cend(),
+            1);
     }
 
     long long time_delta = get_nsec_time() - start_time;
 
-    return run_result_t<GroupT>(time_delta, answers);
+    return run_result_t<GroupT>(time_delta, answer);
+}
+
+template<form_t Form, compression_t Comp, typename GroupT, typename FieldT>
+run_result_t<GroupT> profile_multiexp_stream(
+    const std::string &tag, const std::vector<FieldT> &scalars)
+{
+    const size_t num_elements = scalars.size();
+    const std::string filename =
+        base_elements_filename<Form, Comp>(tag, num_elements);
+
+    struct stat s;
+    if (stat(filename.c_str(), &s)) {
+        throw std::runtime_error("no file: " + filename);
+    }
+
+    std::ifstream in_s(
+        filename.c_str(), std::ios_base::in | std::ios_base::binary);
+    in_s.exceptions(
+        std::ios_base::eofbit | std::ios_base::badbit | std::ios_base::failbit);
+
+    GroupT answer;
+
+    long long start_time = get_nsec_time();
+
+    for (size_t iter = 0; iter < NUM_ITERATIONS; ++iter) {
+        in_s.seekg(0llu);
+        answer = multi_exp_stream<Form, Comp, GroupT, FieldT>(in_s, scalars);
+    }
+
+    long long time_delta = get_nsec_time() - start_time;
+
+    return run_result_t<GroupT>(time_delta, answer);
 }
 
 template<typename GroupT, typename FieldT>
 void print_performance_csv(
+    const std::string &tag,
     size_t expn_start,
     size_t expn_end_fast,
     size_t expn_end_naive,
     bool compare_answers)
 {
+    std::cout << "Profiling " << tag << "\n";
     printf(
-        "\t%16s\t%16s\t%16s\t%16s\t%16s\n",
+        "\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\n",
         "bos-coster",
         "djb",
         "djb_signed",
         "djb_signed_mixed",
+        "from_stream",
         "naive");
     for (size_t expn = expn_start; expn <= expn_end_fast; expn++) {
         printf("%ld", expn);
         fflush(stdout);
 
-        test_instances_t<GroupT> group_elements =
-            generate_group_elements<GroupT>(10, 1 << expn);
-        test_instances_t<FieldT> scalars =
-            generate_scalars<FieldT>(10, 1 << expn);
+        test_instances_t<GroupT> group_elements;
+        try {
+            group_elements = read_group_elements<GroupT>(tag, 1 << expn);
+        } catch (const std::ifstream::failure &e) {
+            std::cout << "(Generating files for 1<<" << expn << ")\n";
+            create_base_element_files<GroupT>(tag, 1 << expn);
+            continue;
+        }
+
+        test_instances_t<FieldT> scalars = generate_scalars<FieldT>(1 << expn);
 
         run_result_t<GroupT> result_bos_coster =
             profile_multiexp<GroupT, FieldT, multi_exp_method_bos_coster>(
@@ -122,7 +265,8 @@ void print_performance_csv(
         run_result_t<GroupT> result_djb_signed_mixed = profile_multiexp<
             GroupT,
             FieldT,
-            multi_exp_method_BDLO12_signed_mixed>(group_elements, scalars);
+            multi_exp_method_BDLO12_signed,
+            multi_exp_base_form_special>(group_elements, scalars);
         printf("\t%16lld", result_djb_signed_mixed.first);
         fflush(stdout);
 
@@ -131,6 +275,17 @@ void print_performance_csv(
             fprintf(
                 stderr,
                 "Answers NOT MATCHING (djb_signed != djb_signed_mixed)\n");
+        }
+
+        run_result_t<GroupT> result_stream =
+            profile_multiexp_stream<FORM, COMP, GroupT, FieldT>(tag, scalars);
+        printf("\t%16lld", result_stream.first);
+        fflush(stdout);
+
+        if (compare_answers &&
+            (result_djb_signed_mixed.second != result_stream.second)) {
+            fprintf(
+                stderr, "Answers NOT MATCHING (djb_signed_mixed != stream)\n");
         }
 
         if (expn <= expn_end_naive) {
@@ -154,12 +309,13 @@ int main(void)
 {
     print_compilation_info();
 
-    printf("Profiling BN128_G1\n");
-    bn128_pp::init_public_params();
-    print_performance_csv<G1<bn128_pp>, Fr<bn128_pp>>(2, 20, 14, true);
+    alt_bn128_pp::init_public_params();
 
-    printf("Profiling BN128_G2\n");
-    print_performance_csv<G2<bn128_pp>, Fr<bn128_pp>>(2, 20, 14, true);
+    print_performance_csv<G1<alt_bn128_pp>, Fr<alt_bn128_pp>>(
+        "alt_bn128_g1", 8, 20, 14, true);
+
+    print_performance_csv<G2<alt_bn128_pp>, Fr<alt_bn128_pp>>(
+        "alt_bn128_g2", 8, 20, 14, true);
 
     return 0;
 }

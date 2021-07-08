@@ -114,6 +114,41 @@ ssize_t field_get_signed_digit(
     return (1 - overflow) * (digit - (carry * overflow_mask));
 }
 
+template<typename FieldT>
+void field_get_signed_digits(
+    std::vector<ssize_t> &digits,
+    const FieldT &v,
+    const size_t digit_size,
+    const size_t num_digits)
+{
+    assert(digits.size() >= num_digits);
+
+    // Code matches fixed_wnaf_digit(), but stores each digit.
+
+    const size_t carry_mask = 1ull << (digit_size - 1);
+    const ssize_t overflow_mask = 1ll << digit_size;
+    const auto v_bi = v.as_bigint();
+
+    size_t carry = 0;
+    ssize_t overflow = 0;
+
+    for (size_t digit_idx = 0; digit_idx < num_digits; ++digit_idx) {
+        //   if overflow, then digit = 0, carry = 1
+        //   if carry, digit = digit - overflow_mask,
+        //     (because overflow_mask is also the value added when carrying into
+        //      in the next digit)
+        //   else digit = digit
+
+        carry = overflow | carry;
+        const ssize_t digit =
+            field_get_digit(v_bi, digit_size, digit_idx) + carry;
+        overflow = (digit & overflow_mask) >> digit_size; // 1/0
+        carry = (digit & carry_mask) >> (digit_size - 1); // 1/0
+
+        digits[digit_idx] = (1 - overflow) * (digit - (carry * overflow_mask));
+    }
+}
+
 template<typename FieldT> FieldT coset_shift()
 {
     return FieldT::multiplicative_generator.squared();

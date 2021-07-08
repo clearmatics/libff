@@ -34,6 +34,15 @@ template<mp_size_t n>
 ssize_t field_get_signed_digit(
     const bigint<n> &v, const size_t digit_size, const size_t digit_index);
 
+/// Decompose the input into a (pre-allocated) vector of fixed-size signed
+/// digits, of size digit_size bits.
+template<typename FieldT>
+void field_get_signed_digits(
+    std::vector<ssize_t> &digits,
+    const FieldT &v,
+    const size_t digit_size,
+    const size_t num_digits);
+
 template<typename FieldT>
 std::vector<FieldT> pack_int_vector_into_field_element_vector(
     const std::vector<size_t> &v, const size_t w);
