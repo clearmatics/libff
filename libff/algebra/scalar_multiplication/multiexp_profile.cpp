@@ -9,7 +9,6 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <vector>
-
 using namespace libff;
 
 constexpr size_t NUM_ITERATIONS = 10;

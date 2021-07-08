@@ -202,6 +202,10 @@ if ("${IS_LIBFF_PARENT}")
 
     algebra/curves/profile/algebra_groups_read_profile.cpp
   )
+  # Required on some older Linux system, for aio_* cals
+  if (UNIX AND NOT APPLE)
+    target_link_libraries(algebra_groups_read_profile rt)
+  endif()
   target_link_libraries(algebra_groups_read_profile ff)
 
   add_dependencies(
