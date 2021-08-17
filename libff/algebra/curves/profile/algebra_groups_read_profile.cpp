@@ -367,19 +367,19 @@ ssize_t cb_wait(aiocb *cb)
     int err;
     for (;;) {
         err = aio_error(cb);
-        if (EINPROGRESS == err) {
+        if (err == EINPROGRESS) {
             std::this_thread::yield();
             // sleep(0);
             continue;
         }
 
         const ssize_t ret = aio_return(cb);
-        if (0 <= ret) {
+        if (ret >= 0) {
             // std::cout << "cb_wait: done\n";
             return ret;
         }
 
-        if (ECANCELED == err) {
+        if (err == ECANCELED) {
             throw std::runtime_error("aio_error: cancelled");
         }
 
@@ -388,83 +388,7 @@ ssize_t cb_wait(aiocb *cb)
     }
 }
 
-template<typename GroupT>
-void profile_group_read_random_aio_ordered_uncompressedw(
-    const std::string &identifier, const size_t interval)
-{
-    const std::string filename = get_filename(identifier);
-
-    // Treat the file as being divided into NUM_ELEMENTS_TO_READ groups, of
-    // size NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ, reading from a ranadom
-    // offset within each group.
-
-    const size_t GROUP_SIZE = interval;
-
-    // Read from group_offset[i] in i-th group, i.e. global offset:
-    //   GROUP_SIZE * i + group_offset[i]
-    std::vector<size_t> group_offsets;
-    group_offsets.reserve(NUM_ELEMENTS_TO_READ);
-    for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
-        group_offsets.push_back((size_t)rand() * GROUP_SIZE / RAND_MAX);
-    }
-
-    int fd = open(filename.c_str(), O_RDONLY);
-    if (fd < 0) {
-        throw std::runtime_error("failed to open " + filename);
-    }
-
-    aiocb cb1;
-    aiocb cb2;
-    GroupT dest1;
-    GroupT dest2;
-    const size_t size_on_disk = 2 * sizeof(dest1.X);
-
-    aiocb *cur_cb = &cb1;
-    aiocb *next_cb = &cb2;
-    GroupT *cur_dest = &dest1;
-    GroupT *next_dest = &dest2;
-
-    std::cout << "  Async Read '" << filename.c_str() << "' ("
-              << std::to_string(NUM_ELEMENTS_TO_READ) << " of "
-              << std::to_string(NUM_ELEMENTS_IN_FILE) << " elements ...\n";
-
-    {
-        enter_block("Read group elements profiling");
-
-        // Enqueue first request
-        cb_init(cur_cb, fd, group_offsets[0], size_on_disk, cur_dest);
-        cb_enqueue(cur_cb);
-
-        // Enqueue all requests
-        for (size_t i = 1; i < NUM_ELEMENTS_TO_READ; ++i) {
-            // Enqueue next (i-th)
-            const size_t file_offset =
-                (i * GROUP_SIZE + group_offsets[i]) * size_on_disk;
-            cb_init(next_cb, fd, file_offset, size_on_disk, next_dest);
-            cb_enqueue(next_cb);
-
-            // Wait for current and process
-            ssize_t bytes = cb_wait(cur_cb);
-            if (bytes != size_on_disk) {
-                throw std::runtime_error("insufficient bytes read");
-            }
-            // TODO: Check values
-
-            // Swap (at which point, cur_cb is the next element to wait for, and
-            // next_cb is unused).
-            std::swap(cur_cb, next_cb);
-            std::swap(cur_dest, next_dest);
-        }
-
-        // Wait for last request
-        cb_wait(cur_cb);
-        // TODO: Check values
-
-        leave_block("Read group elements profiling");
-    }
-}
-
-template<size_t BATCHSIZE> class batched_aio_reader
+template<size_t BatchSize> class batched_aio_reader
 {
 public:
     batched_aio_reader(int fd)
@@ -475,7 +399,7 @@ public:
     {
         memset(_batch1, 0, sizeof(_batch1));
         memset(_batch2, 0, sizeof(_batch2));
-        for (size_t i = 0; i < BATCHSIZE; ++i) {
+        for (size_t i = 0; i < BatchSize; ++i) {
             _batch1_ptrs[i] = &_batch1[i];
             _batch2_ptrs[i] = &_batch2[i];
         }
@@ -484,7 +408,7 @@ public:
     void enqueue_read_first_batch(
         size_t offset_bytes, size_t size_bytes, void *dest)
     {
-        assert(_next_batch_size < BATCHSIZE);
+        assert(_next_batch_size < BatchSize);
 
         aiocb *cb = _next_batch[_next_batch_size];
         cb_init(cb, _fd, offset_bytes, size_bytes, dest);
@@ -493,7 +417,7 @@ public:
         // batch.
 
         ++_next_batch_size;
-        if (_next_batch_size == BATCHSIZE) {
+        if (_next_batch_size == BatchSize) {
             enqueue_next_batch();
 
             std::swap(_active_batch, _next_batch);
@@ -503,13 +427,13 @@ public:
 
     void enqueue_read(size_t offset_bytes, size_t size_bytes, void *dest)
     {
-        assert(_next_batch_size < BATCHSIZE);
+        assert(_next_batch_size < BatchSize);
 
         aiocb *cb = _next_batch[_next_batch_size];
         cb_init(cb, _fd, offset_bytes, size_bytes, dest);
 
         ++_next_batch_size;
-        if (_next_batch_size == BATCHSIZE) {
+        if (_next_batch_size == BatchSize) {
             enqueue_next_batch();
         }
     }
@@ -517,7 +441,7 @@ public:
     void wait_last_read()
     {
         // Wait for the _active_batch
-        for (size_t i = 0; i < BATCHSIZE; ++i) {
+        for (size_t i = 0; i < BatchSize; ++i) {
             int r = cb_wait(_active_batch[i]);
             if (0 > r) {
                 throw std::runtime_error("bad read result");
@@ -535,42 +459,41 @@ public:
 protected:
     void enqueue_next_batch()
     {
-        int r = lio_listio(LIO_NOWAIT, _next_batch, BATCHSIZE, nullptr);
-        if (0 != r) {
+        int r = lio_listio(LIO_NOWAIT, _next_batch, BatchSize, nullptr);
+        if (r != 0) {
             throw std::runtime_error("enqueue_batch error");
         }
     }
 
     const int _fd;
-    aiocb _batch1[BATCHSIZE];
-    aiocb _batch2[BATCHSIZE];
-    aiocb *_batch1_ptrs[BATCHSIZE];
-    aiocb *_batch2_ptrs[BATCHSIZE];
+    aiocb _batch1[BatchSize];
+    aiocb _batch2[BatchSize];
+    aiocb *_batch1_ptrs[BatchSize];
+    aiocb *_batch2_ptrs[BatchSize];
     aiocb **_active_batch; // Next batch to wait for
     aiocb **_next_batch;   // Batch being filled
     size_t _next_batch_size;
 };
 
-/// Similar to profile_group_read_random_aio_ordered_uncompressed, but with
-/// more aio requests in-flight at the same time.
+/// Perform async reads of single group elements, with some (average) interval
+/// between reads on disk, using the aio_* family of functions. Multple aio
+/// requests are kept in-flight at the same time.
 template<typename GroupT>
 void profile_group_read_random_batch_aio_ordered_uncompressed(
     const std::string &identifier, const size_t interval)
 {
     const std::string filename = get_filename(identifier);
 
-    // Treat the file as being divided into NUM_ELEMENTS_TO_READ groups, of
-    // size NUM_ELEMENTS_IN_FILE / NUM_ELEMENTS_TO_READ, reading from a ranadom
-    // offset within each group.
+    // Perform reads from a set of orderd, but random, locations where the
+    // average interval between read locations (the sparsity) is `interval`.
+    // Treat the file as being divided into sections, each of size `interval`.
+    // For each section, we perform a single read from a random offset.
 
-    const size_t GROUP_SIZE = interval;
-
-    // Read from group_offset[i] in i-th group, i.e. global offset:
-    //   GROUP_SIZE * i + group_offset[i]
-    std::vector<size_t> group_offsets;
-    group_offsets.reserve(NUM_ELEMENTS_TO_READ);
+    // Preecompute the random offsets
+    std::vector<size_t> section_offsets;
+    section_offsets.reserve(NUM_ELEMENTS_TO_READ);
     for (size_t i = 0; i < NUM_ELEMENTS_TO_READ; ++i) {
-        group_offsets.push_back((size_t)rand() * GROUP_SIZE / RAND_MAX);
+        section_offsets.push_back((size_t)rand() * interval / RAND_MAX);
     }
 
     int fd = open(filename.c_str(), O_RDONLY);
@@ -602,7 +525,7 @@ void profile_group_read_random_batch_aio_ordered_uncompressed(
         // Enqueue first requests
         for (size_t j = 0; j < BATCH_SIZE; ++j) {
             reader.enqueue_read_first_batch(
-                group_offsets[i + j] * size_on_disk,
+                section_offsets[i + j] * size_on_disk,
                 size_on_disk,
                 cur_dest + j);
         }
@@ -613,7 +536,7 @@ void profile_group_read_random_batch_aio_ordered_uncompressed(
             // Enqueue next batch
             for (size_t j = 0; j < BATCH_SIZE; ++j) {
                 reader.enqueue_read(
-                    ((i + j) * GROUP_SIZE + group_offsets[i + j]) *
+                    ((i + j) * interval + section_offsets[i + j]) *
                         size_on_disk,
                     size_on_disk,
                     cur_dest + j);
