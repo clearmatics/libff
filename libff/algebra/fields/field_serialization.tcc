@@ -93,9 +93,9 @@ public:
     static void write(const Field &field_el, std::ostream &out_s)
     {
         if (Form == form_plain) {
-            out_s << '"' << bigint_to_hex(field_el.as_bigint()) << '"';
+            out_s << '"' << bigint_to_hex(field_el.as_bigint(), true) << '"';
         } else {
-            out_s << '"' << bigint_to_hex(field_el.mont_repr) << '"';
+            out_s << '"' << bigint_to_hex(field_el.mont_repr, true) << '"';
         }
     };
     static void read(Field &field_el, std::istream &in_s)
@@ -274,9 +274,27 @@ void bigint_from_hex(BigIntT &v, const std::string &hex)
     hex_to_bytes_reversed(hex, &v.data[0], sizeof(v.data));
 }
 
-template<typename BigIntT> std::string bigint_to_hex(const BigIntT &v)
+template<typename BigIntT>
+std::string bigint_to_hex(const BigIntT &v, bool prefix)
 {
-    return bytes_to_hex_reversed(&v.data[0], sizeof(v.data));
+    return bytes_to_hex_reversed(&v.data[0], sizeof(v.data), prefix);
+}
+
+template<typename BigIntT>
+void bigint_from_dec(BigIntT &v, const std::string &dec)
+{
+    v = BigIntT(dec.c_str());
+}
+
+template<typename BigIntT> std::string bigint_to_dec(const BigIntT &v)
+{
+    const char *const fmt = "%Nd";
+    const size_t num_chars = gmp_snprintf(nullptr, 0, fmt, v.data, BigIntT::N);
+    std::string result(num_chars, '0');
+    // num_chars holds the number of characters, excluding the null terminator,
+    // but gmp_snprintf requires the number INCLUDING the terminator.
+    gmp_snprintf(&result[0], num_chars + 1, fmt, v.data, BigIntT::N);
+    return result;
 }
 
 template<encoding_t Enc, form_t Form, typename FieldT>
