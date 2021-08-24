@@ -24,12 +24,24 @@ file(
   GLOB_RECURSE
   LIBFF_SOURCE
 
-  algebra/curves/alt_bn128/*.cpp
-  algebra/curves/edwards/*.cpp
-  algebra/curves/mnt/mnt4/*.cpp
-  algebra/curves/mnt/mnt46_common.cpp
-  algebra/curves/mnt/mnt6/*.cpp
-  algebra/curves/bls12_377/*.cpp
+  algebra/serialization.?pp
+  algebra/serialization.tcc
+  algebra/fields/field_serialization.?pp
+  algebra/fields/field_serialization.tcc
+  algebra/curves/alt_bn128/*.?pp
+  algebra/curves/alt_bn128/*.tcc
+  algebra/curves/edwards/*.?pp
+  algebra/curves/edwards/*.tcc
+  algebra/curves/mnt/mnt4/*.?pp
+  algebra/curves/mnt/mnt4/*.tcc
+  algebra/curves/mnt/mnt46_common.?pp
+  algebra/curves/mnt/mnt46_common.tcc
+  algebra/curves/mnt/mnt6/*.?pp
+  algebra/curves/mnt/mnt6/*.tcc
+  algebra/curves/bls12_377/*.?pp
+  algebra/curves/bls12_377/*.tcc
+  algebra/curves/bw6_761/*.?pp
+  algebra/curves/bw6_761/*.tcc
   common/double.cpp
   common/profiling.cpp
   common/utils.cpp
@@ -70,6 +82,19 @@ install(
 # Tests
 if ("${IS_LIBFF_PARENT}")
   add_executable(
+    common_test
+    EXCLUDE_FROM_ALL
+
+    common/test_common.cpp
+  )
+  target_link_libraries(
+    common_test
+
+    ff
+    gtest_main
+  )
+
+  add_executable(
     algebra_bilinearity_test
     EXCLUDE_FROM_ALL
 
@@ -79,6 +104,7 @@ if ("${IS_LIBFF_PARENT}")
     algebra_bilinearity_test
 
     ff
+    gtest_main
   )
 
   add_executable(
@@ -91,6 +117,7 @@ if ("${IS_LIBFF_PARENT}")
     algebra_groups_test
 
     ff
+    gtest_main
   )
 
   add_executable(
@@ -103,9 +130,27 @@ if ("${IS_LIBFF_PARENT}")
     algebra_fields_test
 
     ff
+    gtest_main
+  )
+
+  add_executable(
+    algebra_multiexp_test
+    EXCLUDE_FROM_ALL
+
+    algebra/scalar_multiplication/test_multiexp.cpp
+  )
+  target_link_libraries(
+    algebra_multiexp_test
+
+    ff
+    gtest_main
   )
 
   include(CTest)
+  add_test(
+    NAME common_test
+    COMMAND common_test
+  )
   add_test(
     NAME algebra_bilinearity_test
     COMMAND algebra_bilinearity_test
@@ -119,9 +164,16 @@ if ("${IS_LIBFF_PARENT}")
     COMMAND algebra_fields_test
   )
 
+  add_test(
+    NAME algebra_multiexp_test
+    COMMAND algebra_multiexp_test
+  )
+
+  add_dependencies(check common_test)
   add_dependencies(check algebra_bilinearity_test)
   add_dependencies(check algebra_groups_test)
   add_dependencies(check algebra_fields_test)
+  add_dependencies(check algebra_multiexp_test)
 
   add_executable(
     multiexp_profile
@@ -136,5 +188,31 @@ if ("${IS_LIBFF_PARENT}")
     ff
   )
 
-  add_dependencies(profile multiexp_profile)
+  add_executable(
+    algebra_groups_profile
+    EXCLUDE_FROM_ALL
+
+    algebra/curves/profile/algebra_groups_profile.cpp
+  )
+  target_link_libraries(algebra_groups_profile ff)
+
+  add_executable(
+    algebra_groups_read_profile
+    EXCLUDE_FROM_ALL
+
+    algebra/curves/profile/algebra_groups_read_profile.cpp
+  )
+  # Required on some older Linux system, for aio_* cals
+  if (UNIX AND NOT APPLE)
+    target_link_libraries(algebra_groups_read_profile rt)
+  endif()
+  target_link_libraries(algebra_groups_read_profile ff)
+
+  add_dependencies(
+    profile
+
+    multiexp_profile
+    algebra_groups_profile
+    algebra_groups_read_profile
+  )
 endif()

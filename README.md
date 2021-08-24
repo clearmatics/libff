@@ -1,5 +1,6 @@
 <h1 align="center">libff</h1>
 <h4 align="center">C++ library for Finite Fields and Elliptic Curves</h4>
+<h4 align="center">(forked from https://github.com/scipr-lab/libff)</h4>
 
 ___libff___ is a C++ library for finite fields and elliptic curves. The library is developed by [SCIPR Lab] and contributors (see [AUTHORS] file) and is released under the MIT License (see [LICENSE] file).
 
@@ -47,7 +48,10 @@ The libff library currently provides the following options:
    An implementation of the MNT cycle (MNT4-MNT6) with small fields.
 
 * `bls12-377`:
-   An implementation of the BLS12-377 curve as introduced in the [Zexe](https://eprint.iacr.org/2018/962.pdf) paper.
+   An implementation of the BLS12_377 curve as introduced in the [Zexe](https://eprint.iacr.org/2018/962.pdf) paper.
+
+* `bw6_761`:
+   An implementation of the BW6_761 curve as introduced in [Optimized and secure pairing-friendly elliptic curves suitable for one layer proof composition](https://eprint.iacr.org/2020/351.pdf)
 
 Note that `bn128` requires an x86-64 CPU while the other curve choices
 should be architecture-independent.
@@ -61,19 +65,32 @@ The library has the following dependencies:
 * [GMP](http://gmplib.org/)
 * [libprocps](http://packages.ubuntu.com/trusty/libprocps-dev)
 
+Furthermore, [Doxygen](https://www.doxygen.nl/index.html) is used to generate the documentation.
+
 The library has been tested on Linux, but it is compatible with Windows and Mac OS X.
 
 ### Installation
 
-On Ubuntu 14.04 LTS:
+On Ubuntu 20.04 LTS:
 
+```console
+sudo apt update -y
+sudo apt install \
+    build-essential \
+    git \
+    libboost-all-dev \
+    cmake \
+    libgmp3-dev \
+    libssl-dev \
+    libprocps-dev \
+    pkg-config
 ```
-sudo apt-get install build-essential git libboost-all-dev cmake libgmp3-dev libssl-dev libprocps3-dev pkg-config
-```
+
+Note: To install Doxygen, run `sudo apt install doxygen graphviz`.
 
 Fetch dependencies from their GitHub repos:
 
-```
+```console
 git submodule init && git submodule update
 ```
 
@@ -81,16 +98,16 @@ git submodule init && git submodule update
 
 To compile, starting at the project root directory, create the build directory and Makefile:
 
-```
+```console
 mkdir build && cd build && cmake ..
 ```
 Optionally, you can specify the install location by providing the desired install path prefix:
-```
+```console
 cmake .. -DCMAKE_INSTALL_PREFIX=/install/path
 ```
 
 Then, to compile and install the library, run this within the build directory:
-```
+```console
 make
 make install
 ```
@@ -100,14 +117,22 @@ This will install `libff.a` into `/install/path/lib`; so your application should
 ## Testing
 
 To execute the tests for this library, run:
-```
+```console
 make check
+```
+
+## Generate the Doxygen documentation
+
+To generate the documentation, run:
+```console
+cd build
+cmake .. -DGEN_DOC=ON && make docs
 ```
 
 ## Profile
 
 To compile the multi-exponentiation profiler in this library, run:
-```
+```console
 make profile
 ```
 The resulting profiler is named `multiexp_profile` and can be found in the `libff` folder under the build directory.

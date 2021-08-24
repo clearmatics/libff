@@ -3,7 +3,8 @@
 
  Declaration of interfaces for the (extension) field Fp4.
 
- The field Fp4 equals Fp2[V]/(V^2-U) where Fp2 = Fp[U]/(U^2-non_residue) and non_residue is in Fp.
+ The field Fp4 equals Fp2[V]/(V^2-U) where Fp2 = Fp[U]/(U^2-non_residue) and
+ non_residue is in Fp.
 
  ASSUMPTION: the modulus p is 1 mod 6.
 
@@ -19,39 +20,63 @@
 #include <libff/algebra/fields/fp.hpp>
 #include <libff/algebra/fields/fp2.hpp>
 
-namespace libff {
+namespace libff
+{
 
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp4_model;
+template<mp_size_t n, const bigint<n> &modulus> class Fp4_model;
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::ostream& operator<<(std::ostream &, const Fp4_model<n, modulus> &);
+template<mp_size_t n, const bigint<n> &modulus>
+std::ostream &operator<<(std::ostream &, const Fp4_model<n, modulus> &);
 
-template<mp_size_t n, const bigint<n>& modulus>
-std::istream& operator>>(std::istream &, Fp4_model<n, modulus> &);
+template<mp_size_t n, const bigint<n> &modulus>
+std::istream &operator>>(std::istream &, Fp4_model<n, modulus> &);
 
-template<mp_size_t n, const bigint<n>& modulus>
-class Fp4_model {
+template<mp_size_t n, const bigint<n> &modulus> class Fp4_model
+{
 public:
     typedef Fp_model<n, modulus> my_Fp;
     typedef Fp2_model<n, modulus> my_Fp2;
     typedef my_Fp2 my_Fpe;
 
+    // The field extension here is 4, but this is built as 2 over 2. As such,
+    // the value of `extension_degree` only contains the field extension used to
+    // obtain the top most level in the field tower, which is 2 here, not 4.
+    //
+    // TODO: Maybe choose another name for this static member to avoid confusion
+    // with the actual "total" extension degree.
+    // Note: `final_extension_degree` could be a good name.
+    static const size_t tower_extension_degree = 2;
+
     static my_Fp non_residue;
-    static my_Fp Frobenius_coeffs_c1[4]; // non_residue^((modulus^i-1)/4) for i=0,1,2,3
+    /// non_residue^((modulus^i-1)/4) for i=0,1,2,3
+    static my_Fp Frobenius_coeffs_c1[4];
 
-    my_Fp2 c0, c1;
-    Fp4_model() {};
-    Fp4_model(const my_Fp2& c0, const my_Fp2& c1) : c0(c0), c1(c1) {};
+    my_Fp2 coeffs[2];
+    Fp4_model(){};
+    Fp4_model(const my_Fp2 &c0, const my_Fp2 &c1)
+    {
+        this->coeffs[0] = c0;
+        this->coeffs[1] = c1;
+        return;
+    };
 
-    void print() const { printf("c0/c1:\n"); c0.print(); c1.print(); }
-    void clear() { c0.clear(); c1.clear(); }
+    void print() const
+    {
+        printf("c0/c1:\n");
+        coeffs[0].print();
+        coeffs[1].print();
+    }
+    void clear()
+    {
+        coeffs[0].clear();
+        coeffs[1].clear();
+    }
 
     static Fp4_model<n, modulus> zero();
     static Fp4_model<n, modulus> one();
     static Fp4_model<n, modulus> random_element();
 
-    bool is_zero() const { return c0.is_zero() && c1.is_zero(); }
+    bool is_zero() const { return coeffs[0].is_zero() && coeffs[1].is_zero(); }
     bool operator==(const Fp4_model &other) const;
     bool operator!=(const Fp4_model &other) const;
 
@@ -74,30 +99,39 @@ public:
     static bigint<n> base_field_char() { return modulus; }
     static constexpr size_t extension_degree() { return 4; }
 
-    friend std::ostream& operator<< <n, modulus>(std::ostream &out, const Fp4_model<n, modulus> &el);
-    friend std::istream& operator>> <n, modulus>(std::istream &in, Fp4_model<n, modulus> &el);
+    friend std::ostream &operator<<<n, modulus>(
+        std::ostream &out, const Fp4_model<n, modulus> &el);
+    friend std::istream &operator>>
+        <n, modulus>(std::istream &in, Fp4_model<n, modulus> &el);
 };
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp4_model<n, modulus> operator*(const Fp_model<n, modulus> &lhs, const Fp4_model<n, modulus> &rhs);
+template<mp_size_t n, const bigint<n> &modulus>
+Fp4_model<n, modulus> operator*(
+    const Fp_model<n, modulus> &lhs, const Fp4_model<n, modulus> &rhs);
 
-template<mp_size_t n, const bigint<n>& modulus>
-Fp4_model<n, modulus> operator*(const Fp2_model<n, modulus> &lhs, const Fp4_model<n, modulus> &rhs);
+template<mp_size_t n, const bigint<n> &modulus>
+Fp4_model<n, modulus> operator*(
+    const Fp2_model<n, modulus> &lhs, const Fp4_model<n, modulus> &rhs);
 
-template<mp_size_t n, const bigint<n>& modulus, mp_size_t m>
-Fp4_model<n, modulus> operator^(const Fp4_model<n, modulus> &self, const bigint<m> &exponent);
+template<mp_size_t n, const bigint<n> &modulus, mp_size_t m>
+Fp4_model<n, modulus> operator^(
+    const Fp4_model<n, modulus> &self, const bigint<m> &exponent);
 
-template<mp_size_t n, const bigint<n>& modulus, mp_size_t m, const bigint<m>& modulus_p>
-Fp4_model<n, modulus> operator^(const Fp4_model<n, modulus> &self, const Fp_model<m, modulus_p> &exponent);
+template<
+    mp_size_t n,
+    const bigint<n> &modulus,
+    mp_size_t m,
+    const bigint<m> &modulus_p>
+Fp4_model<n, modulus> operator^(
+    const Fp4_model<n, modulus> &self, const Fp_model<m, modulus_p> &exponent);
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp4_model<n, modulus>::non_residue;
 
-template<mp_size_t n, const bigint<n>& modulus>
+template<mp_size_t n, const bigint<n> &modulus>
 Fp_model<n, modulus> Fp4_model<n, modulus>::Frobenius_coeffs_c1[4];
 
-
-} // libff
+} // namespace libff
 
 #include <libff/algebra/fields/fp4.tcc>
 

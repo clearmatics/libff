@@ -7,16 +7,16 @@
 
 #ifndef BN_UTILS_HPP_
 #define BN_UTILS_HPP_
-#include <vector>
-
 #include "depends/ate-pairing/include/bn.h"
 
-namespace libff {
+#include <vector>
 
-template<typename FieldT>
-void bn_batch_invert(std::vector<FieldT> &vec);
+namespace libff
+{
 
-} // libff
+template<typename FieldT> void bn_batch_invert(std::vector<FieldT> &vec);
+
+} // namespace libff
 
 #include <libff/algebra/curves/bn128/bn_utils.tcc>
 

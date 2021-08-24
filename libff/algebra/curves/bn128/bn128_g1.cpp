@@ -8,7 +8,8 @@
 #include <libff/algebra/curves/bn128/bn128_g1.hpp>
 #include <libff/algebra/curves/bn128/bn_utils.hpp>
 
-namespace libff {
+namespace libff
+{
 
 #ifdef PROFILE_OP_COUNTS
 long long bn128_G1::add_cnt = 0;
@@ -19,6 +20,7 @@ std::vector<size_t> bn128_G1::wnaf_window_table;
 std::vector<size_t> bn128_G1::fixed_base_exp_window_table;
 bn128_G1 bn128_G1::G1_zero;
 bn128_G1 bn128_G1::G1_one;
+bigint<bn128_G1::h_limbs> bn128_G1::h;
 
 bn::Fp bn128_G1::sqrt(const bn::Fp &el)
 {
@@ -31,8 +33,7 @@ bn::Fp bn128_G1::sqrt(const bn::Fp &el)
 #if DEBUG
     // check if square with Euler's criterion
     bn::Fp check = b;
-    for (size_t i = 0; i < v-1; ++i)
-    {
+    for (size_t i = 0; i < v - 1; ++i) {
         bn::Fp::square(check, check);
     }
 
@@ -42,24 +43,22 @@ bn::Fp bn128_G1::sqrt(const bn::Fp &el)
     // compute square root with Tonelli--Shanks
     // (does not terminate if not a square!)
 
-    while (b != bn::Fp(1))
-    {
+    while (b != bn::Fp(1)) {
         size_t m = 0;
         bn::Fp b2m = b;
-        while (b2m != bn::Fp(1))
-        {
+        while (b2m != bn::Fp(1)) {
             // invariant: b2m = b^(2^m) after entering this loop
             bn::Fp::square(b2m, b2m);
             m += 1;
         }
 
-        int j = v-m-1;
+        // w = z^2^(v-m-1)
+        int j = v - m - 1;
         w = z;
-        while (j > 0)
-        {
+        while (j > 0) {
             bn::Fp::square(w, w);
             --j;
-        } // w = z^2^(v-m-1)
+        }
 
         z = w * w;
         b = b * z;
@@ -79,40 +78,33 @@ bn128_G1::bn128_G1()
 
 void bn128_G1::print() const
 {
-    if (this->is_zero())
-    {
+    if (this->is_zero()) {
         printf("O\n");
-    }
-    else
-    {
+    } else {
         bn128_G1 copy(*this);
         copy.to_affine_coordinates();
-        std::cout << "(" << copy.X.toString(10) << " : " << copy.Y.toString(10) << " : " << copy.Z.toString(10) << ")\n";
+        std::cout << "(" << copy.X.toString(10) << " : " << copy.Y.toString(10)
+                  << " : " << copy.Z.toString(10) << ")\n";
     }
 }
 
 void bn128_G1::print_coordinates() const
 {
-    if (this->is_zero())
-    {
+    if (this->is_zero()) {
         printf("O\n");
-    }
-    else
-    {
-        std::cout << "(" << X.toString(10) << " : " << Y.toString(10) << " : " << Z.toString(10) << ")\n";
+    } else {
+        std::cout << "(" << X.toString(10) << " : " << Y.toString(10) << " : "
+                  << Z.toString(10) << ")\n";
     }
 }
 
 void bn128_G1::to_affine_coordinates()
 {
-    if (this->is_zero())
-    {
+    if (this->is_zero()) {
         X = 0;
         Y = 1;
         Z = 0;
-    }
-    else
-    {
+    } else {
         bn::Fp r;
         r = Z;
         r.inverse();
@@ -124,30 +116,19 @@ void bn128_G1::to_affine_coordinates()
     }
 }
 
-void bn128_G1::to_special()
-{
-    this->to_affine_coordinates();
-}
+void bn128_G1::to_special() { this->to_affine_coordinates(); }
 
-bool bn128_G1::is_special() const
-{
-    return (this->is_zero() || this->Z == 1);
-}
+bool bn128_G1::is_special() const { return (this->is_zero() || this->Z == 1); }
 
-bool bn128_G1::is_zero() const
-{
-    return Z.isZero();
-}
+bool bn128_G1::is_zero() const { return Z.isZero(); }
 
 bool bn128_G1::operator==(const bn128_G1 &other) const
 {
-    if (this->is_zero())
-    {
+    if (this->is_zero()) {
         return other.is_zero();
     }
 
-    if (other.is_zero())
-    {
+    if (other.is_zero()) {
         return false;
     }
 
@@ -159,8 +140,7 @@ bool bn128_G1::operator==(const bn128_G1 &other) const
     bn::Fp::mul(lhs, Z2sq, this->X);
     bn::Fp::mul(rhs, Z1sq, other.X);
 
-    if (lhs != rhs)
-    {
+    if (lhs != rhs) {
         return false;
     }
 
@@ -173,7 +153,7 @@ bool bn128_G1::operator==(const bn128_G1 &other) const
     return (lhs == rhs);
 }
 
-bool bn128_G1::operator!=(const bn128_G1& other) const
+bool bn128_G1::operator!=(const bn128_G1 &other) const
 {
     return !(operator==(other));
 }
@@ -181,13 +161,11 @@ bool bn128_G1::operator!=(const bn128_G1& other) const
 bn128_G1 bn128_G1::operator+(const bn128_G1 &other) const
 {
     // handle special cases having to do with O
-    if (this->is_zero())
-    {
+    if (this->is_zero()) {
         return other;
     }
 
-    if (other.is_zero())
-    {
+    if (other.is_zero()) {
         return *this;
     }
 
@@ -195,12 +173,9 @@ bn128_G1 bn128_G1::operator+(const bn128_G1 &other) const
     // (they cannot exist in a prime-order subgroup)
 
     // handle double case, and then all the rest
-    if (this->operator==(other))
-    {
+    if (this->operator==(other)) {
         return this->dbl();
-    }
-    else
-    {
+    } else {
         return this->add(other);
     }
 }
@@ -234,13 +209,11 @@ bn128_G1 bn128_G1::add(const bn128_G1 &other) const
 
 bn128_G1 bn128_G1::mixed_add(const bn128_G1 &other) const
 {
-    if (this->is_zero())
-    {
+    if (this->is_zero()) {
         return other;
     }
 
-    if (other.is_zero())
-    {
+    if (other.is_zero()) {
         return *this;
     }
 
@@ -274,8 +247,7 @@ bn128_G1 bn128_G1::mixed_add(const bn128_G1 &other) const
     bn::Fp S2;
     bn::Fp::mul(S2, other.Y, Z1_cubed); // S2 = Y2*Z1*Z1Z1
 
-    if (U1 == U2 && S1 == S2)
-    {
+    if (U1 == U2 && S1 == S2) {
         // dbl case; nothing of above can be reused
         return this->dbl();
     }
@@ -333,15 +305,15 @@ bn128_G1 bn128_G1::dbl() const
     return result;
 }
 
-bn128_G1 bn128_G1::zero()
+bn128_G1 bn128_G1::mul_by_cofactor() const
 {
-    return G1_zero;
+    // Cofactor = 1
+    return (*this);
 }
 
-bn128_G1 bn128_G1::one()
-{
-    return G1_one;
-}
+const bn128_G1 &bn128_G1::zero() { return G1_zero; }
+
+const bn128_G1 &bn128_G1::one() { return G1_one; }
 
 bn128_G1 bn128_G1::random_element()
 {
@@ -350,16 +322,14 @@ bn128_G1 bn128_G1::random_element()
 
 bool bn128_G1::is_well_formed() const
 {
-    if (this->is_zero())
-    {
+    if (this->is_zero()) {
         return true;
-    }
-    else
-    {
+    } else {
         /*
           y^2 = x^3 + b
 
-          We are using Jacobian coordinates, so equation we need to check is actually
+          We are using Jacobian coordinates, so equation we need to check is
+          actually
 
           (y/z^3)^2 = (x/z^2)^3 + b
           y^2 / z^6 = x^3 / z^6 + b
@@ -379,6 +349,8 @@ bool bn128_G1::is_well_formed() const
     }
 }
 
+bool bn128_G1::is_in_safe_subgroup() const { return true; }
+
 void bn128_G1::write_uncompressed(std::ostream &out) const
 {
     bn128_G1 gcopy(*this);
@@ -389,8 +361,8 @@ void bn128_G1::write_uncompressed(std::ostream &out) const
 #ifndef BINARY_OUTPUT
     out << gcopy.X << OUTPUT_SEPARATOR << gcopy.Y;
 #else
-    out.write((char*) &gcopy.X, sizeof(gcopy.X));
-    out.write((char*) &gcopy.Y, sizeof(gcopy.Y));
+    out.write((char *)&gcopy.X, sizeof(gcopy.X));
+    out.write((char *)&gcopy.Y, sizeof(gcopy.Y));
 #endif
 }
 
@@ -404,15 +376,15 @@ void bn128_G1::write_compressed(std::ostream &out) const
 #ifndef BINARY_OUTPUT
     out << gcopy.X;
 #else
-    out.write((char*) &gcopy.X, sizeof(gcopy.X));
+    out.write((char *)&gcopy.X, sizeof(gcopy.X));
 #endif
-    out << OUTPUT_SEPARATOR << (((unsigned char*)&gcopy.Y)[0] & 1 ? '1' : '0');
+    out << OUTPUT_SEPARATOR << (((unsigned char *)&gcopy.Y)[0] & 1 ? '1' : '0');
 }
 
 void bn128_G1::read_uncompressed(std::istream &in, bn128_G1 &g)
 {
     char is_zero;
-    in.read((char*)&is_zero, 1); // this reads is_zero;
+    in.read((char *)&is_zero, 1); // this reads is_zero;
     is_zero -= '0';
     consume_OUTPUT_SEPARATOR(in);
 
@@ -421,17 +393,14 @@ void bn128_G1::read_uncompressed(std::istream &in, bn128_G1 &g)
     consume_OUTPUT_SEPARATOR(in);
     in >> g.Y;
 #else
-    in.read((char*) &g.X, sizeof(g.X));
-    in.read((char*) &g.Y, sizeof(g.Y));
+    in.read((char *)&g.X, sizeof(g.X));
+    in.read((char *)&g.Y, sizeof(g.Y));
 #endif
 
     /* finalize */
-    if (!is_zero)
-    {
+    if (!is_zero) {
         g.Z = bn::Fp(1);
-    }
-    else
-    {
+    } else {
         g = bn128_G1::zero();
     }
 }
@@ -439,7 +408,8 @@ void bn128_G1::read_uncompressed(std::istream &in, bn128_G1 &g)
 void bn128_G1::read_compressed(std::istream &in, bn128_G1 &g)
 {
     char is_zero;
-    in.read((char*)&is_zero, 1); // this reads is_zero;
+    // this reads is_zero;
+    in.read((char *)&is_zero, 1);
     is_zero -= '0';
     consume_OUTPUT_SEPARATOR(in);
 
@@ -447,16 +417,15 @@ void bn128_G1::read_compressed(std::istream &in, bn128_G1 &g)
 #ifndef BINARY_OUTPUT
     in >> tX;
 #else
-    in.read((char*)&tX, sizeof(tX));
+    in.read((char *)&tX, sizeof(tX));
 #endif
     consume_OUTPUT_SEPARATOR(in);
     unsigned char Y_lsb;
-    in.read((char*)&Y_lsb, 1);
+    in.read((char *)&Y_lsb, 1);
     Y_lsb -= '0';
 
     // y = +/- sqrt(x^3 + b)
-    if (!is_zero)
-    {
+    if (!is_zero) {
         g.X = tX;
         bn::Fp tX2, tY2;
         bn::Fp::square(tX2, tX);
@@ -464,24 +433,20 @@ void bn128_G1::read_compressed(std::istream &in, bn128_G1 &g)
         bn::Fp::add(tY2, tY2, bn128_coeff_b);
 
         g.Y = bn128_G1::sqrt(tY2);
-        if ((((unsigned char*)&g.Y)[0] & 1) != Y_lsb)
-        {
+        if ((((unsigned char *)&g.Y)[0] & 1) != Y_lsb) {
             bn::Fp::neg(g.Y, g.Y);
         }
     }
 
     /* finalize */
-    if (!is_zero)
-    {
+    if (!is_zero) {
         g.Z = bn::Fp(1);
-    }
-    else
-    {
+    } else {
         g = bn128_G1::zero();
     }
 }
 
-std::ostream& operator<<(std::ostream &out, const bn128_G1 &g)
+std::ostream &operator<<(std::ostream &out, const bn128_G1 &g)
 {
 #ifdef NO_PT_COMPRESSION
     g.write_uncompressed(out);
@@ -491,7 +456,7 @@ std::ostream& operator<<(std::ostream &out, const bn128_G1 &g)
     return out;
 }
 
-std::istream& operator>>(std::istream &in, bn128_G1 &g)
+std::istream &operator>>(std::istream &in, bn128_G1 &g)
 {
 #ifdef NO_PT_COMPRESSION
     bn128_G1::read_uncompressed(in, g);
@@ -506,16 +471,14 @@ void bn128_G1::batch_to_special_all_non_zeros(std::vector<bn128_G1> &vec)
     std::vector<bn::Fp> Z_vec;
     Z_vec.reserve(vec.size());
 
-    for (auto &el: vec)
-    {
+    for (auto &el : vec) {
         Z_vec.emplace_back(el.Z);
     }
     bn_batch_invert<bn::Fp>(Z_vec);
 
     const bn::Fp one = 1;
 
-    for (size_t i = 0; i < vec.size(); ++i)
-    {
+    for (size_t i = 0; i < vec.size(); ++i) {
         bn::Fp Z2, Z3;
         bn::Fp::square(Z2, Z_vec[i]);
         bn::Fp::mul(Z3, Z2, Z_vec[i]);
@@ -526,4 +489,4 @@ void bn128_G1::batch_to_special_all_non_zeros(std::vector<bn128_G1> &vec)
     }
 }
 
-} // libff
+} // namespace libff

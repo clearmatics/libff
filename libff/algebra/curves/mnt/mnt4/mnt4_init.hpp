@@ -18,7 +18,8 @@
 #include <libff/algebra/fields/fp2.hpp>
 #include <libff/algebra/fields/fp4.hpp>
 
-namespace libff {
+namespace libff
+{
 
 #define mnt4_modulus_r mnt46_modulus_A
 #define mnt4_modulus_q mnt46_modulus_B
@@ -38,7 +39,8 @@ typedef Fp2_model<mnt4_q_limbs, mnt4_modulus_q> mnt4_Fq2;
 typedef Fp4_model<mnt4_q_limbs, mnt4_modulus_q> mnt4_Fq4;
 typedef mnt4_Fq4 mnt4_GT;
 
-// parameters for twisted short Weierstrass curve E'/Fq2 : y^2 = x^3 + (a * twist^2) * x + (b * twist^3)
+// parameters for twisted short Weierstrass curve E'/Fq2 : y^2 = x^3 + (a *
+// twist^2) * x + (b * twist^3)
 extern mnt4_Fq2 mnt4_twist;
 extern mnt4_Fq2 mnt4_twist_coeff_a;
 extern mnt4_Fq2 mnt4_twist_coeff_b;
@@ -52,7 +54,7 @@ extern mnt4_Fq mnt4_twist_mul_by_q_Y;
 // parameters for pairing
 extern bigint<mnt4_q_limbs> mnt4_ate_loop_count;
 extern bool mnt4_ate_is_loop_count_neg;
-extern bigint<4*mnt4_q_limbs> mnt4_final_exponent;
+extern bigint<4 * mnt4_q_limbs> mnt4_final_exponent;
 extern bigint<mnt4_q_limbs> mnt4_final_exponent_last_chunk_abs_of_w0;
 extern bool mnt4_final_exponent_last_chunk_is_w0_neg;
 extern bigint<mnt4_q_limbs> mnt4_final_exponent_last_chunk_w1;
@@ -62,6 +64,6 @@ void init_mnt4_params();
 class mnt4_G1;
 class mnt4_G2;
 
-} // libff
+} // namespace libff
 
 #endif // MNT4_INIT_HPP_

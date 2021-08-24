@@ -18,12 +18,13 @@
 #include <set>
 #include <vector>
 
-namespace libff {
+namespace libff
+{
 
 /*
  * @todo
- * The serialization is fragile. Shoud be rewritten using a standard, portable-format
- * library like boost::serialize.
+ * The serialization is fragile. Shoud be rewritten using a standard,
+ * portable-format library like boost::serialize.
  *
  * However, for now the following conventions are used within the code.
  *
@@ -78,28 +79,26 @@ inline void input_bool(std::istream &in, bool &b);
 inline void output_bool_vector(std::ostream &out, const std::vector<bool> &v);
 inline void input_bool_vector(std::istream &in, std::vector<bool> &v);
 
-template<typename T>
-T reserialize(const T &obj);
+template<typename T> T reserialize(const T &obj);
 
 template<typename T>
-std::ostream& operator<<(std::ostream& out, const std::vector<T> &v);
+std::ostream &operator<<(std::ostream &out, const std::vector<T> &v);
 
 template<typename T>
-std::istream& operator>>(std::ostream& out, std::vector<T> &v);
+std::istream &operator>>(std::ostream &out, std::vector<T> &v);
 
 template<typename T1, typename T2>
-std::ostream& operator<<(std::ostream& out, const std::map<T1, T2> &m);
+std::ostream &operator<<(std::ostream &out, const std::map<T1, T2> &m);
 
 template<typename T1, typename T2>
-std::istream& operator>>(std::istream& in, std::map<T1, T2> &m);
+std::istream &operator>>(std::istream &in, std::map<T1, T2> &m);
 
 template<typename T>
-std::ostream& operator<<(std::ostream& out, const std::set<T> &s);
+std::ostream &operator<<(std::ostream &out, const std::set<T> &s);
 
-template<typename T>
-std::istream& operator>>(std::istream& in, std::set<T> &s);
+template<typename T> std::istream &operator>>(std::istream &in, std::set<T> &s);
 
-} // libff
+} // namespace libff
 
 #include <libff/common/serialization.tcc>
 

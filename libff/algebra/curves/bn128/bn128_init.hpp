@@ -12,13 +12,16 @@
 #include <libff/algebra/curves/public_params.hpp>
 #include <libff/algebra/fields/fp.hpp>
 
-namespace libff {
+namespace libff
+{
 
 const mp_size_t bn128_r_bitcount = 254;
 const mp_size_t bn128_q_bitcount = 254;
 
-const mp_size_t bn128_r_limbs = (bn128_r_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
-const mp_size_t bn128_q_limbs = (bn128_q_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+const mp_size_t bn128_r_limbs =
+    (bn128_r_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
+const mp_size_t bn128_q_limbs =
+    (bn128_q_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
 
 extern bigint<bn128_r_limbs> bn128_modulus_r;
 extern bigint<bn128_q_limbs> bn128_modulus_q;
@@ -43,5 +46,5 @@ class bn128_G2;
 class bn128_GT;
 typedef bn128_GT bn128_Fq12;
 
-} // libff
+} // namespace libff
 #endif // BN128_INIT_HPP_

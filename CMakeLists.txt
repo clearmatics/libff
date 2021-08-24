@@ -1,6 +1,21 @@
 cmake_minimum_required(VERSION 2.8)
 
+# Change the compiler BEFORE the first `project()` command to avoid an infinite loop.
+# See: https://public.kitware.com/pipermail/cmake/2009-November/033133.html
+if(APPLE)
+  # If custom llvm compilers are available, use them (for openmp
+  # support), otherwise disable multicore.
+  if(EXISTS "/usr/local/opt/llvm/bin/clang")
+    set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang")
+    set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++")
+  endif()
+endif()
+
 project (libff)
+
+# Versionning of the project
+set(LIBFF_VERSION_MAJOR 0)
+set(LIBFF_VERSION_MINOR 1)
 
 # Default to RelWithDebInfo configuration if no configuration is explicitly specified.
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -12,7 +27,7 @@ set(
   "BN128"
   CACHE
   STRING
-  "Default curve: one of ALT_BN128, BN128, EDWARDS, MNT4, MNT6, BLS12_377"
+  "Default curve: one of ALT_BN128, BN128, EDWARDS, MNT4, MNT6, BLS12_377, BW6_761"
 )
 
 option(
@@ -28,7 +43,7 @@ option(
 option(
   MULTICORE
   "Enable parallelized execution, using OpenMP"
-  OFF
+  ON
 )
 option(
   BINARY_OUTPUT
@@ -85,6 +100,12 @@ option(
   "Install submodule dependencies if caller originates from here"
   ON
 )
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+if(APPLE)
+  set(WITH_PROCPS OFF)
+endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # Common compilation flags and warning configuration
@@ -196,25 +217,14 @@ endif()
 # Configure CCache if available
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif(CCACHE_FOUND)
 
 if ("${IS_LIBFF_PARENT}")
-  find_program(
-    MARKDOWN
-
-    markdown_py
-    DOC "Path to markdown_py binary"
-  )
-  if(MARKDOWN-NOTFOUND)
-  else()
-     add_custom_target(
-       doc
-       ${MARKDOWN} -f ${CMAKE_CURRENT_BINARY_DIR}/README.html -x toc -x extra --noisy ${CMAKE_CURRENT_SOURCE_DIR}/README.md
-       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-       COMMENT "Translating from markdown to HTML" VERBATIM
-     )
+  # If the option -DGEN_DOC is used, add the `docs` target
+  if("${GEN_DOC}")
+    include(cmake/documentation.cmake)
   endif()
 
   # Add a `make check` target that builds and tests
@@ -223,10 +233,11 @@ if ("${IS_LIBFF_PARENT}")
   # Add a `make profile` target that builds and profiles
   add_custom_target(
     profile
-    COMMAND ${CMAKE_COMMAND}
-     -E echo 'Built target finished'
+    COMMAND ${CMAKE_COMMAND} -E echo 'Built target finished'
   )
 
   add_subdirectory(depends)
+  add_subdirectory(ffi)
 endif()
+
 add_subdirectory(libff)

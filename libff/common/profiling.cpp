@@ -15,37 +15,46 @@
 #include <chrono>
 #include <cstdio>
 #include <ctime>
-#include <list>
-#include <stdexcept>
-#include <vector>
-
 #include <libff/common/default_types/ec_pp.hpp>
 #include <libff/common/profiling.hpp>
 #include <libff/common/utils.hpp>
+#include <list>
+#include <stdexcept>
+#include <vector>
 
 #ifndef NO_PROCPS
 #include <proc/readproc.h>
 #endif
 
-namespace libff {
+namespace libff
+{
 
 long long get_nsec_time()
 {
     auto timepoint = std::chrono::high_resolution_clock::now();
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(timepoint.time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(
+               timepoint.time_since_epoch())
+        .count();
 }
 
-/* Return total CPU time consumsed by all threads of the process, in nanoseconds. */
+/* Return total CPU time consumsed by all threads of the process, in
+ * nanoseconds. */
 long long get_nsec_cpu_time()
 {
 #if _MSC_VER
-	return 0;
+    return 0;
 #else
     ::timespec ts;
-    if ( ::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) )
-        throw ::std::runtime_error("clock_gettime(CLOCK_PROCESS_CPUTIME_ID) failed");
-        // If we expected this to work, don't silently ignore failures, because that would hide the problem and incur an unnecessarily system-call overhead. So if we ever observe this exception, we should probably add a suitable #ifdef .
-        //TODO: clock_gettime(CLOCK_PROCESS_CPUTIME_ID) is not supported by native Windows. What about Cygwin? Should we #ifdef on CLOCK_PROCESS_CPUTIME_ID or on __linux__?
+    if (::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts))
+        throw ::std::runtime_error(
+            "clock_gettime(CLOCK_PROCESS_CPUTIME_ID) failed");
+    // If we expected this to work, don't silently ignore failures, because that
+    // would hide the problem and incur an unnecessarily system-call overhead.
+    // So if we ever observe this exception, we should probably add a suitable
+    // #ifdef .
+    // TODO: clock_gettime(CLOCK_PROCESS_CPUTIME_ID) is not supported by native
+    // Windows. What about Cygwin? Should we #ifdef on CLOCK_PROCESS_CPUTIME_ID
+    // or on __linux__?
     return ts.tv_sec * 1000000000ll + ts.tv_nsec;
 #endif
 }
@@ -65,17 +74,20 @@ std::map<std::string, size_t> invocation_counts;
 std::map<std::string, long long> enter_times;
 std::map<std::string, long long> last_times;
 std::map<std::string, long long> cumulative_times;
-//TODO: Instead of analogous maps for time and cpu_time, use a single struct-valued map
+// TODO: Instead of analogous maps for time and cpu_time, use a single
+// struct-valued map
 std::map<std::string, long long> enter_cpu_times;
 std::map<std::string, long long> last_cpu_times;
 std::map<std::pair<std::string, std::string>, long long> op_counts;
-std::map<std::pair<std::string, std::string>, long long> cumulative_op_counts; // ((msg, data_point), value)
-    // TODO: Convert op_counts and cumulative_op_counts from pair to structs
+std::map<std::pair<std::string, std::string>, long long>
+    cumulative_op_counts; // ((msg, data_point), value)
+                          // TODO: Convert op_counts and cumulative_op_counts
+                          // from pair to structs
 size_t indentation = 0;
 
 std::vector<std::string> block_names;
 
-std::list<std::pair<std::string, long long*> > op_data_points = {
+std::list<std::pair<std::string, long long *>> op_data_points = {
 #ifdef PROFILE_OP_COUNTS
     std::make_pair("Fradd", &Fr<default_ec_pp>::add_cnt),
     std::make_pair("Frsub", &Fr<default_ec_pp>::sub_cnt),
@@ -108,14 +120,23 @@ void print_cumulative_time_entry(const std::string &key, const long long factor)
     const double total_ms = (cumulative_times.at(key) * 1e-6);
     const size_t cnt = invocation_counts.at(key);
     const double avg_ms = total_ms / cnt;
-    printf("   %-45s: %12.5fms = %lld * %0.5fms (%zu invocations, %0.5fms = %lld * %0.5fms per invocation)\n", key.c_str(), total_ms, factor, total_ms/factor, cnt, avg_ms, factor, avg_ms/factor);
+    printf(
+        "   %-45s: %12.5fms = %lld * %0.5fms (%zu invocations, %0.5fms = %lld "
+        "* %0.5fms per invocation)\n",
+        key.c_str(),
+        total_ms,
+        factor,
+        total_ms / factor,
+        cnt,
+        avg_ms,
+        factor,
+        avg_ms / factor);
 }
 
 void print_cumulative_times(const long long factor)
 {
     printf("Dumping times:\n");
-    for (auto& kv : cumulative_times)
-    {
+    for (auto &kv : cumulative_times) {
         print_cumulative_time_entry(kv.first, factor);
     }
 }
@@ -124,25 +145,25 @@ void print_cumulative_op_counts(const bool only_fq)
 {
 #ifdef PROFILE_OP_COUNTS
     printf("Dumping operation counts:\n");
-    for (auto& msg : invocation_counts)
-    {
+    for (auto &msg : invocation_counts) {
         printf("  %-45s: ", msg.first.c_str());
         bool first = true;
-        for (auto& data_point : op_data_points)
-        {
-            if (only_fq && data_point.first.compare(0, 2, "Fq") != 0)
-            {
+        for (auto &data_point : op_data_points) {
+            if (only_fq && data_point.first.compare(0, 2, "Fq") != 0) {
                 continue;
             }
 
-            if (!first)
-            {
+            if (!first) {
                 printf(", ");
             }
-            printf("%-5s = %7.0f (%3zu)",
-                   data_point.first.c_str(),
-                   1. * cumulative_op_counts[std::make_pair(msg.first, data_point.first)] / msg.second,
-                   msg.second);
+            printf(
+                "%-5s = %7.0f (%3zu)",
+                data_point.first.c_str(),
+                1. *
+                    cumulative_op_counts[std::make_pair(
+                        msg.first, data_point.first)] /
+                    msg.second,
+                msg.second);
             first = false;
         }
         printf("\n");
@@ -160,14 +181,15 @@ void print_op_profiling(const std::string &msg)
 
     printf("(opcounts) = (");
     bool first = true;
-    for (std::pair<std::string, long long*> p : op_data_points)
-    {
-        if (!first)
-        {
+    for (std::pair<std::string, long long *> p : op_data_points) {
+        if (!first) {
             printf(", ");
         }
 
-        printf("%s=%lld", p.first.c_str(), *(p.second)-op_counts[std::make_pair(msg, p.first)]);
+        printf(
+            "%s=%lld",
+            p.first.c_str(),
+            *(p.second) - op_counts[std::make_pair(msg, p.first)]);
         first = false;
     }
     printf(")");
@@ -176,8 +198,8 @@ void print_op_profiling(const std::string &msg)
 #endif
 }
 
-static void print_times_from_last_and_start(long long     now, long long     last,
-                                            long long cpu_now, long long cpu_last)
+static void print_times_from_last_and_start(
+    long long now, long long last, long long cpu_now, long long cpu_last)
 {
     long long time_from_start = now - start_time;
     long long time_from_last = now - last;
@@ -186,21 +208,25 @@ static void print_times_from_last_and_start(long long     now, long long     las
     long long cpu_time_from_last = cpu_now - cpu_last;
 
     if (time_from_last != 0) {
-        double parallelism_from_last = 1.0 * cpu_time_from_last / time_from_last;
+        double parallelism_from_last =
+            1.0 * cpu_time_from_last / time_from_last;
         printf("[%0.4fs x%0.2f]", time_from_last * 1e-9, parallelism_from_last);
     } else {
         printf("[             ]");
     }
     if (time_from_start != 0) {
-        double parallelism_from_start = 1.0 * cpu_time_from_start / time_from_start;
-        printf("\t(%0.4fs x%0.2f from start)", time_from_start * 1e-9, parallelism_from_start);
+        double parallelism_from_start =
+            1.0 * cpu_time_from_start / time_from_start;
+        printf(
+            "\t(%0.4fs x%0.2f from start)",
+            time_from_start * 1e-9,
+            parallelism_from_start);
     }
 }
 
-void print_time(const char* msg)
+void print_time(const char *msg)
 {
-    if (inhibit_profiling_info)
-    {
+    if (inhibit_profiling_info) {
         return;
     }
 
@@ -221,31 +247,30 @@ void print_time(const char* msg)
 
 void print_header(const char *msg)
 {
-    printf("\n================================================================================\n");
+    printf("\n================================================================="
+           "===============\n");
     printf("%s\n", msg);
-    printf("================================================================================\n\n");
+    printf("==================================================================="
+           "=============\n\n");
 }
 
 void print_indent()
 {
-    for (size_t i = 0; i < indentation; ++i)
-    {
+    for (size_t i = 0; i < indentation; ++i) {
         printf("  ");
     }
 }
 
 void op_profiling_enter(const std::string &msg)
 {
-    for (std::pair<std::string, long long*> p : op_data_points)
-    {
+    for (std::pair<std::string, long long *> p : op_data_points) {
         op_counts[std::make_pair(msg, p.first)] = *(p.second);
     }
 }
 
 void enter_block(const std::string &msg, const bool indent)
 {
-    if (inhibit_profiling_counters)
-    {
+    if (inhibit_profiling_counters) {
         return;
     }
 
@@ -255,8 +280,7 @@ void enter_block(const std::string &msg, const bool indent)
     long long cpu_t = get_nsec_cpu_time();
     enter_cpu_times[msg] = cpu_t;
 
-    if (inhibit_profiling_info)
-    {
+    if (inhibit_profiling_info) {
         return;
     }
 
@@ -272,8 +296,7 @@ void enter_block(const std::string &msg, const bool indent)
         printf("\n");
         fflush(stdout);
 
-        if (indent)
-        {
+        if (indent) {
             ++indentation;
         }
     }
@@ -281,8 +304,7 @@ void enter_block(const std::string &msg, const bool indent)
 
 void leave_block(const std::string &msg, const bool indent)
 {
-    if (inhibit_profiling_counters)
-    {
+    if (inhibit_profiling_counters) {
         return;
     }
 
@@ -301,14 +323,13 @@ void leave_block(const std::string &msg, const bool indent)
     last_cpu_times[msg] = (cpu_t - enter_cpu_times[msg]);
 
 #ifdef PROFILE_OP_COUNTS
-    for (std::pair<std::string, long long*> p : op_data_points)
-    {
-        cumulative_op_counts[std::make_pair(msg, p.first)] += *(p.second)-op_counts[std::make_pair(msg, p.first)];
+    for (std::pair<std::string, long long *> p : op_data_points) {
+        cumulative_op_counts[std::make_pair(msg, p.first)] +=
+            *(p.second) - op_counts[std::make_pair(msg, p.first)];
     }
 #endif
 
-    if (inhibit_profiling_info)
-    {
+    if (inhibit_profiling_info) {
         return;
     }
 
@@ -316,14 +337,14 @@ void leave_block(const std::string &msg, const bool indent)
 #pragma omp critical
 #endif
     {
-        if (indent)
-        {
+        if (indent) {
             --indentation;
         }
 
         print_indent();
         printf("(leave) %-35s\t", msg.c_str());
-        print_times_from_last_and_start(t, enter_times[msg], cpu_t, enter_cpu_times[msg]);
+        print_times_from_last_and_start(
+            t, enter_times[msg], cpu_t, enter_cpu_times[msg]);
         print_op_profiling(msg);
         printf("\n");
         fflush(stdout);
@@ -335,13 +356,15 @@ void print_mem(const std::string &s)
 #ifndef NO_PROCPS
     struct proc_t usage;
     look_up_our_self(&usage);
-    if (s.empty())
-    {
-        printf("* Peak vsize (physical memory+swap) in mebibytes: %lu\n", usage.vsize >> 20);
-    }
-    else
-    {
-        printf("* Peak vsize (physical memory+swap) in mebibytes (%s): %lu\n", s.c_str(), usage.vsize >> 20);
+    if (s.empty()) {
+        printf(
+            "* Peak vsize (physical memory+swap) in mebibytes: %lu\n",
+            usage.vsize >> 20);
+    } else {
+        printf(
+            "* Peak vsize (physical memory+swap) in mebibytes (%s): %lu\n",
+            s.c_str(),
+            usage.vsize >> 20);
     }
 #else
     UNUSED(s);
@@ -382,4 +405,4 @@ void print_compilation_info()
 #endif
 }
 
-} // libff
+} // namespace libff
