@@ -65,15 +65,28 @@ The library has the following dependencies:
 * [GMP](http://gmplib.org/)
 * [libprocps](http://packages.ubuntu.com/trusty/libprocps-dev)
 
+Furthermore, [Doxygen](https://www.doxygen.nl/index.html) is used to generate the documentation.
+
 The library has been tested on Linux, but it is compatible with Windows and Mac OS X.
 
 ### Installation
 
-On Ubuntu 14.04 LTS:
+On Ubuntu 20.04 LTS:
 
 ```
-sudo apt-get install build-essential git libboost-all-dev cmake libgmp3-dev libssl-dev libprocps3-dev pkg-config
+sudo apt update -y
+sudo apt install \
+    build-essential \
+    git \
+    libboost-all-dev \
+    cmake \
+    libgmp3-dev \
+    libssl-dev \
+    libprocps-dev \
+    pkg-config
 ```
+
+Note: To install Doxygen, run `sudo apt install doxygen graphviz`.
 
 Fetch dependencies from their GitHub repos:
 
@@ -106,6 +119,14 @@ This will install `libff.a` into `/install/path/lib`; so your application should
 To execute the tests for this library, run:
 ```
 make check
+```
+
+## Generate the Doxygen documentation
+
+To generate the documentation, run:
+```
+cd build
+cmake .. -DGEN_DOC=ON && make docs
 ```
 
 ## Profile

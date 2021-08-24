@@ -1,4 +1,4 @@
-# Curve BW6_761
+# Implementation of curve BW6_761
 
 This implementation of `BW6_761` is adapted from Youssef El Housni's implementation (https://github.com/EYBlockchain/zk-swap-libff/tree/ey/libff/algebra/curves/bw6_761).
 
