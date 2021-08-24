@@ -37,9 +37,9 @@ public:
     typedef Fp2_model<n, modulus> my_Fp2;
 
     static my_Fp2 non_residue;
-    // non_residue^((modulus^i-1)/3)   for i=0,1,2,3,4,5
+    /// non_residue^((modulus^i-1)/3)   for i=0,1,2,3,4,5
     static my_Fp2 Frobenius_coeffs_c1[6];
-    // non_residue^((2*modulus^i-2)/3) for i=0,1,2,3,4,5
+    /// non_residue^((2*modulus^i-2)/3) for i=0,1,2,3,4,5
     static my_Fp2 Frobenius_coeffs_c2[6];
 
     static const size_t tower_extension_degree = 3;

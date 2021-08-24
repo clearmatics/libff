@@ -41,7 +41,7 @@ bool is_little_endian();
 
 std::string FORMAT(const std::string &prefix, const char *format, ...);
 
-/* A variadic template to suppress unused argument warnings */
+/// A variadic template to suppress unused argument warnings
 template<typename... Types> void UNUSED(Types &&...) {}
 
 #ifdef DEBUG

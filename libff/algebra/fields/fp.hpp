@@ -54,31 +54,31 @@ public:
     static long long inv_cnt;
 #endif
 
-    // The "base"/"ground" field
+    /// The "base"/"ground" field
     static const size_t tower_extension_degree = 1;
 
     static size_t num_bits;
-    // (modulus-1)/2
+    /// (modulus-1)/2
     static bigint<n> euler;
-    // modulus = 2^s * t + 1
+    /// modulus = 2^s * t + 1
     static size_t s;
-    // with t odd
+    /// with t odd
     static bigint<n> t;
-    // (t-1)/2
+    /// (t-1)/2
     static bigint<n> t_minus_1_over_2;
-    // a quadratic nonresidue
+    /// a quadratic nonresidue
     static Fp_model<n, modulus> nqr;
-    // nqr^t
+    /// nqr^t
     static Fp_model<n, modulus> nqr_to_t;
-    // generator of Fp^*
+    /// generator of Fp^*
     static Fp_model<n, modulus> multiplicative_generator;
-    // generator^((modulus-1)/2^s)
+    /// generator^((modulus-1)/2^s)
     static Fp_model<n, modulus> root_of_unity;
-    // -modulus^(-1) mod W, where W = 2^(word size)
+    /// -modulus^(-1) mod W, where W = 2^(word size)
     static mp_limb_t inv;
-    // R^2, where R = W^k, where k = ??
+    /// R^2, where R = W^k, where k = ??
     static bigint<n> Rsquared;
-    // R^3
+    /// R^3
     static bigint<n> Rcubed;
 
     static bool modulus_is_valid()
@@ -125,7 +125,8 @@ public:
     Fp_model squared() const;
     Fp_model &invert();
     Fp_model inverse() const;
-    Fp_model sqrt() const; // HAS TO BE A SQUARE (else does not terminate)
+    /// HAS TO BE A SQUARE (else does not terminate)
+    Fp_model sqrt() const;
 
     Fp_model operator^(const unsigned long pow) const;
     template<mp_size_t m> Fp_model operator^(const bigint<m> &pow) const;
@@ -141,10 +142,10 @@ public:
     /// returns random element of Fp_model
     static Fp_model<n, modulus> random_element();
 
-    // generator^k, for k = 1 to m, domain size m
+    /// generator^k, for k = 1 to m, domain size m
     static Fp_model<n, modulus> geometric_generator();
 
-    // generator++, for k = 1 to m, domain size m
+    /// generator++, for k = 1 to m, domain size m
     static Fp_model<n, modulus> arithmetic_generator();
 
 protected:

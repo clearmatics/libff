@@ -40,7 +40,7 @@ public:
     typedef my_Fp3 my_Fpe;
 
     static my_Fp non_residue;
-    // non_residue^((modulus^i-1)/6)   for i=0,1,2,3,4,5
+    /// non_residue^((modulus^i-1)/6)   for i=0,1,2,3,4,5
     static my_Fp Frobenius_coeffs_c1[6];
 
     static const size_t tower_extension_degree = 2;

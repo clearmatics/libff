@@ -36,24 +36,24 @@ public:
 
     static const size_t tower_extension_degree = 3;
 
-    // (modulus^3-1)/2
+    /// (modulus^3-1)/2
     static bigint<3 * n> euler;
-    // modulus^3 = 2^s * t + 1
+    /// modulus^3 = 2^s * t + 1
     static size_t s;
-    // with t odd
+    /// with t odd
     static bigint<3 * n> t;
-    // (t-1)/2
+    /// (t-1)/2
     static bigint<3 * n> t_minus_1_over_2;
-    // X^6-non_residue irreducible over Fp; used for constructing
-    //   aFp3 = Fp[X] / (X^3 - non_residue)
+    /// X^6-non_residue irreducible over Fp; used for constructing
+    ///   aFp3 = Fp[X] / (X^3 - non_residue)
     static my_Fp non_residue;
-    // a quadratic nonresidue in Fp3
+    /// a quadratic nonresidue in Fp3
     static Fp3_model<n, modulus> nqr;
-    // nqr^t
+    /// nqr^t
     static Fp3_model<n, modulus> nqr_to_t;
-    // non_residue^((modulus^i-1)/3)   for i=0,1,2
+    /// non_residue^((modulus^i-1)/3)   for i=0,1,2
     static my_Fp Frobenius_coeffs_c1[3];
-    // non_residue^((2*modulus^i-2)/3) for i=0,1,2
+    /// non_residue^((2*modulus^i-2)/3) for i=0,1,2
     static my_Fp Frobenius_coeffs_c2[3];
 
     my_Fp coeffs[3];
@@ -101,7 +101,8 @@ public:
     Fp3_model squared() const;
     Fp3_model inverse() const;
     Fp3_model Frobenius_map(unsigned long power) const;
-    Fp3_model sqrt() const; // HAS TO BE A SQUARE (else does not terminate)
+    /// HAS TO BE A SQUARE (else does not terminate)
+    Fp3_model sqrt() const;
 
     template<mp_size_t m> Fp3_model operator^(const bigint<m> &other) const;
 
