@@ -73,7 +73,7 @@ The library has been tested on Linux, but it is compatible with Windows and Mac 
 
 On Ubuntu 20.04 LTS:
 
-```
+```console
 sudo apt update -y
 sudo apt install \
     build-essential \
@@ -90,7 +90,7 @@ Note: To install Doxygen, run `sudo apt install doxygen graphviz`.
 
 Fetch dependencies from their GitHub repos:
 
-```
+```console
 git submodule init && git submodule update
 ```
 
@@ -98,16 +98,16 @@ git submodule init && git submodule update
 
 To compile, starting at the project root directory, create the build directory and Makefile:
 
-```
+```console
 mkdir build && cd build && cmake ..
 ```
 Optionally, you can specify the install location by providing the desired install path prefix:
-```
+```console
 cmake .. -DCMAKE_INSTALL_PREFIX=/install/path
 ```
 
 Then, to compile and install the library, run this within the build directory:
-```
+```console
 make
 make install
 ```
@@ -117,14 +117,14 @@ This will install `libff.a` into `/install/path/lib`; so your application should
 ## Testing
 
 To execute the tests for this library, run:
-```
+```console
 make check
 ```
 
 ## Generate the Doxygen documentation
 
 To generate the documentation, run:
-```
+```console
 cd build
 cmake .. -DGEN_DOC=ON && make docs
 ```
@@ -132,7 +132,7 @@ cmake .. -DGEN_DOC=ON && make docs
 ## Profile
 
 To compile the multi-exponentiation profiler in this library, run:
-```
+```console
 make profile
 ```
 The resulting profiler is named `multiexp_profile` and can be found in the `libff` folder under the build directory.
