@@ -15,8 +15,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update -y
+        sudo apt install -y build-essential git libboost-all-dev cmake libgmp3-dev libssl-dev libprocps-dev pkg-config
         sudo apt install -y doxygen graphviz
-    - name: Generatate documentation
+    - name: Generate documentation
       run: |
         mkdir -p build
         pushd build
