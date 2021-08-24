@@ -42,22 +42,22 @@ public:
 
     static void static_init();
 
-    // (modulus^2-1)/2
+    /// (modulus^2-1)/2
     static bigint<2 * n> euler;
-    // modulus^2 = 2^s * t + 1
+    /// modulus^2 = 2^s * t + 1
     static size_t s;
-    // with t odd
+    /// with t odd
     static bigint<2 * n> t;
-    // (t-1)/2
+    /// (t-1)/2
     static bigint<2 * n> t_minus_1_over_2;
-    // X^4-non_residue irreducible over Fp; used for constructing Fp2 = Fp[X] /
-    // (X^2 - non_residue)
+    /// X^4-non_residue irreducible over Fp; used for constructing Fp2 = Fp[X] /
+    /// (X^2 - non_residue)
     static my_Fp non_residue;
-    // a quadratic nonresidue in Fp2
+    /// a quadratic nonresidue in Fp2
     static Fp2_model<n, modulus> nqr;
-    // nqr^t
+    /// nqr^t
     static Fp2_model<n, modulus> nqr_to_t;
-    // non_residue^((modulus^i-1)/2) for i=0,1
+    /// non_residue^((modulus^i-1)/2) for i=0,1
     static my_Fp Frobenius_coeffs_c1[2];
 
     my_Fp coeffs[2];
@@ -94,11 +94,11 @@ public:
     Fp2_model operator-(const Fp2_model &other) const;
     Fp2_model operator*(const Fp2_model &other) const;
     Fp2_model operator-() const;
-    // default is squared_complex
+    /// default is squared_complex
     Fp2_model squared() const;
     Fp2_model inverse() const;
     Fp2_model Frobenius_map(unsigned long power) const;
-    // HAS TO BE A SQUARE (else does not terminate)
+    /// HAS TO BE A SQUARE (else does not terminate)
     Fp2_model sqrt() const;
     Fp2_model squared_karatsuba() const;
     Fp2_model squared_complex() const;

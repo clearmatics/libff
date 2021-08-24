@@ -42,13 +42,13 @@ public:
     // the value of `extension_degree` only contains the field extension used to
     // obtain the top most level in the field tower, which is 2 here, not 4.
     //
-    // TODO: Maybe chosen another name for this static member to avoid confusion
+    // TODO: Maybe choose another name for this static member to avoid confusion
     // with the actual "total" extension degree.
     // Note: `final_extension_degree` could be a good name.
     static const size_t tower_extension_degree = 2;
 
     static my_Fp non_residue;
-    // non_residue^((modulus^i-1)/4) for i=0,1,2,3
+    /// non_residue^((modulus^i-1)/4) for i=0,1,2,3
     static my_Fp Frobenius_coeffs_c1[4];
 
     my_Fp2 coeffs[2];

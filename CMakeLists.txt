@@ -13,6 +13,10 @@ endif()
 
 project (libff)
 
+# Versionning of the project
+set(LIBFF_VERSION_MAJOR 0)
+set(LIBFF_VERSION_MINOR 1)
+
 # Default to RelWithDebInfo configuration if no configuration is explicitly specified.
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type on single-configuration generators" FORCE)
@@ -213,25 +217,14 @@ endif()
 # Configure CCache if available
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif(CCACHE_FOUND)
 
 if ("${IS_LIBFF_PARENT}")
-  find_program(
-    MARKDOWN
-
-    markdown_py
-    DOC "Path to markdown_py binary"
-  )
-  if(MARKDOWN-NOTFOUND)
-  else()
-     add_custom_target(
-       doc
-       ${MARKDOWN} -f ${CMAKE_CURRENT_BINARY_DIR}/README.html -x toc -x extra --noisy ${CMAKE_CURRENT_SOURCE_DIR}/README.md
-       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-       COMMENT "Translating from markdown to HTML" VERBATIM
-     )
+  # If the option -DGEN_DOC is used, add the `docs` target
+  if("${GEN_DOC}")
+    include(cmake/documentation.cmake)
   endif()
 
   # Add a `make check` target that builds and tests
@@ -240,12 +233,11 @@ if ("${IS_LIBFF_PARENT}")
   # Add a `make profile` target that builds and profiles
   add_custom_target(
     profile
-    COMMAND ${CMAKE_COMMAND}
-     -E echo 'Built target finished'
+    COMMAND ${CMAKE_COMMAND} -E echo 'Built target finished'
   )
 
   add_subdirectory(depends)
-
   add_subdirectory(ffi)
 endif()
+
 add_subdirectory(libff)

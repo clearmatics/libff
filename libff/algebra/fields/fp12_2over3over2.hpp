@@ -41,7 +41,7 @@ public:
     typedef Fp6_3over2_model<n, modulus> my_Fp6;
 
     static Fp2_model<n, modulus> non_residue;
-    // non_residue^((modulus^i-1)/6) for i=0,...,11
+    /// non_residue^((modulus^i-1)/6) for i=0,...,11
     static Fp2_model<n, modulus> Frobenius_coeffs_c1[12];
 
     static const size_t tower_extension_degree = 2;
@@ -79,7 +79,7 @@ public:
     Fp12_2over3over2_model operator-(const Fp12_2over3over2_model &other) const;
     Fp12_2over3over2_model operator*(const Fp12_2over3over2_model &other) const;
     Fp12_2over3over2_model operator-() const;
-    // default is squared_complex
+    /// default is squared_complex
     Fp12_2over3over2_model squared() const;
     Fp12_2over3over2_model squared_karatsuba() const;
     Fp12_2over3over2_model squared_complex() const;
