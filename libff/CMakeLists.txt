@@ -24,28 +24,11 @@ file(
   GLOB_RECURSE
   LIBFF_SOURCE
 
-  algebra/serialization.?pp
-  algebra/serialization.tcc
-  algebra/fields/field_serialization.?pp
-  algebra/fields/field_serialization.tcc
-  algebra/curves/alt_bn128/*.?pp
-  algebra/curves/alt_bn128/*.tcc
-  algebra/curves/edwards/*.?pp
-  algebra/curves/edwards/*.tcc
-  algebra/curves/mnt/mnt4/*.?pp
-  algebra/curves/mnt/mnt4/*.tcc
-  algebra/curves/mnt/mnt46_common.?pp
-  algebra/curves/mnt/mnt46_common.tcc
-  algebra/curves/mnt/mnt6/*.?pp
-  algebra/curves/mnt/mnt6/*.tcc
-  algebra/curves/bls12_377/*.?pp
-  algebra/curves/bls12_377/*.tcc
-  algebra/curves/bw6_761/*.?pp
-  algebra/curves/bw6_761/*.tcc
-  common/double.cpp
-  common/profiling.cpp
-  common/utils.cpp
+  *.?pp
+  *.tcc
 )
+list(FILTER LIBFF_SOURCE EXCLUDE REGEX ".*/tests/.*")
+list(FILTER LIBFF_SOURCE EXCLUDE REGEX ".*/profile/.*")
 
 add_library(
   ff
@@ -72,6 +55,7 @@ install(
   PATTERN "*.hpp"
   PATTERN "*.tcc"
   PATTERN "tests" EXCLUDE
+  PATTERN "profile" EXCLUDE
   PATTERN "examples" EXCLUDE
 )
 
@@ -81,138 +65,40 @@ install(
 
 # Tests
 if ("${IS_LIBFF_PARENT}")
-  add_executable(
-    common_test
-    EXCLUDE_FROM_ALL
-
-    common/test_common.cpp
-  )
-  target_link_libraries(
-    common_test
-
-    ff
-    gtest_main
-  )
-
-  add_executable(
-    algebra_bilinearity_test
-    EXCLUDE_FROM_ALL
-
-    algebra/curves/tests/test_bilinearity.cpp
-  )
-  target_link_libraries(
-    algebra_bilinearity_test
-
-    ff
-    gtest_main
-  )
-
-  add_executable(
-    algebra_groups_test
-    EXCLUDE_FROM_ALL
-
-    algebra/curves/tests/test_groups.cpp
-  )
-  target_link_libraries(
-    algebra_groups_test
-
-    ff
-    gtest_main
-  )
-
-  add_executable(
-    algebra_fields_test
-    EXCLUDE_FROM_ALL
-
-    algebra/fields/tests/test_fields.cpp
-  )
-  target_link_libraries(
-    algebra_fields_test
-
-    ff
-    gtest_main
-  )
-
-  add_executable(
-    algebra_multiexp_test
-    EXCLUDE_FROM_ALL
-
-    algebra/scalar_multiplication/test_multiexp.cpp
-  )
-  target_link_libraries(
-    algebra_multiexp_test
-
-    ff
-    gtest_main
-  )
 
   include(CTest)
-  add_test(
-    NAME common_test
-    COMMAND common_test
-  )
-  add_test(
-    NAME algebra_bilinearity_test
-    COMMAND algebra_bilinearity_test
-  )
-  add_test(
-    NAME algebra_groups_test
-    COMMAND algebra_groups_test
-  )
-  add_test(
-    NAME algebra_fields_test
-    COMMAND algebra_fields_test
-  )
 
-  add_test(
-    NAME algebra_multiexp_test
-    COMMAND algebra_multiexp_test
-  )
+  # Test executables
 
-  add_dependencies(check common_test)
-  add_dependencies(check algebra_bilinearity_test)
-  add_dependencies(check algebra_groups_test)
-  add_dependencies(check algebra_fields_test)
-  add_dependencies(check algebra_multiexp_test)
+  # libff_test(<test_name> <source_file>)
+  function(libff_test TEST_NAME SOURCE_FILE)
+    message("TEST: ${TEST_NAME} ${SOURCE_FILE}")
+    add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${SOURCE_FILE})
+    target_link_libraries(${TEST_NAME} ff gtest_main)
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+    add_dependencies(check ${TEST_NAME})
+  endfunction()
 
-  add_executable(
-    multiexp_profile
-    EXCLUDE_FROM_ALL
+  libff_test(test_common common/tests/test_common.cpp)
+  libff_test(test_algebra_bilinearity algebra/curves/tests/test_bilinearity.cpp)
+  libff_test(test_algebra_groups algebra/curves/tests/test_groups.cpp)
+  libff_test(test_algebra_fields algebra/fields/tests/test_fields.cpp)
+  libff_test(test_algebra_multiexp algebra/scalar_multiplication/tests/test_multiexp.cpp)
 
-    algebra/scalar_multiplication/multiexp_profile.cpp
-  )
-  target_link_libraries(
-    multiexp_profile
+  # Profile executables
 
-    ${OPENSSL_LIBRARIES}
-    ff
-  )
+  # libff_profile(<profile_name> <source_file>)
+  function(libff_profile PROFILE_NAME SOURCE_FILE)
+    message("PROFILE: ${PROFILE_NAME} ${SOURCE_FILE}")
+    add_executable(${PROFILE_NAME} EXCLUDE_FROM_ALL ${SOURCE_FILE})
+    target_link_libraries(${PROFILE_NAME} ${OPENSSL_LIBRARIES} ff)
+    if (UNIX AND NOT APPLE)
+      target_link_libraries(${PROFILE_NAME} rt)
+    endif()
+    add_dependencies(profile ${PROFILE_NAME})
+  endfunction()
 
-  add_executable(
-    algebra_groups_profile
-    EXCLUDE_FROM_ALL
-
-    algebra/curves/profile/algebra_groups_profile.cpp
-  )
-  target_link_libraries(algebra_groups_profile ff)
-
-  add_executable(
-    algebra_groups_read_profile
-    EXCLUDE_FROM_ALL
-
-    algebra/curves/profile/algebra_groups_read_profile.cpp
-  )
-  # Required on some older Linux system, for aio_* cals
-  if (UNIX AND NOT APPLE)
-    target_link_libraries(algebra_groups_read_profile rt)
-  endif()
-  target_link_libraries(algebra_groups_read_profile ff)
-
-  add_dependencies(
-    profile
-
-    multiexp_profile
-    algebra_groups_profile
-    algebra_groups_read_profile
-  )
+  libff_profile(profile_multiexp algebra/scalar_multiplication/profile/profile_multiexp.cpp)
+  libff_profile(profile_algebra_groups algebra/curves/profile/profile_algebra_groups.cpp)
+  libff_profile(profile_algebra_groups_read algebra/curves/profile/profile_algebra_groups_read.cpp)
 endif()
