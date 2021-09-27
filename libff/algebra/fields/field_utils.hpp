@@ -7,10 +7,13 @@
 
 #ifndef FIELD_UTILS_HPP_
 #define FIELD_UTILS_HPP_
+
+#include "libff/algebra/fields/bigint.hpp"
+#include "libff/algebra/fields/fp.hpp"
+#include "libff/common/double.hpp"
+#include "libff/common/utils.hpp"
+
 #include <cstdint>
-#include <libff/algebra/fields/bigint.hpp>
-#include <libff/common/double.hpp>
-#include <libff/common/utils.hpp>
 
 namespace libff
 {
@@ -79,6 +82,16 @@ template<typename FieldT> void batch_invert(std::vector<FieldT> &vec);
 /// itself if FieldT is not an extension field).
 template<typename FieldT>
 const typename FieldT::my_Fp &field_get_component_0(const FieldT &v);
+
+/// Safe conversion from one finite field type to another. Internally asserts
+/// that the transformation is injective (i.e. multiple input values cannot
+/// result in the same output value).
+template<
+    mp_size_t wn,
+    const bigint<wn> &wmodulus,
+    mp_size_t nn,
+    const bigint<nn> &nmodulus>
+void fp_from_fp(Fp_model<wn, wmodulus> &wfp, const Fp_model<nn, nmodulus> &nfp);
 
 } // namespace libff
 

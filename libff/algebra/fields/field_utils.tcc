@@ -333,6 +333,23 @@ const typename FieldT::my_Fp &field_get_component_0(const FieldT &v)
     return internal::component_0_getter<FieldT>::get_component_0(v);
 }
 
+template<
+    mp_size_t wn,
+    const bigint<wn> &wmodulus,
+    mp_size_t nn,
+    const bigint<nn> &nmodulus>
+void fp_from_fp(Fp_model<wn, wmodulus> &wfp, const Fp_model<nn, nmodulus> &nfp)
+{
+    bigint<wn> wint;
+    const bigint<nn> nint = nfp.as_bigint();
+    assert(wint.max_bits() >= nint.max_bits());
+    for (size_t limb_idx = 0; limb_idx < nn; ++limb_idx) {
+        wint.data[limb_idx] = nint.data[limb_idx];
+    }
+
+    wfp = Fp_model<wn, wmodulus>(wint);
+}
+
 } // namespace libff
 
 #endif // FIELD_UTILS_TCC_
