@@ -134,7 +134,6 @@ set_target_properties(
 )
 
 find_package(OpenSSL REQUIRED)
-INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
 
 if("${WITH_PROCPS}")
   include(FindPkgConfig)
