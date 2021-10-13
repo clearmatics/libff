@@ -155,6 +155,30 @@ template<typename FieldT> FieldT coset_shift()
 }
 
 template<typename FieldT>
+typename std::enable_if<std::is_same<FieldT, Double>::value, bool>::type
+has_root_of_unity(const size_t /*n*/)
+{
+    return true;
+}
+
+template<typename FieldT>
+typename std::enable_if<!std::is_same<FieldT, Double>::value, bool>::type
+has_root_of_unity(const size_t n)
+{
+    const size_t logn = libff::log2(n);
+
+    if (n != (1u << logn)) {
+        return false;
+    }
+
+    if (logn > FieldT::s) {
+        return false;
+    }
+
+    return true;
+}
+
+template<typename FieldT>
 typename std::enable_if<std::is_same<FieldT, Double>::value, FieldT>::type
 get_root_of_unity(const size_t n)
 {
@@ -167,14 +191,12 @@ template<typename FieldT>
 typename std::enable_if<!std::is_same<FieldT, Double>::value, FieldT>::type
 get_root_of_unity(const size_t n)
 {
-    const size_t logn = log2(n);
-    if (n != (1u << logn))
-        throw std::invalid_argument(
-            "libff::get_root_of_unity: expected n == (1u << logn)");
-    if (logn > FieldT::s)
-        throw std::invalid_argument(
-            "libff::get_root_of_unity: expected logn <= FieldT::s");
+    if (!has_root_of_unity<FieldT>(n)) {
+        throw std::invalid_argument("libff::get_root_of_unity: expected n == "
+                                    "(1u << logn) && logn <= FieldT::s");
+    }
 
+    const size_t logn = log2(n);
     FieldT omega = FieldT::root_of_unity;
     for (size_t i = FieldT::s; i > logn; --i) {
         omega *= omega;

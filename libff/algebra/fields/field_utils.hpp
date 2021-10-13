@@ -18,6 +18,15 @@
 namespace libff
 {
 
+// returns true if get_root_of_unity will succeed.
+template<typename FieldT>
+typename std::enable_if<std::is_same<FieldT, Double>::value, bool>::type
+has_root_of_unity(const size_t n);
+
+template<typename FieldT>
+typename std::enable_if<!std::is_same<FieldT, Double>::value, bool>::type
+has_root_of_unity(const size_t n);
+
 // returns root of unity of order n (for n a power of 2), if one exists
 template<typename FieldT>
 typename std::enable_if<std::is_same<FieldT, Double>::value, FieldT>::type
