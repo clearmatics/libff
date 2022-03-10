@@ -5,7 +5,7 @@
  * @copyright  MIT license (see LICENSE file)
  *****************************************************************************/
 
-#include <libff/algebra/curves/bls12_381/bls12_381_fields.hpp>
+// #include <libff/algebra/curves/bls12_381/bls12_381_fields.hpp> // (VV)
 
 namespace libff {
 
