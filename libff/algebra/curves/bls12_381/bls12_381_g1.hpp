@@ -69,7 +69,8 @@ public:
     static bls12_381_G1 one();
     static bls12_381_G1 random_element();
 
-    static std::size_t size_in_bits() { return base_field::ceil_size_in_bits() + 1; }
+  //    static std::size_t size_in_bits() { return base_field::ceil_size_in_bits() + 1; } // from scipr-lab (VV)
+    static std::size_t size_in_bits() { return base_field::size_in_bits() + 1; }
     static bigint<base_field::num_limbs> field_char() { return base_field::field_char(); }
     static bigint<scalar_field::num_limbs> order() { return scalar_field::field_char(); }
 
