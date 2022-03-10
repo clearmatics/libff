@@ -24,7 +24,10 @@ bls12_381_G2::bls12_381_G2()
 
 bls12_381_Fq2 bls12_381_G2::mul_by_b(const bls12_381_Fq2 &elt)
 {
-    return bls12_381_Fq2(bls12_381_twist_mul_by_b_c0 * elt.c0, bls12_381_twist_mul_by_b_c1 * elt.c1);
+  //    return bls12_381_Fq2(bls12_381_twist_mul_by_b_c0 * elt.c0, bls12_381_twist_mul_by_b_c1 * elt.c1); // from scipr-lab (VV) 
+  return bls12_381_Fq2(
+		       bls12_381_twist_mul_by_b_c0 * elt.coeffs[0],
+		       bls12_381_twist_mul_by_b_c1 * elt.coeffs[1]);
 }
 
 void bls12_381_G2::print() const
@@ -37,11 +40,21 @@ void bls12_381_G2::print() const
     {
         bls12_381_G2 copy(*this);
         copy.to_affine_coordinates();
+	// from scipr-lab (VV)
+	//        gmp_printf("(%Nd*z + %Nd , %Nd*z + %Nd)\n",
+	//                   copy.X.c1.as_bigint().data, bls12_381_Fq::num_limbs,
+	//                   copy.X.c0.as_bigint().data, bls12_381_Fq::num_limbs,
+	//                   copy.Y.c1.as_bigint().data, bls12_381_Fq::num_limbs,
+	//                   copy.Y.c0.as_bigint().data, bls12_381_Fq::num_limbs);
         gmp_printf("(%Nd*z + %Nd , %Nd*z + %Nd)\n",
-                   copy.X.c1.as_bigint().data, bls12_381_Fq::num_limbs,
-                   copy.X.c0.as_bigint().data, bls12_381_Fq::num_limbs,
-                   copy.Y.c1.as_bigint().data, bls12_381_Fq::num_limbs,
-                   copy.Y.c0.as_bigint().data, bls12_381_Fq::num_limbs);
+                   copy.X.coeffs[1].as_bigint().data,
+		   bls12_381_Fq::num_limbs,
+                   copy.X.coeffs[0].as_bigint().data,
+		   bls12_381_Fq::num_limbs,
+                   copy.Y.coeffs[1].as_bigint().data,
+		   bls12_381_Fq::num_limbs,
+                   copy.Y.coeffs[0].as_bigint().data,
+		   bls12_381_Fq::num_limbs);
     }
 }
 
@@ -53,13 +66,27 @@ void bls12_381_G2::print_coordinates() const
     }
     else
     {
+      // from scipr-lab (VV)
+      //        gmp_printf("(%Nd*z + %Nd : %Nd*z + %Nd : %Nd*z + %Nd)\n",
+      //                   this->X.c1.as_bigint().data, bls12_381_Fq::num_limbs,
+      //                   this->X.c0.as_bigint().data, bls12_381_Fq::num_limbs,
+      //                   this->Y.c1.as_bigint().data, bls12_381_Fq::num_limbs,
+      //                   this->Y.c0.as_bigint().data, bls12_381_Fq::num_limbs,
+      //                   this->Z.c1.as_bigint().data, bls12_381_Fq::num_limbs,
+      //                   this->Z.c0.as_bigint().data, bls12_381_Fq::num_limbs);
         gmp_printf("(%Nd*z + %Nd : %Nd*z + %Nd : %Nd*z + %Nd)\n",
-                   this->X.c1.as_bigint().data, bls12_381_Fq::num_limbs,
-                   this->X.c0.as_bigint().data, bls12_381_Fq::num_limbs,
-                   this->Y.c1.as_bigint().data, bls12_381_Fq::num_limbs,
-                   this->Y.c0.as_bigint().data, bls12_381_Fq::num_limbs,
-                   this->Z.c1.as_bigint().data, bls12_381_Fq::num_limbs,
-                   this->Z.c0.as_bigint().data, bls12_381_Fq::num_limbs);
+                   this->X.coeffs[1].as_bigint().data,
+		   bls12_381_Fq::num_limbs,
+                   this->X.coeffs[0].as_bigint().data,
+		   bls12_381_Fq::num_limbs,
+                   this->Y.coeffs[1].as_bigint().data,
+		   bls12_381_Fq::num_limbs,
+                   this->Y.coeffs[0].as_bigint().data,
+		   bls12_381_Fq::num_limbs,
+                   this->Z.coeffs[1].as_bigint().data,
+		   bls12_381_Fq::num_limbs,
+                   this->Z.coeffs[0].as_bigint().data,
+		   bls12_381_Fq::num_limbs);
     }
 }
 
@@ -375,7 +402,8 @@ std::ostream& operator<<(std::ostream &out, const bls12_381_G2 &g)
     out << copy.X << OUTPUT_SEPARATOR << copy.Y;
 #else
     /* storing LSB of Y */
-    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.c0.as_bigint().data[0] & 1);
+    //    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.c0.as_bigint().data[0] & 1); // from scipr-lab (VV)
+    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.coeffs[0].as_bigint().data[0] & 1);
 #endif
 
     return out;
@@ -407,7 +435,8 @@ std::istream& operator>>(std::istream &in, bls12_381_G2 &g)
         bls12_381_Fq2 tY2 = tX2 * tX + bls12_381_twist_coeff_b;
         tY = tY2.sqrt();
 
-        if ((tY.c0.as_bigint().data[0] & 1) != Y_lsb)
+	//        if ((tY.c0.as_bigint().data[0] & 1) != Y_lsb) // VV
+        if ((tY.coeffs[0].as_bigint().data[0] & 1) != Y_lsb)
         {
             tY = -tY;
         }
