@@ -7,10 +7,16 @@
 
 #ifndef BLS12_381_FIELDS_HPP_
 #define BLS12_381_FIELDS_HPP_
-#include <libff/algebra/fields/prime_base/fp.hpp>
-#include <libff/algebra/fields/prime_extension/fp2.hpp>
-#include <libff/algebra/fields/prime_extension/fp6_3over2.hpp>
-#include <libff/algebra/fields/prime_extension/fp12_2over3over2.hpp>
+//#include <libff/algebra/fields/prime_base/fp.hpp>
+//#include <libff/algebra/fields/prime_extension/fp2.hpp>
+//#include <libff/algebra/fields/prime_extension/fp6_3over2.hpp>
+//#include <libff/algebra/fields/prime_extension/fp12_2over3over2.hpp>
+
+#include <libff/algebra/fields/fp.hpp>
+#include <libff/algebra/fields/fp2.hpp>
+#include <libff/algebra/fields/fp6_3over2.hpp>
+#include <libff/algebra/fields/fp12_2over3over2.hpp>
+
 
 namespace libff {
 
