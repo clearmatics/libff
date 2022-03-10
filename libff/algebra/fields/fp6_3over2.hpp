@@ -36,6 +36,14 @@ public:
     typedef Fp_model<n, modulus> my_Fp;
     typedef Fp2_model<n, modulus> my_Fp2;
 
+    // from scipr-lab (VV)
+    static bigint<6*n> euler; // (modulus^6-1)/2 
+    static std::size_t s; // modulus^6 = 2^s * t + 1
+    static bigint<6*n> t; // with t odd
+    static bigint<6*n> t_minus_1_over_2; // (t-1)/2
+    static Fp6_3over2_model<n, modulus> nqr; // a quadratic nonresidue in Fp6
+    static Fp6_3over2_model<n, modulus> nqr_to_t; // nqr^t
+   
     static my_Fp2 non_residue;
     /// non_residue^((modulus^i-1)/3)   for i=0,1,2,3,4,5
     static my_Fp2 Frobenius_coeffs_c1[6];
