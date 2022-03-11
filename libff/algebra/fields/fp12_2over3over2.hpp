@@ -99,7 +99,7 @@ public:
     Fp12_2over3over2_model mul_by_024(
         const my_Fp2 &ell_0, const my_Fp2 &ell_VW, const my_Fp2 &ell_VV) const;
 
-  // from scipr-lab for bls12-381 (VV)
+    // from scipr-lab for bls12-381 (VV)
     Fp12_2over3over2_model mul_by_045(
 	const my_Fp2 &ell_0, const my_Fp2 &ell_VW, const my_Fp2 &ell_VV) const;
 
@@ -154,6 +154,25 @@ Fp12_2over3over2_model<n, modulus> operator^(
     const Fp12_2over3over2_model<n, modulus> &self,
     const Fp_model<m, exp_modulus> &exponent);
 
+// from scipr-lab (VV)
+template<mp_size_t n, const bigint<n>& modulus>
+bigint<12*n> Fp12_2over3over2_model<n, modulus>::euler;
+
+template<mp_size_t n, const bigint<n>& modulus>
+size_t Fp12_2over3over2_model<n, modulus>::s;
+
+template<mp_size_t n, const bigint<n>& modulus>
+bigint<12*n> Fp12_2over3over2_model<n, modulus>::t;
+
+template<mp_size_t n, const bigint<n>& modulus>
+bigint<12*n> Fp12_2over3over2_model<n, modulus>::t_minus_1_over_2;
+
+template<mp_size_t n, const bigint<n>& modulus>
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::nqr;
+
+template<mp_size_t n, const bigint<n>& modulus>
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::nqr_to_t;
+  
 template<mp_size_t n, const bigint<n> &modulus>
 Fp2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::non_residue;
 
