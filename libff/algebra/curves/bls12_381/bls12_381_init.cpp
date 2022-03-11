@@ -2,9 +2,13 @@
 #include <libff/algebra/curves/bls12_381/bls12_381_g2.hpp>
 #include <libff/algebra/curves/bls12_381/bls12_381_init.hpp>
 
-namespace libff {
+namespace libff
+{
+
+bigint<bls12_381_r_limbs> bls12_381_modulus_r; // (VV)
 
 bls12_381_Fq bls12_381_coeff_b;
+bigint<bls12_381_r_limbs> bls12_381_trace_of_frobenius; // from bls12_377 (VV)
 bls12_381_Fq2 bls12_381_twist;
 bls12_381_Fq2 bls12_381_twist_coeff_b;
 bls12_381_Fq bls12_381_twist_mul_by_b_c0;
@@ -12,6 +16,18 @@ bls12_381_Fq bls12_381_twist_mul_by_b_c1;
 bls12_381_Fq2 bls12_381_twist_mul_by_q_X;
 bls12_381_Fq2 bls12_381_twist_mul_by_q_Y;
 
+// from bls12_377 (VV) 
+bls12_381_Fq bls12_381_g1_endomorphism_beta;
+bigint<bls12_381_r_limbs> bls12_381_g1_safe_subgroup_check_c1;
+
+
+// Coefficients for G2 untwist-frobenius-twist (from bls12_377 VV)
+bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_v;
+bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_w_3;
+bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_v_inverse;
+bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_w_3_inverse;
+
+  
 bigint<bls12_381_q_limbs> bls12_381_ate_loop_count;
 bool bls12_381_ate_is_loop_count_neg;
 bigint<12*bls12_381_q_limbs> bls12_381_final_exponent;
@@ -176,9 +192,20 @@ void init_bls12_381_params()
     bls12_381_G1::G1_one = bls12_381_G1(bls12_381_Fq("3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507"),
                                     bls12_381_Fq("1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569"),
                                     bls12_381_Fq::one());
+    // Curve coeffs (from bls12_377 (VV))
+    bls12_381_G1::coeff_a = bls12_381_Fq::zero();
+    bls12_381_G1::coeff_b = bls12_381_coeff_b;
+    
     // Cofactor
     bls12_381_G1::h = bigint<bls12_381_G1::h_limbs>("76329603384216526031706109802092473003");
 
+    // from bls12_377 (VV) !!! change constants for 381
+    // G1 fast subgroup check:  0 == [c0]P + [c1]sigma(P)
+    bls12_381_g1_endomorphism_beta =
+        bls12_381_Fq("809496482649127194085583631406374772648452947207104994781"
+                     "37287262712535938301461879813459410945");
+    bls12_381_g1_safe_subgroup_check_c1 =
+        bigint_r("91893752504881257701523279626832445441");
 
     // TODO: wNAF window table
     bls12_381_G1::wnaf_window_table.resize(0);
@@ -246,9 +273,25 @@ void init_bls12_381_params()
                                         bls12_381_Fq2(bls12_381_Fq("1985150602287291935568054521177171638300868978215655730859378665066344726373823718423869104263333984641494340347905"),
                                                       bls12_381_Fq("927553665492332455747201965776037880757740193453592970025027978793976877002675564980949289727957565575433344219582")),
                                         bls12_381_Fq2::one());
+    // Curve twist coeffs (from bls12_377 VV)
+    bls12_381_G2::coeff_a = bls12_381_Fq2::zero();
+    bls12_381_G2::coeff_b = bls12_381_twist_coeff_b;
+    
     // Cofactor
     bls12_381_G2::h = bigint<bls12_381_G2::h_limbs>("305502333931268344200999753193121504214466019254188142667664032982267604182971884026507427359259977847832272839041616661285803823378372096355777062779109");
 
+     // Untwist-Frobenius-Twist coefficients (from bls12_377 VV)
+    bls12_381_Fq12 untwist_frobenius_twist_w =
+        bls12_381_Fq12(bls12_381_Fq6::zero(), bls12_381_Fq6::one());
+    bls12_381_g2_untwist_frobenius_twist_v =
+        untwist_frobenius_twist_w * untwist_frobenius_twist_w;
+    bls12_381_g2_untwist_frobenius_twist_w_3 =
+        untwist_frobenius_twist_w * bls12_381_g2_untwist_frobenius_twist_v;
+    bls12_381_g2_untwist_frobenius_twist_v_inverse =
+        bls12_381_g2_untwist_frobenius_twist_v.inverse();
+    bls12_381_g2_untwist_frobenius_twist_w_3_inverse =
+        bls12_381_g2_untwist_frobenius_twist_w_3.inverse();
+   
 
     // TODO: wNAF window table
     bls12_381_G2::wnaf_window_table.resize(0);
