@@ -126,6 +126,25 @@ template<mp_size_t n, const bigint<n> &modulus>
 Fp6_3over2_model<n, modulus> operator*(
     const Fp2_model<n, modulus> &lhs, const Fp6_3over2_model<n, modulus> &rhs);
 
+// bls12-381 from scipr-lab (VV)  
+template<mp_size_t n, const bigint<n>& modulus>
+bigint<6*n> Fp6_3over2_model<n, modulus>::euler;
+
+template<mp_size_t n, const bigint<n>& modulus>
+size_t Fp6_3over2_model<n, modulus>::s;
+
+template<mp_size_t n, const bigint<n>& modulus>
+bigint<6*n> Fp6_3over2_model<n, modulus>::t;
+
+template<mp_size_t n, const bigint<n>& modulus>
+bigint<6*n> Fp6_3over2_model<n, modulus>::t_minus_1_over_2;
+
+template<mp_size_t n, const bigint<n>& modulus>
+Fp6_3over2_model<n, modulus> Fp6_3over2_model<n, modulus>::nqr;
+
+template<mp_size_t n, const bigint<n>& modulus>
+Fp6_3over2_model<n, modulus> Fp6_3over2_model<n, modulus>::nqr_to_t;
+
 template<mp_size_t n, const bigint<n> &modulus>
 Fp2_model<n, modulus> Fp6_3over2_model<n, modulus>::non_residue;
 
