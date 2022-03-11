@@ -14,6 +14,7 @@
 #endif
 #include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
+#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp>
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
 #include <libff/algebra/curves/curve_serialization.hpp>
 #include <libff/algebra/curves/curve_utils.hpp>
@@ -382,6 +383,20 @@ TEST(TestGroups, BLS12_377)
     test_check_membership<bls12_377_pp>();
     test_mul_by_cofactor<G1<bls12_377_pp>>();
     test_mul_by_cofactor<G2<bls12_377_pp>>();
+}
+
+TEST(TestGroups, BLS12_381)
+{
+    bls12_381_pp::init_public_params();
+    test_group<G1<bls12_381_pp>>();
+    //    test_output<G1<bls12_381_pp>>();
+    test_group<G2<bls12_381_pp>>();
+    //    test_output<G2<bls12_381_pp>>();
+    //    test_serialize<bls12_381_pp>();
+    //    test_mul_by_q<G2<bls12_381_pp>>();    
+    test_check_membership<bls12_381_pp>();
+    //    test_mul_by_cofactor<G1<bls12_381_pp>>();
+    test_mul_by_cofactor<G2<bls12_381_pp>>();
 }
 
 TEST(TestGroups, BW6_761)
