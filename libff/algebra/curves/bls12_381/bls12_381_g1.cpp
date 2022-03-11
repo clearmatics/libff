@@ -13,6 +13,8 @@ std::vector<size_t> bls12_381_G1::wnaf_window_table;
 std::vector<size_t> bls12_381_G1::fixed_base_exp_window_table;
 bls12_381_G1 bls12_381_G1::G1_zero;
 bls12_381_G1 bls12_381_G1::G1_one;
+bls12_381_Fq bls12_381_G1::coeff_a; // VV
+bls12_381_Fq bls12_381_G1::coeff_b; // VV
 bigint<bls12_381_G1::h_limbs> bls12_381_G1::h;
 
 bls12_381_G1::bls12_381_G1()
@@ -311,6 +313,14 @@ bls12_381_G1 bls12_381_G1::mul_by_cofactor() const
     return bls12_381_G1::h * (*this);
 }
 
+bls12_381_G1 bls12_381_G1::sigma() const
+{
+    bls12_381_G1 result = *this;
+    result.to_affine_coordinates();
+    result.X = bls12_381_g1_endomorphism_beta * result.X;
+    return result;
+}
+
 bool bls12_381_G1::is_well_formed() const
 {
     if (this->is_zero())
@@ -333,6 +343,20 @@ bool bls12_381_G1::is_well_formed() const
     return (Y2 == X3 + bls12_381_coeff_b * Z6);
 }
 
+// (VV)
+bool bls12_381_G1::is_in_safe_subgroup() const
+{
+    // Check that [c0]P + [c1]\sigma(P) == 0 (see bls12_381.sage), where:
+    //   c0: 1
+    //   c1: 91893752504881257701523279626832445441
+    //         (0x452217cc900000010a11800000000001)
+    const bls12_381_G1 sigma_g = sigma();
+    const bls12_381_G1 r_times_g =
+        bls12_381_g1_safe_subgroup_check_c1 * sigma_g + *this;
+    return zero() == r_times_g;
+}
+
+
 bls12_381_G1 bls12_381_G1::zero()
 {
     return G1_zero;
@@ -346,6 +370,80 @@ bls12_381_G1 bls12_381_G1::one()
 bls12_381_G1 bls12_381_G1::random_element()
 {
     return (scalar_field::random_element().as_bigint()) * G1_one;
+}
+
+// from scipr-lab (VV)
+
+void bls12_381_G1::write_uncompressed(std::ostream &out) const
+{
+    bls12_381_G1 copy(*this);
+    copy.to_affine_coordinates();
+    out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
+    out << copy.X << OUTPUT_SEPARATOR << copy.Y;
+}
+
+void bls12_381_G1::write_compressed(std::ostream &out) const
+{
+    bls12_381_G1 copy(*this);
+    copy.to_affine_coordinates();
+    out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
+    /* storing LSB of Y */
+    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.as_bigint().data[0] & 1);
+}
+
+void bls12_381_G1::read_uncompressed(std::istream &in, bls12_381_G1 &g)
+{
+    char is_zero;
+    bls12_381_Fq tX, tY;
+
+    in >> is_zero >> tX >> tY;
+    is_zero -= '0';
+
+    // using Jacobian coordinates
+    if (!is_zero) {
+        g.X = tX;
+        g.Y = tY;
+        g.Z = bls12_381_Fq::one();
+    } else {
+        g = bls12_381_G1::zero();
+    }
+}
+
+void bls12_381_G1::read_compressed(std::istream &in, bls12_381_G1 &g)
+{
+    char is_zero;
+    bls12_381_Fq tX, tY;
+
+    // this reads is_zero;
+    in.read((char *)&is_zero, 1);
+    is_zero -= '0';
+    consume_OUTPUT_SEPARATOR(in);
+
+    unsigned char Y_lsb;
+    in >> tX;
+    consume_OUTPUT_SEPARATOR(in);
+    in.read((char *)&Y_lsb, 1);
+    Y_lsb -= '0';
+
+    // y = +/- sqrt(x^3 + b)
+    if (!is_zero) {
+        bls12_381_Fq tX2 = tX.squared();
+        bls12_381_Fq tY2 = tX2 * tX + bls12_381_coeff_b;
+        tY = tY2.sqrt();
+
+        if ((tY.as_bigint().data[0] & 1) != Y_lsb) {
+            tY = -tY;
+        }
+    }
+
+    // using Jacobian coordinates
+    if (!is_zero) {
+        g.X = tX;
+        g.Y = tY;
+        g.Z = bls12_381_Fq::one();
+    } else {
+        g = bls12_381_G1::zero();
+    }
 }
 
 std::ostream& operator<<(std::ostream &out, const bls12_381_G1 &g)
