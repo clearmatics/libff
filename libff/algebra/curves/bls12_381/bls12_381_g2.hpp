@@ -28,6 +28,9 @@ public:
     static std::vector<std::size_t> fixed_base_exp_window_table;
     static bls12_381_G2 G2_zero;
     static bls12_381_G2 G2_one;
+    static bls12_381_Fq2 coeff_a; // VV
+    static bls12_381_Fq2 coeff_b; // VV
+  
     // Cofactor
     static const mp_size_t h_bitcount = 507;
     static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
@@ -65,9 +68,11 @@ public:
     bls12_381_G2 mixed_add(const bls12_381_G2 &other) const;
     bls12_381_G2 dbl() const;
     bls12_381_G2 mul_by_q() const;
+    bls12_381_G2 untwist_frobenius_twist() const; // from bls12_377 (VV)
     bls12_381_G2 mul_by_cofactor() const;
 
     bool is_well_formed() const;
+    bool is_in_safe_subgroup() const; // VV
 
     static bls12_381_G2 zero();
     static bls12_381_G2 one();
@@ -75,11 +80,21 @@ public:
 
   //    static std::size_t size_in_bits() { return twist_field::ceil_size_in_bits() + 1; } // from scipr-lab (VV)
     static std::size_t size_in_bits() { return twist_field::size_in_bits() + 1; }
+    static bigint<base_field::num_limbs> base_field_char() // (VV)
+    {
+        return base_field::field_char();
+    }
     static bigint<base_field::num_limbs> field_char() { return base_field::field_char(); }
     static bigint<scalar_field::num_limbs> order() { return scalar_field::field_char(); }
 
     friend std::ostream& operator<<(std::ostream &out, const bls12_381_G2 &g);
     friend std::istream& operator>>(std::istream &in, bls12_381_G2 &g);
+
+    // scipr-lab (VV)
+    void write_uncompressed(std::ostream &) const;
+    void write_compressed(std::ostream &) const;
+    static void read_uncompressed(std::istream &, bls12_381_G2 &);
+    static void read_compressed(std::istream &, bls12_381_G2 &);
 
     static void batch_to_special_all_non_zeros(std::vector<bls12_381_G2> &vec);
 };

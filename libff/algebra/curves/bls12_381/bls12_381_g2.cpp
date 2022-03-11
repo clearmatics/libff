@@ -13,6 +13,8 @@ std::vector<size_t> bls12_381_G2::wnaf_window_table;
 std::vector<size_t> bls12_381_G2::fixed_base_exp_window_table;
 bls12_381_G2 bls12_381_G2::G2_zero;
 bls12_381_G2 bls12_381_G2::G2_one;
+bls12_381_Fq2 bls12_381_G2::coeff_a; // VV
+bls12_381_Fq2 bls12_381_G2::coeff_b; // VV
 bigint<bls12_381_G2::h_limbs> bls12_381_G2::h;
 
 bls12_381_G2::bls12_381_G2()
@@ -347,6 +349,52 @@ bls12_381_G2 bls12_381_G2::mul_by_q() const
                       (this->Z).Frobenius_map(1));
 }
 
+// from blas12_377 (VV)
+bls12_381_G2 bls12_381_G2::untwist_frobenius_twist() const
+{
+    bls12_381_G2 g = *this;
+    g.to_affine_coordinates();
+
+    // Note, the algebra works out such that the first component of the
+    // untwisted point only ever occupies Fq6, and so we use this type to avoid
+    // the extra multiplications involved in Fq12 operations.
+
+    // TODO: There are further optimizations we can make here, because we know
+    // that many components will be zero and unused. For now, we use generic
+    // Fp6 and Fp12 operations for conveneience.
+
+    // Untwist
+    const bls12_381_Fq6 x_fq6(
+        g.X, bls12_381_Fq2::zero(), bls12_381_Fq2::zero());
+    const bls12_381_Fq12 y_fq12(
+        bls12_381_Fq6(g.Y, bls12_381_Fq2::zero(), bls12_381_Fq2::zero()),
+        bls12_381_Fq6::zero());
+    const bls12_381_Fq6 untwist_x =
+        x_fq6 * bls12_381_g2_untwist_frobenius_twist_v.coeffs[0];
+    const bls12_381_Fq12 untwist_y =
+        y_fq12 * bls12_381_g2_untwist_frobenius_twist_w_3;
+    // Frobenius
+    const bls12_381_Fq6 frob_untwist_x = untwist_x.Frobenius_map(1);
+    const bls12_381_Fq12 frob_untwist_y = untwist_y.Frobenius_map(1);
+    // Twist
+    const bls12_381_Fq6 twist_frob_untwist_x =
+        frob_untwist_x *
+        bls12_381_g2_untwist_frobenius_twist_v_inverse.coeffs[0];
+    const bls12_381_Fq12 twist_frob_untwist_y =
+        frob_untwist_y * bls12_381_g2_untwist_frobenius_twist_w_3_inverse;
+
+    assert(twist_frob_untwist_x.coeffs[2] == bls12_381_Fq2::zero());
+    assert(twist_frob_untwist_x.coeffs[1] == bls12_381_Fq2::zero());
+    assert(twist_frob_untwist_y.coeffs[1] == bls12_381_Fq6::zero());
+    assert(twist_frob_untwist_y.coeffs[0].coeffs[2] == bls12_381_Fq2::zero());
+    assert(twist_frob_untwist_y.coeffs[0].coeffs[1] == bls12_381_Fq2::zero());
+
+    return bls12_381_G2(
+        twist_frob_untwist_x.coeffs[0],
+        twist_frob_untwist_y.coeffs[0].coeffs[0],
+        bls12_381_Fq2::one());
+}
+
 bls12_381_G2 bls12_381_G2::mul_by_cofactor() const
 {
     return bls12_381_G2::h * (*this);
@@ -378,6 +426,21 @@ bool bls12_381_G2::is_well_formed() const
     return (Y2 == X3 + bls12_381_twist_coeff_b * Z6);
 }
 
+// from bls12_377 (VV)
+bool bls12_381_G2::is_in_safe_subgroup() const
+{
+    // Check that [h1.r]P == 0, where
+    //   [h1.r]P as P + [t](\psi(P) - P) - \psi^2(P)
+    // (See bls12_381.sage).
+
+    const bls12_381_G2 psi_p = untwist_frobenius_twist();
+    const bls12_381_G2 psi_2_p = psi_p.untwist_frobenius_twist();
+    const bls12_381_G2 psi_p_minus_p = psi_p - *this;
+    const bls12_381_G2 h1_r_p =
+        *this + bls12_381_trace_of_frobenius * psi_p_minus_p - psi_2_p;
+    return zero() == h1_r_p;
+}
+
 bls12_381_G2 bls12_381_G2::zero()
 {
     return G2_zero;
@@ -391,6 +454,73 @@ bls12_381_G2 bls12_381_G2::one()
 bls12_381_G2 bls12_381_G2::random_element()
 {
     return (bls12_381_Fr::random_element().as_bigint()) * G2_one;
+}
+
+void bls12_381_G2::write_uncompressed(std::ostream &out) const
+{
+    bls12_381_G2 copy(*this);
+    copy.to_affine_coordinates();
+    out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
+    out << copy.X << OUTPUT_SEPARATOR << copy.Y;
+}
+
+void bls12_381_G2::write_compressed(std::ostream &out) const
+{
+    bls12_381_G2 copy(*this);
+    copy.to_affine_coordinates();
+    out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
+    /* storing LSB of Y */
+    out << copy.X << OUTPUT_SEPARATOR
+        << (copy.Y.coeffs[0].as_bigint().data[0] & 1);
+}
+
+void bls12_381_G2::read_uncompressed(std::istream &in, bls12_381_G2 &g)
+{
+    char is_zero;
+    bls12_381_Fq2 tX, tY;
+    in >> is_zero >> tX >> tY;
+    is_zero -= '0';
+
+    if (!is_zero) {
+        g.X = tX;
+        g.Y = tY;
+        g.Z = bls12_381_Fq2::one();
+    } else {
+        g = bls12_381_G2::zero();
+    }
+}
+
+void bls12_381_G2::read_compressed(std::istream &in, bls12_381_G2 &g)
+{
+    char is_zero;
+    bls12_381_Fq2 tX, tY;
+    // this reads is_zero;
+    in.read((char *)&is_zero, 1);
+    is_zero -= '0';
+    consume_OUTPUT_SEPARATOR(in);
+
+    unsigned char Y_lsb;
+    in >> tX;
+    consume_OUTPUT_SEPARATOR(in);
+    in.read((char *)&Y_lsb, 1);
+    Y_lsb -= '0';
+
+    // y = +/- sqrt(x^3 + b)
+    if (!is_zero) {
+        bls12_381_Fq2 tX2 = tX.squared();
+        bls12_381_Fq2 tY2 = tX2 * tX + bls12_381_twist_coeff_b;
+        tY = tY2.sqrt();
+
+        if ((tY.coeffs[0].as_bigint().data[0] & 1) != Y_lsb) {
+            tY = -tY;
+        }
+
+        g.X = tX;
+        g.Y = tY;
+        g.Z = bls12_381_Fq2::one();
+    } else {
+        g = bls12_381_G2::zero();
+    }
 }
 
 std::ostream& operator<<(std::ostream &out, const bls12_381_G2 &g)
