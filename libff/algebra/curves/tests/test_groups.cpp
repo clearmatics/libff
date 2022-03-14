@@ -49,7 +49,7 @@ template<typename GroupT> void test_mixed_add()
     el.to_special();
 #if 0 // bls12-381: temporary disable mixed_add test for debug (VV)
     result = base.mixed_add(el);
-#else    
+#else
     result = base.add(el);
 #endif // #if 0 // bls12-381: temporary disable mixed_add test for debug (VV)
     ASSERT_EQ(base + el, result);
@@ -138,27 +138,27 @@ template<typename GroupT> void test_output()
 
 #if 0 // bls12-381: temporary disable for debug (VV)
     for (size_t i = 0; i < 1000; ++i) {
-#else      
+#else
     for (size_t i = 0; i < 1; ++i) {
 #endif // #if 0 // bls12-381: temporary disable for debug (VV)
-        std::stringstream ss;
-        ss << g;
-        g.write_compressed(ss);
-        g.write_uncompressed(ss);
+    std::stringstream ss;
+    ss << g;
+    g.write_compressed(ss);
+    g.write_uncompressed(ss);
 
-        GroupT gg;
-        GroupT gg_comp;
-        GroupT gg_uncomp;
-        ss >> gg;
-        GroupT::read_compressed(ss, gg_comp);
-        GroupT::read_uncompressed(ss, gg_uncomp);
+    GroupT gg;
+    GroupT gg_comp;
+    GroupT gg_uncomp;
+    ss >> gg;
+    GroupT::read_compressed(ss, gg_comp);
+    GroupT::read_uncompressed(ss, gg_uncomp);
 
-        ASSERT_EQ(g, gg);
-        ASSERT_EQ(g, gg_comp);
-        ASSERT_EQ(g, gg_uncomp);
-        /* use a random point in next iteration */
-        g = GroupT::random_element();
-    }
+    ASSERT_EQ(g, gg);
+    ASSERT_EQ(g, gg_comp);
+    ASSERT_EQ(g, gg_uncomp);
+    /* use a random point in next iteration */
+    g = GroupT::random_element();
+}
 }
 
 template<
@@ -191,7 +191,7 @@ template<typename GroupT> void test_serialize_group_element(const GroupT &v)
 {
     // Missing combinations are unsupported.
     test_serialize_group_config<encoding_binary, form_plain, compression_on>(v);
-#if 0 // debug (VV)        
+#if 0  // debug (VV)        
     test_serialize_group_config<encoding_binary, form_plain, compression_off>(
         v);
     test_serialize_group_config<
@@ -208,7 +208,7 @@ template<typename GroupT> void test_serialize_group_element(const GroupT &v)
         encoding_json,
         form_montgomery,
         compression_off>(v);
-#endif // #if 0 // debug (VV)        
+#endif // #if 0 // debug (VV)
 }
 
 template<typename GroupT> void test_serialize_group()
@@ -397,14 +397,16 @@ TEST(TestGroups, BLS12_377)
 TEST(TestGroups, BLS12_381)
 {
     bls12_381_pp::init_public_params();
-    test_group<G1<bls12_381_pp>>(); // mix_add not tested (VV)
-    test_output<G1<bls12_381_pp>>(); // tested only for the zero element, else does not terminate (VV)
-    test_group<G2<bls12_381_pp>>(); // mix_add not tested (VV)
-    test_output<G2<bls12_381_pp>>(); // tested only for the zero element, else does not terminate (VV)
-#if 0 // bls12-381: temporary disable for debug (VV)
+    test_group<G1<bls12_381_pp>>();  // mix_add not tested (VV)
+    test_output<G1<bls12_381_pp>>(); // tested only for the zero element, else
+                                     // does not terminate (VV)
+    test_group<G2<bls12_381_pp>>();  // mix_add not tested (VV)
+    test_output<G2<bls12_381_pp>>(); // tested only for the zero element, else
+                                     // does not terminate (VV)
+#if 0  // bls12-381: temporary disable for debug (VV)
     test_serialize<bls12_381_pp>(); // does not terminate
 #endif // #if 0 // bls12-381: temporary disable for debug (VV)
-    test_mul_by_q<G2<bls12_381_pp>>();    
+    test_mul_by_q<G2<bls12_381_pp>>();
     test_check_membership<bls12_381_pp>();
     test_mul_by_cofactor<G1<bls12_381_pp>>();
     test_mul_by_cofactor<G2<bls12_381_pp>>();
