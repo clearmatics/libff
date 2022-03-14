@@ -7,18 +7,19 @@
 
 #ifndef BLS12_381_G1_HPP_
 #define BLS12_381_G1_HPP_
-#include <vector>
-
 #include <libff/algebra/curves/bls12_381/bls12_381_init.hpp>
 #include <libff/algebra/curves/curve_utils.hpp>
+#include <vector>
 
-namespace libff {
+namespace libff
+{
 
 class bls12_381_G1;
-std::ostream& operator<<(std::ostream &, const bls12_381_G1&);
-std::istream& operator>>(std::istream &, bls12_381_G1&);
+std::ostream &operator<<(std::ostream &, const bls12_381_G1 &);
+std::istream &operator>>(std::istream &, bls12_381_G1 &);
 
-class bls12_381_G1 {
+class bls12_381_G1
+{
 public:
 #ifdef PROFILE_OP_COUNTS
     static long long add_cnt;
@@ -30,10 +31,11 @@ public:
     static bls12_381_G1 G1_one;
     static bls12_381_Fq coeff_a; // VV
     static bls12_381_Fq coeff_b; // VV
-  
+
     // Cofactor
     static const mp_size_t h_bitcount = 126;
-    static const mp_size_t h_limbs = (h_bitcount+GMP_NUMB_BITS-1)/GMP_NUMB_BITS;
+    static const mp_size_t h_limbs =
+        (h_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
     static bigint<h_limbs> h;
 
     typedef bls12_381_Fq base_field;
@@ -43,7 +45,9 @@ public:
 
     // using Jacobian coordinates
     bls12_381_G1();
-    bls12_381_G1(const bls12_381_Fq& X, const bls12_381_Fq& Y, const bls12_381_Fq& Z) : X(X), Y(Y), Z(Z) {};
+    bls12_381_G1(
+        const bls12_381_Fq &X, const bls12_381_Fq &Y, const bls12_381_Fq &Z)
+        : X(X), Y(Y), Z(Z){};
 
     void print() const;
     void print_coordinates() const;
@@ -66,11 +70,11 @@ public:
     bls12_381_G1 dbl() const;
     bls12_381_G1 mul_by_cofactor() const;
 
-    // from bls12_377 (VV) 
+    // from bls12_377 (VV)
     // Endomorphism (x, y) -> (\beta * x, y) for \beta an element of Fq with
     // order 3.
     bls12_381_G1 sigma() const;
-  
+
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const; // (VV)
 
@@ -78,20 +82,27 @@ public:
     static bls12_381_G1 one();
     static bls12_381_G1 random_element();
 
-  //    static std::size_t size_in_bits() { return base_field::ceil_size_in_bits() + 1; } // from scipr-lab (VV)
+    //    static std::size_t size_in_bits() { return
+    //    base_field::ceil_size_in_bits() + 1; } // from scipr-lab (VV)
     static std::size_t size_in_bits() { return base_field::size_in_bits() + 1; }
-    static bigint<base_field::num_limbs> field_char() { return base_field::field_char(); }
-    static bigint<scalar_field::num_limbs> order() { return scalar_field::field_char(); }
+    static bigint<base_field::num_limbs> field_char()
+    {
+        return base_field::field_char();
+    }
+    static bigint<scalar_field::num_limbs> order()
+    {
+        return scalar_field::field_char();
+    }
 
-    friend std::ostream& operator<<(std::ostream &out, const bls12_381_G1 &g);
-    friend std::istream& operator>>(std::istream &in, bls12_381_G1 &g);
+    friend std::ostream &operator<<(std::ostream &out, const bls12_381_G1 &g);
+    friend std::istream &operator>>(std::istream &in, bls12_381_G1 &g);
 
     // (VV)
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
     static void read_uncompressed(std::istream &, bls12_381_G1 &);
     static void read_compressed(std::istream &, bls12_381_G1 &);
-  
+
     static void batch_to_special_all_non_zeros(std::vector<bls12_381_G1> &vec);
 };
 
@@ -101,14 +112,15 @@ bls12_381_G1 operator*(const bigint<m> &lhs, const bls12_381_G1 &rhs)
     return scalar_mul<bls12_381_G1, m>(rhs, lhs);
 }
 
-template<mp_size_t m, const bigint<m>& modulus_p>
-bls12_381_G1 operator*(const Fp_model<m,modulus_p> &lhs, const bls12_381_G1 &rhs)
+template<mp_size_t m, const bigint<m> &modulus_p>
+bls12_381_G1 operator*(
+    const Fp_model<m, modulus_p> &lhs, const bls12_381_G1 &rhs)
 {
     return scalar_mul<bls12_381_G1, m>(rhs, lhs.as_bigint());
 }
 
-std::ostream& operator<<(std::ostream& out, const std::vector<bls12_381_G1> &v);
-std::istream& operator>>(std::istream& in, std::vector<bls12_381_G1> &v);
+std::ostream &operator<<(std::ostream &out, const std::vector<bls12_381_G1> &v);
+std::istream &operator>>(std::istream &in, std::vector<bls12_381_G1> &v);
 
 } // namespace libff
 #endif // BLS12_381_G1_HPP_
