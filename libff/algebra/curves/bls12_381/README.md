@@ -1,4 +1,4 @@
-# Implementation of BLS12-381
+#Implementation of BLS12 - 381
 
 ## Run the sage script to generate the curve parameters
 
