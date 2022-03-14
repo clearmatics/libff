@@ -61,16 +61,18 @@ bool Fp12_2over3over2_model<n, modulus>::operator!=(
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
-operator+(const Fp12_2over3over2_model<n, modulus> &other) const
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<
+    n,
+    modulus>::operator+(const Fp12_2over3over2_model<n, modulus> &other) const
 {
     return Fp12_2over3over2_model<n, modulus>(
         this->coeffs[0] + other.coeffs[0], this->coeffs[1] + other.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
-operator-(const Fp12_2over3over2_model<n, modulus> &other) const
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<
+    n,
+    modulus>::operator-(const Fp12_2over3over2_model<n, modulus> &other) const
 {
     return Fp12_2over3over2_model<n, modulus>(
         this->coeffs[0] - other.coeffs[0], this->coeffs[1] - other.coeffs[1]);
@@ -104,8 +106,8 @@ Fp12_2over3over2_model<n, modulus> operator*(
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
-operator*(const Fp12_2over3over2_model<n, modulus> &other) const
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::operator
+    *(const Fp12_2over3over2_model<n, modulus> &other) const
 {
     // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
     // Pairing-Friendly Fields.pdf; Section 3 (Karatsuba)
@@ -121,8 +123,9 @@ operator*(const Fp12_2over3over2_model<n, modulus> &other) const
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
-operator-() const
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<
+    n,
+    modulus>::operator-() const
 {
     return Fp12_2over3over2_model<n, modulus>(
         -this->coeffs[0], -this->coeffs[1]);
@@ -276,22 +279,22 @@ Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
 }
 
 // bls12-381 from scipr-lab (VV)
-template<mp_size_t n, const bigint<n>& modulus>
-Fp12_2over3over2_model<n,modulus> Fp12_2over3over2_model<n,modulus>::
-mul_by_045(
-	   const Fp2_model<n, modulus> &ell_0,
-           const Fp2_model<n, modulus> &ell_VW,
-           const Fp2_model<n, modulus> &ell_VV) const
+template<mp_size_t n, const bigint<n> &modulus>
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
+    mul_by_045(
+        const Fp2_model<n, modulus> &ell_0,
+        const Fp2_model<n, modulus> &ell_VW,
+        const Fp2_model<n, modulus> &ell_VV) const
 {
     /*
     // OLD
-    Fp12_2over3over2_model<n,modulus> a(my_Fp6(ell_VW, my_Fp2::zero(), my_Fp2::zero()),
-                                        my_Fp6(my_Fp2::zero(), ell_0, ell_VV));
+    Fp12_2over3over2_model<n,modulus> a(my_Fp6(ell_VW, my_Fp2::zero(),
+    my_Fp2::zero()), my_Fp6(my_Fp2::zero(), ell_0, ell_VV));
 
     return (*this) * a;
     */
 
-    // (VV) 
+    // (VV)
     //    my_Fp2 z0 = this->c0.c0;
     //    my_Fp2 z1 = this->c0.c1;
     //    my_Fp2 z2 = this->c0.c2;
@@ -324,7 +327,8 @@ mul_by_045(
     t4 = x0 * z4 + x4 * z0 + tmp2 * z2;
     t5 = x0 * z5 + x4 * z1 + x5 * z0;
 
-    return Fp12_2over3over2_model<n,modulus>(my_Fp6(t0,t1,t2),my_Fp6(t3,t4,t5));
+    return Fp12_2over3over2_model<n, modulus>(
+        my_Fp6(t0, t1, t2), my_Fp6(t3, t4, t5));
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
