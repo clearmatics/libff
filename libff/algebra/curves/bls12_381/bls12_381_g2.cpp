@@ -426,19 +426,10 @@ bool bls12_381_G2::is_well_formed() const
     return (Y2 == X3 + bls12_381_twist_coeff_b * Z6);
 }
 
-// from bls12_377 (VV)
+// VV from DT
 bool bls12_381_G2::is_in_safe_subgroup() const
 {
-    // Check that [h1.r]P == 0, where
-    //   [h1.r]P as P + [t](\psi(P) - P) - \psi^2(P)
-    // (See bls12_381.sage).
-
-    const bls12_381_G2 psi_p = untwist_frobenius_twist();
-    const bls12_381_G2 psi_2_p = psi_p.untwist_frobenius_twist();
-    const bls12_381_G2 psi_p_minus_p = psi_p - *this;
-    const bls12_381_G2 h1_r_p =
-        *this + bls12_381_trace_of_frobenius * psi_p_minus_p - psi_2_p;
-    return zero() == h1_r_p;
+    return zero() == scalar_field::mod * (*this);
 }
 
 bls12_381_G2 bls12_381_G2::zero()

@@ -272,7 +272,7 @@ bls12_381_G1 bls12_381_G1::mixed_add(const bls12_381_G1 &other) const
 
     return bls12_381_G1(X3, Y3, Z3);
 }
-
+ 
 bls12_381_G1 bls12_381_G1::dbl() const
 {
 #ifdef PROFILE_OP_COUNTS
@@ -343,17 +343,10 @@ bool bls12_381_G1::is_well_formed() const
     return (Y2 == X3 + bls12_381_coeff_b * Z6);
 }
 
-// (VV)
+// VV from DT
 bool bls12_381_G1::is_in_safe_subgroup() const
 {
-    // Check that [c0]P + [c1]\sigma(P) == 0 (see bls12_381.sage), where:
-    //   c0: 1
-    //   c1: 91893752504881257701523279626832445441
-    //         (0x452217cc900000010a11800000000001)
-    const bls12_381_G1 sigma_g = sigma();
-    const bls12_381_G1 r_times_g =
-        bls12_381_g1_safe_subgroup_check_c1 * sigma_g + *this;
-    return zero() == r_times_g;
+    return zero() == scalar_field::mod * (*this);
 }
 
 
