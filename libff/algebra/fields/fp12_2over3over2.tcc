@@ -61,18 +61,16 @@ bool Fp12_2over3over2_model<n, modulus>::operator!=(
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<
-    n,
-    modulus>::operator+(const Fp12_2over3over2_model<n, modulus> &other) const
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
+operator+(const Fp12_2over3over2_model<n, modulus> &other) const
 {
     return Fp12_2over3over2_model<n, modulus>(
         this->coeffs[0] + other.coeffs[0], this->coeffs[1] + other.coeffs[1]);
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<
-    n,
-    modulus>::operator-(const Fp12_2over3over2_model<n, modulus> &other) const
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
+operator-(const Fp12_2over3over2_model<n, modulus> &other) const
 {
     return Fp12_2over3over2_model<n, modulus>(
         this->coeffs[0] - other.coeffs[0], this->coeffs[1] - other.coeffs[1]);
@@ -106,8 +104,8 @@ Fp12_2over3over2_model<n, modulus> operator*(
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::operator
-    *(const Fp12_2over3over2_model<n, modulus> &other) const
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
+operator*(const Fp12_2over3over2_model<n, modulus> &other) const
 {
     // Devegili OhEig Scott Dahab --- Multiplication and Squaring on
     // Pairing-Friendly Fields.pdf; Section 3 (Karatsuba)
@@ -123,9 +121,8 @@ Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::operator
 }
 
 template<mp_size_t n, const bigint<n> &modulus>
-Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<
-    n,
-    modulus>::operator-() const
+Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
+operator-() const
 {
     return Fp12_2over3over2_model<n, modulus>(
         -this->coeffs[0], -this->coeffs[1]);
