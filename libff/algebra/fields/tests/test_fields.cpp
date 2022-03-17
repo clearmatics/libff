@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
+#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp> // VV
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
@@ -369,11 +370,14 @@ void do_test_signed_digits(const FieldT &value, const size_t digit_size)
     //   c = digit size and
     //   d_i = i-th signed digit of size c
     FieldT accum = FieldT::zero();
+    
     for (size_t i = 0; i < num_digits; ++i) {
         accum = accum * FieldT((long)1 << digit_size);
         ssize_t digit =
             field_get_signed_digit(v, digit_size, num_digits - 1 - i);
         accum = accum + FieldT((long)digit);
+
+	printf("[%s:%d] (num_digits - 1 - i) %3d\n", __FILE__, __LINE__, (int)(num_digits - 1 - i));
 
         // Assert digit value range
         ASSERT_LE(digit_min, digit);
@@ -382,15 +386,15 @@ void do_test_signed_digits(const FieldT &value, const size_t digit_size)
         // Compare to vector
         ASSERT_EQ(all_digits[num_digits - 1 - i], digit);
     }
-
+    
     ASSERT_EQ(v, accum.as_bigint());
 }
 
 template<typename FieldT> void test_signed_digits()
 {
-    for (size_t i = 2; i < 22; ++i) {
+   for (size_t i = 2; i < 22; ++i) {
         do_test_signed_digits(FieldT(-1), i);
-        do_test_signed_digits(FieldT(-2), i);
+	do_test_signed_digits(FieldT(-2), i);
     }
 }
 
@@ -439,6 +443,7 @@ template<typename ppT> void test_serialization()
     test_field_serialization_all_configs<Fqk<ppT>>();
 }
 
+#if 0 // BLS12_381 debug disable other curves (VV)
 TEST(FieldsTest, BigInt)
 {
     const std::string a_str("0");
@@ -580,3 +585,17 @@ TEST(FieldsTest, BN128)
     test_field<Fq<bn128_pp>>();
 }
 #endif
+
+#endif // #if 0 // BLS12_381 debug disable other curves (VV)
+
+TEST(FieldsTest, BLS12_381)
+{
+    bls12_381_pp::init_public_params();
+    test_serialization<bls12_381_pp>();
+    test_field<bls12_381_Fq6>();
+    test_all_fields<bls12_381_pp>();
+    test_Fp12_2over3over2_mul_by_024<bls12_381_Fq12>();
+#if 0 // disabled for BLS12_381 (VV)
+    test_signed_digits<bls12_381_Fr>();
+#endif // #if 0 // disabled for BLS12_381 (VV)
+}
