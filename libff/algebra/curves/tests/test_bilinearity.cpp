@@ -25,9 +25,9 @@ template<typename ppT> void pairing_test()
     GT<ppT> GT_one = GT<ppT>::one();
 
     printf("Running bilinearity tests:\n");
-    //G1<ppT> P = (Fr<ppT>::random_element()) * G1<ppT>::one();
+    // G1<ppT> P = (Fr<ppT>::random_element()) * G1<ppT>::one();
     G1<ppT> P = Fr<ppT>("2") * G1<ppT>::one();
-    //G2<ppT> Q = (Fr<ppT>::random_element()) * G2<ppT>::one();
+    // G2<ppT> Q = (Fr<ppT>::random_element()) * G2<ppT>::one();
     G2<ppT> Q = Fr<ppT>("3") * G2<ppT>::one();
 
     printf("P:\n");
@@ -38,7 +38,7 @@ template<typename ppT> void pairing_test()
     Q.print_coordinates();
     printf("\n\n");
 
-    //Fr<ppT> s = Fr<ppT>::random_element(); // VV
+    // Fr<ppT> s = Fr<ppT>::random_element(); // VV
     Fr<ppT> s = Fr<ppT>("2");
     G1<ppT> sP = s * P;
     G2<ppT> sQ = s * Q;
@@ -78,7 +78,7 @@ template<typename ppT> void pairing_test()
     ASSERT_NE(res1, res2);
     std::cout << "**** RES (res1 != res2) : " << (res1 != res2) << " ****"
               << std::endl;
-#endif    
+#endif
 }
 
 template<typename ppT> void double_miller_loop_test()
@@ -190,8 +190,7 @@ TEST(TestBiliearity, BN128)
 // bls12_381 (VV)
 TEST(TestBiliearity, BLS12_381)
 {
-  bls12_381_pp::init_public_params();
-  pairing_test<bls12_381_pp>();
-  double_miller_loop_test<bls12_381_pp>(); // VV
+    bls12_381_pp::init_public_params();
+    pairing_test<bls12_381_pp>();
+    double_miller_loop_test<bls12_381_pp>(); // VV
 }
-

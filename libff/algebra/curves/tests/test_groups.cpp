@@ -133,24 +133,24 @@ template<typename GroupT> void test_output()
     GroupT g = GroupT::zero();
 
     for (size_t i = 0; i < 1000; ++i) {
-    std::stringstream ss;
-    ss << g;
-    g.write_compressed(ss);
-    g.write_uncompressed(ss);
+        std::stringstream ss;
+        ss << g;
+        g.write_compressed(ss);
+        g.write_uncompressed(ss);
 
-    GroupT gg;
-    GroupT gg_comp;
-    GroupT gg_uncomp;
-    ss >> gg;
-    GroupT::read_compressed(ss, gg_comp);
-    GroupT::read_uncompressed(ss, gg_uncomp);
+        GroupT gg;
+        GroupT gg_comp;
+        GroupT gg_uncomp;
+        ss >> gg;
+        GroupT::read_compressed(ss, gg_comp);
+        GroupT::read_uncompressed(ss, gg_uncomp);
 
-    ASSERT_EQ(g, gg);
-    ASSERT_EQ(g, gg_comp);
-    ASSERT_EQ(g, gg_uncomp);
-    /* use a random point in next iteration */
-    g = GroupT::random_element();
-}
+        ASSERT_EQ(g, gg);
+        ASSERT_EQ(g, gg_comp);
+        ASSERT_EQ(g, gg_uncomp);
+        /* use a random point in next iteration */
+        g = GroupT::random_element();
+    }
 }
 
 template<
