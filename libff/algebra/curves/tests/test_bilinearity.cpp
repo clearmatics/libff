@@ -13,6 +13,7 @@
 #endif
 #include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
+#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp> // VV
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
@@ -24,8 +25,10 @@ template<typename ppT> void pairing_test()
     GT<ppT> GT_one = GT<ppT>::one();
 
     printf("Running bilinearity tests:\n");
-    G1<ppT> P = (Fr<ppT>::random_element()) * G1<ppT>::one();
-    G2<ppT> Q = (Fr<ppT>::random_element()) * G2<ppT>::one();
+    //G1<ppT> P = (Fr<ppT>::random_element()) * G1<ppT>::one();
+    G1<ppT> P = Fr<ppT>("2") * G1<ppT>::one();
+    //G2<ppT> Q = (Fr<ppT>::random_element()) * G2<ppT>::one();
+    G2<ppT> Q = Fr<ppT>("3") * G2<ppT>::one();
 
     printf("P:\n");
     P.print();
@@ -35,7 +38,8 @@ template<typename ppT> void pairing_test()
     Q.print_coordinates();
     printf("\n\n");
 
-    Fr<ppT> s = Fr<ppT>::random_element();
+    //Fr<ppT> s = Fr<ppT>::random_element(); // VV
+    Fr<ppT> s = Fr<ppT>("2");
     G1<ppT> sP = s * P;
     G2<ppT> sQ = s * Q;
 
@@ -55,7 +59,7 @@ template<typename ppT> void pairing_test()
               << std::endl;
     std::cout << "**** RES (ans2 == ans3) : " << (ans2 == ans3) << " ****"
               << std::endl;
-
+#if 1
     ASSERT_NE(ans1, GT_one);
     ASSERT_EQ(ans1 ^ Fr<ppT>::field_char(), GT_one);
     printf("\n\n");
@@ -74,6 +78,7 @@ template<typename ppT> void pairing_test()
     ASSERT_NE(res1, res2);
     std::cout << "**** RES (res1 != res2) : " << (res1 != res2) << " ****"
               << std::endl;
+#endif    
 }
 
 template<typename ppT> void double_miller_loop_test()
@@ -126,6 +131,7 @@ template<typename ppT> void affine_pairing_test()
     ASSERT_EQ((ans1 ^ Fr<ppT>::field_char()), GT_one);
 }
 
+#if 0 // BLS12_381 debug (VV)
 TEST(TestBiliearity, Edwards)
 {
     edwards_pp::init_public_params();
@@ -179,3 +185,13 @@ TEST(TestBiliearity, BN128)
     double_miller_loop_test<bn128_pp>();
 }
 #endif
+#endif // #if 0 // BLS12_381 debug (VV)
+
+// bls12_381 (VV)
+TEST(TestBiliearity, BLS12_381)
+{
+  bls12_381_pp::init_public_params();
+  pairing_test<bls12_381_pp>();
+  double_miller_loop_test<bls12_381_pp>(); // VV
+}
+
