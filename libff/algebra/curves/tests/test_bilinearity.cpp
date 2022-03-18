@@ -131,7 +131,7 @@ template<typename ppT> void affine_pairing_test()
     ASSERT_EQ((ans1 ^ Fr<ppT>::field_char()), GT_one);
 }
 
-#if 0 // BLS12_381 debug (VV)
+#if 1 // BLS12_381 debug (VV)
 TEST(TestBiliearity, Edwards)
 {
     edwards_pp::init_public_params();
@@ -192,5 +192,5 @@ TEST(TestBiliearity, BLS12_381)
 {
     bls12_381_pp::init_public_params();
     pairing_test<bls12_381_pp>();
-    double_miller_loop_test<bls12_381_pp>(); // VV
+    double_miller_loop_test<bls12_381_pp>();
 }
