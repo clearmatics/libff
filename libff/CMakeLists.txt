@@ -79,11 +79,11 @@ if ("${IS_LIBFF_PARENT}")
     add_dependencies(check ${TEST_NAME})
   endfunction()
 
-  # libff_test(test_common common/tests/test_common.cpp) # VV
-  # libff_test(test_algebra_bilinearity algebra/curves/tests/test_bilinearity.cpp)
-  # libff_test(test_algebra_groups algebra/curves/tests/test_groups.cpp) # VV
+  libff_test(test_common common/tests/test_common.cpp) # VV
+  libff_test(test_algebra_bilinearity algebra/curves/tests/test_bilinearity.cpp)
+  libff_test(test_algebra_groups algebra/curves/tests/test_groups.cpp) # VV
   libff_test(test_algebra_fields algebra/fields/tests/test_fields.cpp) # VV
-  # libff_test(test_algebra_multiexp algebra/scalar_multiplication/tests/test_multiexp.cpp) # VV
+  libff_test(test_algebra_multiexp algebra/scalar_multiplication/tests/test_multiexp.cpp) # VV
 
   # Profile executables
 
