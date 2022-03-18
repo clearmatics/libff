@@ -447,7 +447,7 @@ template<typename ppT> void test_serialization()
     test_field_serialization_all_configs<Fqk<ppT>>();
 }
 
-#if 0 // BLS12_381 debug disable other curves (VV)
+#if 1 // BLS12_381 debug disable other curves (VV)
 TEST(FieldsTest, BigInt)
 {
     const std::string a_str("0");
@@ -600,6 +600,8 @@ TEST(FieldsTest, BLS12_381)
     test_all_fields<bls12_381_pp>();
     test_Fp12_2over3over2_mul_by_024<bls12_381_Fq12>();
 #if 0  // disabled for BLS12_381 (VV)
+    // disabled due to due to issue #69:
+    // https://github.com/clearmatics/libff/issues/69#issuecomment-1071174423
     test_signed_digits<bls12_381_Fr>();
 #endif // #if 0 // disabled for BLS12_381 (VV)
 }
