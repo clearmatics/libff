@@ -317,7 +317,7 @@ void test_bls12_377()
     ASSERT_EQ(bls12_377_G2::zero(), z);
 }
 
-#if 0 // BLS12_381 debug (VV)
+#if 1 // BLS12_381 debug (VV)
 
 TEST(TestGroups, Edwards)
 {
