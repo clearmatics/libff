@@ -6,6 +6,7 @@ namespace libff
 {
 
 bigint<bls12_381_r_limbs> bls12_381_modulus_r; // (VV)
+bigint<bls12_381_q_limbs> bls12_381_modulus_q; // (VV)
 
 bls12_381_Fq bls12_381_coeff_b;
 bigint<bls12_381_r_limbs> bls12_381_trace_of_frobenius; // from bls12_377 (VV)
@@ -460,6 +461,7 @@ void init_bls12_381_params()
             "133950654494447647302047137994192122158493387593834962042654373641"
             "6511423956333506472724655353366534992391756441569"),
         bls12_381_Fq::one());
+
     // Cofactor
     bls12_381_G1::h =
         bigint<bls12_381_G1::h_limbs>("76329603384216526031706109802092473003");

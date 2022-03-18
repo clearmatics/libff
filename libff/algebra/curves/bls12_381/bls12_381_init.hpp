@@ -25,14 +25,14 @@ const mp_size_t bls12_381_r_limbs =
 const mp_size_t bls12_381_q_limbs =
     (bls12_381_q_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
 
-// extern bigint<bls12_381_q_limbs> bls12_381_modulus_q;
+extern bigint<bls12_381_q_limbs> bls12_381_modulus_q;
 // by example of bls12_377_modulus_q in bls12_377_init.hpp
-extern bigint<bls12_381_q_limbs> bw6_761_modulus_r; // (VV)
+// extern bigint<bls12_381_q_limbs> bw6_761_modulus_r; // (VV)
 
 extern bigint<bls12_381_r_limbs> bls12_381_modulus_r;
 
 // by example of bls12_377_modulus_q in bls12_377_init.hpp
-#define bls12_381_modulus_q bw6_761_modulus_r // (VV)
+//#define bls12_381_modulus_q bw6_761_modulus_r // (VV)
 
 typedef Fp_model<bls12_381_r_limbs, bls12_381_modulus_r> bls12_381_Fr;
 typedef Fp_model<bls12_381_q_limbs, bls12_381_modulus_q> bls12_381_Fq;
