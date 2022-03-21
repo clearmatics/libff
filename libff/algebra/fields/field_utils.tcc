@@ -57,14 +57,25 @@ size_t field_get_digit(
     const size_t low_limb = start_bit / limb_size_bits;
     const size_t high_limb = end_bit / limb_size_bits;
 
-    // use_high_limb = (high_limb < n) && (high_limb != low_limb)
-    //               = (1 - (n - 1 - high_limb) >> limb_size_bits) &&
-    //                   (high_limb - low_limb)
-    const size_t use_high_limb =
-        (1 - ((n - 1 - high_limb) >> (limb_size_bits - 1))) &
-        (high_limb - low_limb);
-    assert(use_high_limb == ((high_limb < n) && (high_limb != low_limb)));
+    // low_limb < n <=> low_limb - n < 0
+    //              <=> (low_limb - n) >> (limb_size_bits - 1) == 1
+    // use_low_limb == (low_limb - n) >> (limb_size_bits - 1)
+    //
+    const size_t use_low_limb = (low_limb - n) >> (limb_size_bits - 1);
+    assert(use_low_limb == (low_limb < n));
+
     const size_t low_limb_shift = start_bit - low_limb * limb_size_bits;
+
+    // use_high_limb = (high_limb < n) && (high_limb != low_limb)
+    //
+    // high_limb < n <=> high_limb - n < 0
+    //               <=> (high_limb - n) >> (limb_size_bits - 1) == 1
+    //
+    // high_limb != low_limb <=> high_limb - low_limb == 1
+    assert((high_limb == low_limb) || (high_limb == low_limb + 1));
+    const size_t use_high_limb =
+        ((high_limb - n) >> (limb_size_bits - 1)) & (high_limb - low_limb);
+    assert(use_high_limb == ((high_limb < n) && (high_limb != low_limb)));
 
     // if use_high_limb == 0, then high_limb_shift = c, which causes any high
     // limb data to be shifted outside of the mask.
@@ -74,8 +85,83 @@ size_t field_get_digit(
 
     const size_t mask = (1ull << digit_size) - 1;
 
-    return mask & ((v.data[use_high_limb * high_limb] << high_limb_shift) |
-                   (v.data[low_limb] >> low_limb_shift));
+    const size_t low_val = v.data[use_low_limb * low_limb];
+    const size_t low_val_shifted = low_val >> low_limb_shift;
+    const size_t low_val_final = use_low_limb * low_val_shifted;
+
+    const size_t high_val = v.data[use_high_limb * high_limb];
+    const size_t high_val_shifted = high_val << high_limb_shift;
+    const size_t high_val_final = use_high_limb * high_val_shifted;
+
+    const size_t value = mask & (low_val_final | high_val_final);
+
+    assert((low_limb < n) || (value == 0));
+    return value;
+}
+
+template<typename FieldT>
+size_t field_get_num_signed_digits(const size_t digit_size)
+{
+    // -1 in the field must have the largest number of 1's in the higher order
+    // elements of its binary representation.
+    const bigint<FieldT::num_limbs> minus_one = (-FieldT::one()).as_bigint();
+
+    // The naive approach is to compute:
+    //
+    //   ceil(FieldT::num_bits + 1 / digit_size)
+    //
+    // where the extra bit avoids the need to overflow in the final digit.
+    // However there are edges cases. Consider digit size 2 for a field where
+    // -1 has bits: 1 1 1 0 0 ....  with 2-bit digit boundaries:
+    //
+    //    1 | 11 | 00
+    //
+    // The extra bit added in the calculation above becomes the SIGN bit of the
+    // high-order digit:
+    //
+    //   01 | 11 | 00
+    //
+    // and the second digit is guaranteed to overflow, in turn causing the 1st
+    // digit to overflow. We wish to minimize the number of digits used and
+    // rely on the naive calculation where possible. Therefore the actual value
+    // of the digits of -1 must be examined.
+
+    // Examine the unsigned digits, checking for the case where the final digit
+    // overflows.
+
+    const size_t naive_num_digits =
+        (FieldT::num_bits + 1 + digit_size - 1) / digit_size;
+    const size_t sign_bit_mask = 1ull << (digit_size - 1);
+    const size_t max_signed_value = sign_bit_mask - 1;
+
+    // Check each unsigned digit, starting with the highest order. If it cannot
+    // overflow (< max_signed_value) then we can early-out and use
+    // naive_num_digits. If it will definitely overflow, we need an extra
+    // digit. If it is max_signed_value, move to the next least significant
+    // digit and repeat the check.
+
+    bool final_overflow = false;
+    for (size_t i = naive_num_digits - 1; i < naive_num_digits; --i) {
+        const size_t unsigned_digit = field_get_digit(minus_one, digit_size, i);
+        if (unsigned_digit & sign_bit_mask) {
+            final_overflow = true;
+            break;
+        }
+
+        if (unsigned_digit != max_signed_value) {
+            break;
+        }
+
+        // This (and any previous values) are max_signed_value. Any lower-order
+        // digits which have the signed bit set will trigger an overflow up to
+        // the most-significant digit.
+    }
+
+    if (final_overflow) {
+        return naive_num_digits + 1;
+    }
+
+    return naive_num_digits;
 }
 
 template<mp_size_t n>
@@ -86,9 +172,9 @@ ssize_t field_get_signed_digit(
     //  carry_mask       1 0 0 0
     //  overflow_mask  1 0 0 0 0
     const size_t carry_mask = 1ull << (digit_size - 1);
-    const ssize_t overflow_mask = 1ll << digit_size;
+    const size_t overflow_mask = 1ull << digit_size;
     size_t carry = 0;
-    ssize_t overflow = 0;
+    size_t overflow = 0;
     size_t digit;
     size_t i = 0;
 
@@ -105,9 +191,11 @@ ssize_t field_get_signed_digit(
         // final value when this loop terminates.
         carry = overflow | carry;
 
-        digit = field_get_digit(v, digit_size, i) + carry;
+        const size_t raw_digit = field_get_digit(v, digit_size, i);
+        digit = raw_digit + carry;
         overflow = (digit & overflow_mask) >> digit_size; // 1/0
         carry = (digit & carry_mask) >> (digit_size - 1); // 1/0
+
         ++i;
     } while (i <= digit_index);
 
@@ -126,11 +214,11 @@ void field_get_signed_digits(
     // Code matches fixed_wnaf_digit(), but stores each digit.
 
     const size_t carry_mask = 1ull << (digit_size - 1);
-    const ssize_t overflow_mask = 1ll << digit_size;
+    const size_t overflow_mask = 1ll << digit_size;
     const auto v_bi = v.as_bigint();
 
     size_t carry = 0;
-    ssize_t overflow = 0;
+    size_t overflow = 0;
 
     for (size_t digit_idx = 0; digit_idx < num_digits; ++digit_idx) {
         //   if overflow, then digit = 0, carry = 1
@@ -140,8 +228,9 @@ void field_get_signed_digits(
         //   else digit = digit
 
         carry = overflow | carry;
-        const ssize_t digit =
-            field_get_digit(v_bi, digit_size, digit_idx) + carry;
+        assert((carry == 0 || carry == 1));
+        const size_t raw_digit = field_get_digit(v_bi, digit_size, digit_idx);
+        const size_t digit = raw_digit + carry;
         overflow = (digit & overflow_mask) >> digit_size; // 1/0
         carry = (digit & carry_mask) >> (digit_size - 1); // 1/0
 

@@ -354,8 +354,7 @@ void do_test_signed_digits(const FieldT &value, const size_t digit_size)
     const ssize_t digit_min = -digit_max;
 
     // Num digits must include an extra bit for overflow.
-    const size_t num_digits =
-        (FieldT::num_bits + 1 + digit_size - 1) / digit_size;
+    const size_t num_digits = field_get_num_signed_digits<FieldT>(digit_size);
 
     // Compute all digits to a vector, for checking
     std::vector<ssize_t> all_digits(num_digits);
@@ -373,16 +372,18 @@ void do_test_signed_digits(const FieldT &value, const size_t digit_size)
 
     for (size_t i = 0; i < num_digits; ++i) {
         accum = accum * FieldT((long)1 << digit_size);
-        ssize_t digit =
-            field_get_signed_digit(v, digit_size, num_digits - 1 - i);
-        accum = accum + FieldT((long)digit);
+        const size_t digit_idx = num_digits - 1 - i;
+        const ssize_t digit = field_get_signed_digit(v, digit_size, digit_idx);
+
+        const FieldT digit_Fr((long)digit);
+        accum = accum + digit_Fr;
 
         // Assert digit value range
         ASSERT_LE(digit_min, digit);
         ASSERT_LT(digit, digit_max);
 
         // Compare to vector
-        ASSERT_EQ(all_digits[num_digits - 1 - i], digit);
+        ASSERT_EQ(all_digits[digit_idx], digit);
     }
 
     ASSERT_EQ(v, accum.as_bigint());
@@ -590,9 +591,5 @@ TEST(FieldsTest, BLS12_381)
     test_field<bls12_381_Fq6>();
     test_all_fields<bls12_381_pp>();
     test_Fp12_2over3over2_mul_by_024<bls12_381_Fq12>();
-#if 0  // disabled for BLS12_381
-    // disabled due to issue #69:
-    // https://github.com/clearmatics/libff/issues/69#issuecomment-1071174423
     test_signed_digits<bls12_381_Fr>();
-#endif // #if 0 // disabled for BLS12_381
 }
