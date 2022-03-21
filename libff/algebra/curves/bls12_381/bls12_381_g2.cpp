@@ -14,8 +14,8 @@ std::vector<size_t> bls12_381_G2::wnaf_window_table;
 std::vector<size_t> bls12_381_G2::fixed_base_exp_window_table;
 bls12_381_G2 bls12_381_G2::G2_zero;
 bls12_381_G2 bls12_381_G2::G2_one;
-bls12_381_Fq2 bls12_381_G2::coeff_a; // VV
-bls12_381_Fq2 bls12_381_G2::coeff_b; // VV
+bls12_381_Fq2 bls12_381_G2::coeff_a;
+bls12_381_Fq2 bls12_381_G2::coeff_b;
 bigint<bls12_381_G2::h_limbs> bls12_381_G2::h;
 
 bls12_381_G2::bls12_381_G2()
@@ -27,8 +27,6 @@ bls12_381_G2::bls12_381_G2()
 
 bls12_381_Fq2 bls12_381_G2::mul_by_b(const bls12_381_Fq2 &elt)
 {
-    //    return bls12_381_Fq2(bls12_381_twist_mul_by_b_c0 * elt.c0,
-    //    bls12_381_twist_mul_by_b_c1 * elt.c1); // from scipr-lab (VV)
     return bls12_381_Fq2(
         bls12_381_twist_mul_by_b_c0 * elt.coeffs[0],
         bls12_381_twist_mul_by_b_c1 * elt.coeffs[1]);
@@ -41,16 +39,6 @@ void bls12_381_G2::print() const
     } else {
         bls12_381_G2 copy(*this);
         copy.to_affine_coordinates();
-        // from scipr-lab (VV)
-        //        gmp_printf("(%Nd*z + %Nd , %Nd*z + %Nd)\n",
-        //                   copy.X.c1.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs,
-        //                   copy.X.c0.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs,
-        //                   copy.Y.c1.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs,
-        //                   copy.Y.c0.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs);
         gmp_printf(
             "(%Nd*z + %Nd , %Nd*z + %Nd)\n",
             copy.X.coeffs[1].as_bigint().data,
@@ -69,20 +57,6 @@ void bls12_381_G2::print_coordinates() const
     if (this->is_zero()) {
         printf("O\n");
     } else {
-        // from scipr-lab (VV)
-        //        gmp_printf("(%Nd*z + %Nd : %Nd*z + %Nd : %Nd*z + %Nd)\n",
-        //                   this->X.c1.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs,
-        //                   this->X.c0.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs,
-        //                   this->Y.c1.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs,
-        //                   this->Y.c0.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs,
-        //                   this->Z.c1.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs,
-        //                   this->Z.c0.as_bigint().data,
-        //                   bls12_381_Fq::num_limbs);
         gmp_printf(
             "(%Nd*z + %Nd : %Nd*z + %Nd : %Nd*z + %Nd)\n",
             this->X.coeffs[1].as_bigint().data,
@@ -340,7 +314,6 @@ bls12_381_G2 bls12_381_G2::mul_by_q() const
         (this->Z).Frobenius_map(1));
 }
 
-// from blas12_377 (VV)
 bls12_381_G2 bls12_381_G2::untwist_frobenius_twist() const
 {
     bls12_381_G2 g = *this;
@@ -417,7 +390,6 @@ bool bls12_381_G2::is_well_formed() const
     return (Y2 == X3 + bls12_381_twist_coeff_b * Z6);
 }
 
-// VV from DT
 bool bls12_381_G2::is_in_safe_subgroup() const
 {
     return zero() == scalar_field::mod * (*this);
@@ -508,8 +480,6 @@ std::ostream &operator<<(std::ostream &out, const bls12_381_G2 &g)
     out << copy.X << OUTPUT_SEPARATOR << copy.Y;
 #else
     /* storing LSB of Y */
-    //    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.c0.as_bigint().data[0] &
-    //    1); // from scipr-lab (VV)
     out << copy.X << OUTPUT_SEPARATOR
         << (copy.Y.coeffs[0].as_bigint().data[0] & 1);
 #endif
@@ -542,7 +512,6 @@ std::istream &operator>>(std::istream &in, bls12_381_G2 &g)
         bls12_381_Fq2 tY2 = tX2 * tX + bls12_381_twist_coeff_b;
         tY = tY2.sqrt();
 
-        //        if ((tY.c0.as_bigint().data[0] & 1) != Y_lsb) // VV
         if ((tY.coeffs[0].as_bigint().data[0] & 1) != Y_lsb) {
             tY = -tY;
         }

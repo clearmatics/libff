@@ -130,8 +130,6 @@ bls12_381_Fq12 bls12_381_final_exponentiation_first_chunk(
       result = D * C
     */
 
-    //    const bls12_381_Fq12 A = bls12_381_Fq12(elt.c0,-elt.c1); // scipr-lab
-    //    (VV)
     const bls12_381_Fq12 A = bls12_381_Fq12(elt.coeffs[0], -elt.coeffs[1]);
     const bls12_381_Fq12 B = elt.inverse();
     const bls12_381_Fq12 C = A * B;

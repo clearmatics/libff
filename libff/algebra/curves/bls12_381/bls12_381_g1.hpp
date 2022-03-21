@@ -29,8 +29,8 @@ public:
     static std::vector<std::size_t> fixed_base_exp_window_table;
     static bls12_381_G1 G1_zero;
     static bls12_381_G1 G1_one;
-    static bls12_381_Fq coeff_a; // VV
-    static bls12_381_Fq coeff_b; // VV
+    static bls12_381_Fq coeff_a;
+    static bls12_381_Fq coeff_b;
 
     // Cofactor
     static const mp_size_t h_bitcount = 126;
@@ -70,20 +70,17 @@ public:
     bls12_381_G1 dbl() const;
     bls12_381_G1 mul_by_cofactor() const;
 
-    // from bls12_377 (VV)
     // Endomorphism (x, y) -> (\beta * x, y) for \beta an element of Fq with
     // order 3.
     bls12_381_G1 sigma() const;
 
     bool is_well_formed() const;
-    bool is_in_safe_subgroup() const; // (VV)
+    bool is_in_safe_subgroup() const;
 
     static bls12_381_G1 zero();
     static bls12_381_G1 one();
     static bls12_381_G1 random_element();
 
-    //    static std::size_t size_in_bits() { return
-    //    base_field::ceil_size_in_bits() + 1; } // from scipr-lab (VV)
     static std::size_t size_in_bits() { return base_field::size_in_bits() + 1; }
     static bigint<base_field::num_limbs> field_char()
     {
@@ -97,7 +94,6 @@ public:
     friend std::ostream &operator<<(std::ostream &out, const bls12_381_G1 &g);
     friend std::istream &operator>>(std::istream &in, bls12_381_G1 &g);
 
-    // (VV)
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
     static void read_uncompressed(std::istream &, bls12_381_G1 &);

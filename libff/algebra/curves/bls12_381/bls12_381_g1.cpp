@@ -14,8 +14,8 @@ std::vector<size_t> bls12_381_G1::wnaf_window_table;
 std::vector<size_t> bls12_381_G1::fixed_base_exp_window_table;
 bls12_381_G1 bls12_381_G1::G1_zero;
 bls12_381_G1 bls12_381_G1::G1_one;
-bls12_381_Fq bls12_381_G1::coeff_a; // VV
-bls12_381_Fq bls12_381_G1::coeff_b; // VV
+bls12_381_Fq bls12_381_G1::coeff_a;
+bls12_381_Fq bls12_381_G1::coeff_b;
 bigint<bls12_381_G1::h_limbs> bls12_381_G1::h;
 
 bls12_381_G1::bls12_381_G1()
@@ -325,7 +325,6 @@ bool bls12_381_G1::is_well_formed() const
     return (Y2 == X3 + bls12_381_coeff_b * Z6);
 }
 
-// VV from DT
 bool bls12_381_G1::is_in_safe_subgroup() const
 {
     return zero() == scalar_field::mod * (*this);
@@ -339,8 +338,6 @@ bls12_381_G1 bls12_381_G1::random_element()
 {
     return (scalar_field::random_element().as_bigint()) * G1_one;
 }
-
-// from scipr-lab (VV)
 
 void bls12_381_G1::write_uncompressed(std::ostream &out) const
 {

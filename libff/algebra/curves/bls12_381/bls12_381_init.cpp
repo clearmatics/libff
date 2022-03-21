@@ -5,11 +5,11 @@
 namespace libff
 {
 
-bigint<bls12_381_r_limbs> bls12_381_modulus_r; // (VV)
-bigint<bls12_381_q_limbs> bls12_381_modulus_q; // (VV)
+bigint<bls12_381_r_limbs> bls12_381_modulus_r;
+bigint<bls12_381_q_limbs> bls12_381_modulus_q;
 
 bls12_381_Fq bls12_381_coeff_b;
-bigint<bls12_381_r_limbs> bls12_381_trace_of_frobenius; // from bls12_377 (VV)
+bigint<bls12_381_r_limbs> bls12_381_trace_of_frobenius;
 bls12_381_Fq2 bls12_381_twist;
 bls12_381_Fq2 bls12_381_twist_coeff_b;
 bls12_381_Fq bls12_381_twist_mul_by_b_c0;
@@ -17,11 +17,10 @@ bls12_381_Fq bls12_381_twist_mul_by_b_c1;
 bls12_381_Fq2 bls12_381_twist_mul_by_q_X;
 bls12_381_Fq2 bls12_381_twist_mul_by_q_Y;
 
-// from bls12_377 (VV)
 bls12_381_Fq bls12_381_g1_endomorphism_beta;
 bigint<bls12_381_r_limbs> bls12_381_g1_safe_subgroup_check_c1;
 
-// Coefficients for G2 untwist-frobenius-twist (from bls12_377 VV)
+// Coefficients for G2 untwist-frobenius-twist
 bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_v;
 bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_w_3;
 bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_v_inverse;
@@ -81,7 +80,7 @@ void init_bls12_381_fields()
     bls12_381_Fr::nqr_to_t =
         bls12_381_Fr("937917089079007706106976984802249742464848817460758522850"
                      "752807661925904159");
-    bls12_381_Fr::static_init(); // from bls12_377 (VV)
+    bls12_381_Fr::static_init();
 
     /* parameters for base field Fq */
     bls12_381_modulus_q =
@@ -126,7 +125,7 @@ void init_bls12_381_fields()
     bls12_381_Fq::nqr_to_t = bls12_381_Fq(
         "4002409555221667393417789825735904156556882819939007885332058136124031"
         "650490837864442687629129015664037894272559786");
-    bls12_381_Fq::static_init(); // from bls12_377 (VV)
+    bls12_381_Fq::static_init();
 
     /* parameters for twist field Fq2 */
     bls12_381_Fq2::euler = bigint<2 * bls12_381_q_limbs>(
@@ -161,7 +160,7 @@ void init_bls12_381_fields()
     bls12_381_Fq2::Frobenius_coeffs_c1[1] = bls12_381_Fq(
         "4002409555221667393417789825735904156556882819939007885332058136124031"
         "650490837864442687629129015664037894272559786");
-    bls12_381_Fq2::static_init(); // from bls12_377 (VV)
+    bls12_381_Fq2::static_init();
 
     /* parameters for Fq6 */
 
