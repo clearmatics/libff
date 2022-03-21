@@ -59,7 +59,6 @@ template<typename ppT> void pairing_test()
               << std::endl;
     std::cout << "**** RES (ans2 == ans3) : " << (ans2 == ans3) << " ****"
               << std::endl;
-#if 1
     ASSERT_NE(ans1, GT_one);
     ASSERT_EQ(ans1 ^ Fr<ppT>::field_char(), GT_one);
     printf("\n\n");
@@ -78,7 +77,6 @@ template<typename ppT> void pairing_test()
     ASSERT_NE(res1, res2);
     std::cout << "**** RES (res1 != res2) : " << (res1 != res2) << " ****"
               << std::endl;
-#endif
 }
 
 template<typename ppT> void double_miller_loop_test()
@@ -131,7 +129,6 @@ template<typename ppT> void affine_pairing_test()
     ASSERT_EQ((ans1 ^ Fr<ppT>::field_char()), GT_one);
 }
 
-#if 1 // BLS12_381 debug (VV)
 TEST(TestBiliearity, Edwards)
 {
     edwards_pp::init_public_params();
@@ -185,9 +182,7 @@ TEST(TestBiliearity, BN128)
     double_miller_loop_test<bn128_pp>();
 }
 #endif
-#endif // #if 0 // BLS12_381 debug (VV)
 
-// bls12_381 (VV)
 TEST(TestBiliearity, BLS12_381)
 {
     bls12_381_pp::init_public_params();

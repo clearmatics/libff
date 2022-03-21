@@ -37,8 +37,7 @@ typedef bls12_381_Fq12 bls12_381_GT;
 
 // parameters for the curve E/Fq : y^2 = x^3 + b
 extern bls12_381_Fq bls12_381_coeff_b;
-extern bigint<bls12_381_r_limbs>
-    bls12_381_trace_of_frobenius;
+extern bigint<bls12_381_r_limbs> bls12_381_trace_of_frobenius;
 // parameters for the twisted curve E'/Fq2 : y^2 = x^3 + b/xi
 extern bls12_381_Fq2 bls12_381_twist;
 extern bls12_381_Fq2 bls12_381_twist_coeff_b;
