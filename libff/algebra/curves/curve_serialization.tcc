@@ -134,7 +134,7 @@ public:
         mp_limb_t flags;
         field_read_with_flags<encoding_binary, Form>(group_el.X, flags, in_s);
         if (0 == (flags & 0x2)) {
-	  
+
             Fq x = group_el.X;
             Fq x_squared = x * x;
             Fq x_cubed = x_squared * x;
@@ -144,7 +144,7 @@ public:
                 throw std::runtime_error("curve eqn has no solution at x");
             }
             printf("Y is a square, safe to continue!\n");
-	    
+
             group_el.Y = curve_point_y_at_x<GroupT>(group_el.X);
             const mp_limb_t Y_lsb =
                 field_get_component_0(group_el.Y).mont_repr.data[0] & 1;

@@ -465,7 +465,7 @@ void init_bls12_381_params()
     // Curve coeffs
     bls12_381_G1::coeff_a = bls12_381_Fq::zero();
     bls12_381_G1::coeff_b = bls12_381_coeff_b;
-    
+
     // Cofactor
     bls12_381_G1::h =
         bigint<bls12_381_G1::h_limbs>("76329603384216526031706109802092473003");
@@ -549,7 +549,7 @@ void init_bls12_381_params()
     // Curve twist coeffs
     bls12_381_G2::coeff_a = bls12_381_Fq2::zero();
     bls12_381_G2::coeff_b = bls12_381_twist_coeff_b;
-    
+
     // Cofactor
     bls12_381_G2::h = bigint<bls12_381_G2::h_limbs>(
         "3055023339312683442009997531931215042144660192541881426676640329822676"
