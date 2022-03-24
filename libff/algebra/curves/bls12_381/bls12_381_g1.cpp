@@ -152,8 +152,10 @@ bls12_381_G1 bls12_381_G1::operator+(const bls12_381_G1 &other) const
     bls12_381_Fq Z1_cubed = (this->Z) * Z1Z1;
     bls12_381_Fq Z2_cubed = (other.Z) * Z2Z2;
 
-    bls12_381_Fq S1 = (this->Y) * Z2_cubed; // S1 = Y1 * Z2 * Z2Z2
-    bls12_381_Fq S2 = (other.Y) * Z1_cubed; // S2 = Y2 * Z1 * Z1Z1
+    // S1 = Y1 * Z2 * Z2Z2
+    bls12_381_Fq S1 = (this->Y) * Z2_cubed;
+    // S2 = Y2 * Z1 * Z1Z1
+    bls12_381_Fq S2 = (other.Y) * Z1_cubed; 
 
     if (U1 == U2 && S1 == S2) {
         // dbl case; nothing of above can be reused
@@ -161,17 +163,25 @@ bls12_381_G1 bls12_381_G1::operator+(const bls12_381_G1 &other) const
     }
 
     // rest of add case
-    bls12_381_Fq H = U2 - U1; // H = U2-U1
+    // H = U2-U1
+    bls12_381_Fq H = U2 - U1; 
     bls12_381_Fq S2_minus_S1 = S2 - S1;
-    bls12_381_Fq I = (H + H).squared();          // I = (2 * H)^2
-    bls12_381_Fq J = H * I;                      // J = H * I
-    bls12_381_Fq r = S2_minus_S1 + S2_minus_S1;  // r = 2 * (S2-S1)
-    bls12_381_Fq V = U1 * I;                     // V = U1 * I
-    bls12_381_Fq X3 = r.squared() - J - (V + V); // X3 = r^2 - J - 2 * V
+    // I = (2 * H)^2
+    bls12_381_Fq I = (H + H).squared();
+    // J = H * I
+    bls12_381_Fq J = H * I;
+    // r = 2 * (S2-S1)
+    bls12_381_Fq r = S2_minus_S1 + S2_minus_S1;
+    // V = U1 * I
+    bls12_381_Fq V = U1 * I;
+    // X3 = r^2 - J - 2 * V
+    bls12_381_Fq X3 = r.squared() - J - (V + V); 
     bls12_381_Fq S1_J = S1 * J;
-    bls12_381_Fq Y3 = r * (V - X3) - (S1_J + S1_J); // Y3 = r * (V-X3)-2 S1 J
+    // Y3 = r * (V-X3)-2 S1 J
+    bls12_381_Fq Y3 = r * (V - X3) - (S1_J + S1_J);
+    // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
     bls12_381_Fq Z3 = ((this->Z + other.Z).squared() - Z1Z1 - Z2Z2) *
-                      H; // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
+                      H; 
 
     return bls12_381_G1(X3, Y3, Z3);
 }
@@ -227,8 +237,10 @@ bls12_381_G1 bls12_381_G1::mixed_add(const bls12_381_G1 &other) const
 
     const bls12_381_Fq Z1_cubed = (this->Z) * Z1Z1;
 
-    const bls12_381_Fq &S1 = (this->Y);           // S1 = Y1 * Z2 * Z2Z2
-    const bls12_381_Fq S2 = (other.Y) * Z1_cubed; // S2 = Y2 * Z1 * Z1Z1
+    // S1 = Y1 * Z2 * Z2Z2
+    const bls12_381_Fq &S1 = (this->Y);
+    // S2 = Y2 * Z1 * Z1Z1
+    const bls12_381_Fq S2 = (other.Y) * Z1_cubed; 
 
     if (U1 == U2 && S1 == S2) {
         // dbl case; nothing of above can be reused
@@ -241,19 +253,28 @@ bls12_381_G1 bls12_381_G1::mixed_add(const bls12_381_G1 &other) const
 
     // NOTE: does not handle O and pts of order 2,4
     // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#addition-madd-2007-bl
-    bls12_381_Fq H = U2 - (this->X); // H = U2-X1
-    bls12_381_Fq HH = H.squared();   // HH = H^2
-    bls12_381_Fq I = HH + HH;        // I = 4*HH
+    // H = U2-X1
+    bls12_381_Fq H = U2 - (this->X);
+    // HH = H^2
+    bls12_381_Fq HH = H.squared();
+    // I = 4*HH
+    bls12_381_Fq I = HH + HH;        
     I = I + I;
-    bls12_381_Fq J = H * I;          // J = H*I
-    bls12_381_Fq r = S2 - (this->Y); // r = 2*(S2-Y1)
+    // J = H*I
+    bls12_381_Fq J = H * I;
+    // r = 2*(S2-Y1)
+    bls12_381_Fq r = S2 - (this->Y);  
     r = r + r;
-    bls12_381_Fq V = (this->X) * I;            // V = X1*I
-    bls12_381_Fq X3 = r.squared() - J - V - V; // X3 = r^2-J-2*V
-    bls12_381_Fq Y3 = (this->Y) * J;           // Y3 = r*(V-X3)-2*Y1*J
+    // V = X1*I
+    bls12_381_Fq V = (this->X) * I;
+    // X3 = r^2-J-2*V
+    bls12_381_Fq X3 = r.squared() - J - V - V;
+    // Y3 = r*(V-X3)-2*Y1*J
+    bls12_381_Fq Y3 = (this->Y) * J;           
     Y3 = r * (V - X3) - Y3 - Y3;
+    // Z3 = (Z1+H)^2-Z1Z1-HH
     bls12_381_Fq Z3 =
-        ((this->Z) + H).squared() - Z1Z1 - HH; // Z3 = (Z1+H)^2-Z1Z1-HH
+        ((this->Z) + H).squared() - Z1Z1 - HH;  
 
     return bls12_381_G1(X3, Y3, Z3);
 }
@@ -274,20 +295,29 @@ bls12_381_G1 bls12_381_G1::dbl() const
     // NOTE: does not handle O and pts of order 2,4
     // http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#doubling-dbl-2009-l
 
-    bls12_381_Fq A = (this->X).squared(); // A = X1^2
-    bls12_381_Fq B = (this->Y).squared(); // B = Y1^2
-    bls12_381_Fq C = B.squared();         // C = B^2
+    // A = X1^2
+    bls12_381_Fq A = (this->X).squared();
+    // B = Y1^2
+    bls12_381_Fq B = (this->Y).squared();
+    // C = B^2
+    bls12_381_Fq C = B.squared();          
     bls12_381_Fq D = (this->X + B).squared() - A - C;
-    D = D + D;                     // D = 2 * ((X1 + B)^2 - A - C)
-    bls12_381_Fq E = A + A + A;    // E = 3 * A
-    bls12_381_Fq F = E.squared();  // F = E^2
-    bls12_381_Fq X3 = F - (D + D); // X3 = F - 2 D
+    // D = 2 * ((X1 + B)^2 - A - C)
+    D = D + D;
+    // E = 3 * A
+    bls12_381_Fq E = A + A + A;
+    // F = E^2
+    bls12_381_Fq F = E.squared();
+    // X3 = F - 2 D
+    bls12_381_Fq X3 = F - (D + D); 
     bls12_381_Fq eightC = C + C;
     eightC = eightC + eightC;
     eightC = eightC + eightC;
-    bls12_381_Fq Y3 = E * (D - X3) - eightC; // Y3 = E * (D - X3) - 8 * C
+    // Y3 = E * (D - X3) - 8 * C
+    bls12_381_Fq Y3 = E * (D - X3) - eightC; 
     bls12_381_Fq Y1Z1 = (this->Y) * (this->Z);
-    bls12_381_Fq Z3 = Y1Z1 + Y1Z1; // Z3 = 2 * Y1 * Z1
+    // Z3 = 2 * Y1 * Z1
+    bls12_381_Fq Z3 = Y1Z1 + Y1Z1; 
 
     return bls12_381_G1(X3, Y3, Z3);
 }
