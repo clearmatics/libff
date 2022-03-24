@@ -162,8 +162,7 @@ bls12_381_Fq12 bls12_381_final_exponentiation_last_chunk(
 
     //  https://eprint.iacr.org/2016/130.pdf (Algorithm 1 described in Table 1)
     // elt^(-2)
-    const bls12_381_Fq12 A =
-        elt.cyclotomic_squared().unitary_inverse();
+    const bls12_381_Fq12 A = elt.cyclotomic_squared().unitary_inverse();
     // elt^z
     const bls12_381_Fq12 B = bls12_381_exp_by_z(elt);
     // elt^(2z)
@@ -195,25 +194,20 @@ bls12_381_Fq12 bls12_381_final_exponentiation_last_chunk(
     // elt^(z^4-2z^3+2z) * elt^(-1)
     const bls12_381_Fq12 P = H * M;
     // (elt^(z^4-2z^3+2z) * elt^(-1))^q
-    const bls12_381_Fq12 Q =
-        P.Frobenius_map(1);
+    const bls12_381_Fq12 Q = P.Frobenius_map(1);
     // elt^(z^3-2z^2) * elt^z
     const bls12_381_Fq12 R = B * F;
     // (elt^(z^3-2z^2) * elt^z)^(q^2)
-    const bls12_381_Fq12 S =
-        R.Frobenius_map(2);
+    const bls12_381_Fq12 S = R.Frobenius_map(2);
     // (elt^(z^2-2z) * elt)^(q^3) * (elt^(z^3-2z^2) * elt^z)^(q^2)
-    const bls12_381_Fq12 T =
-        S * O; 
+    const bls12_381_Fq12 T = S * O;
     // (elt^(z^2-2z) * elt)^(q^3) * (elt^(z^3-2z^2) * elt^z)^(q^2) *
     // (elt^(z^4-2z^3+2z) * elt^(-1))^q
-    const bls12_381_Fq12 U =
-        T * Q;
+    const bls12_381_Fq12 U = T * Q;
     // (elt^(z^2-2z) * elt)^(q^3) * (elt^(z^3-2z^2) * elt^z)^(q^2) *
     // (elt^(z^4-2z^3+2z) * elt^(-1))^q * elt^(z^5-2z^4+2z^2) *
     // elt^(-z+2) * elt
-    const bls12_381_Fq12 result =
-        U * L;
+    const bls12_381_Fq12 result = U * L;
 
     leave_block("Call to bls12_381_final_exponentiation_last_chunk");
 
@@ -263,13 +257,12 @@ void doubling_step_for_miller_loop(
     // J = X1^2
     const bls12_381_Fq2 J = X.squared();
     // E_squared = E^2
-    const bls12_381_Fq2 E_squared = E.squared();         
+    const bls12_381_Fq2 E_squared = E.squared();
 
     // X3 = A * (B-F)
     current.X = A * (B - F);
     // Y3 = G^2 - 3*E^2
-    current.Y =
-        G.squared() - (E_squared + E_squared + E_squared);
+    current.Y = G.squared() - (E_squared + E_squared + E_squared);
     // Z3 = B * H
     current.Z = B * H;
     // ell_0 = xi * I
@@ -277,7 +270,7 @@ void doubling_step_for_miller_loop(
     // ell_VW = - H (later: * yP)
     c.ell_VW = -bls12_381_twist * H;
     // ell_VV = 3*J (later: * xP)
-    c.ell_VV = J + J + J;            
+    c.ell_VV = J + J + J;
 }
 
 void mixed_addition_step_for_miller_loop(
@@ -299,7 +292,7 @@ void mixed_addition_step_for_miller_loop(
     // I = X1 * F
     const bls12_381_Fq2 I = X1 * F;
     // J = H + Z1*G - (I+I)
-    const bls12_381_Fq2 J = H + Z1 * G - (I + I); 
+    const bls12_381_Fq2 J = H + Z1 * G - (I + I);
 
     // X3 = D*J
     current.X = D * J;
@@ -312,7 +305,7 @@ void mixed_addition_step_for_miller_loop(
     // ell_VV = - E (later: * xP)
     c.ell_VV = -E;
     // ell_VW = D (later: * yP    )
-    c.ell_VW = bls12_381_twist * D;     
+    c.ell_VW = bls12_381_twist * D;
 }
 
 bls12_381_ate_G1_precomp bls12_381_ate_precompute_G1(const bls12_381_G1 &P)
@@ -338,8 +331,7 @@ bls12_381_ate_G2_precomp bls12_381_ate_precompute_G2(const bls12_381_G2 &Q)
     Qcopy.to_affine_coordinates();
 
     // could add to global params if needed
-    bls12_381_Fq two_inv =
-        (bls12_381_Fq("2").inverse()); 
+    bls12_381_Fq two_inv = (bls12_381_Fq("2").inverse());
 
     bls12_381_ate_G2_precomp result;
     result.QX = Qcopy.X;

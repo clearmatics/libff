@@ -172,7 +172,7 @@ bls12_381_G2 bls12_381_G2::operator+(const bls12_381_G2 &other) const
     // S1 = Y1 * Z2 * Z2Z2
     bls12_381_Fq2 S1 = (this->Y) * Z2_cubed;
     // S2 = Y2 * Z1 * Z1Z1
-    bls12_381_Fq2 S2 = (other.Y) * Z1_cubed; 
+    bls12_381_Fq2 S2 = (other.Y) * Z1_cubed;
 
     if (U1 == U2 && S1 == S2) {
         // dbl case; nothing of above can be reused
@@ -181,7 +181,7 @@ bls12_381_G2 bls12_381_G2::operator+(const bls12_381_G2 &other) const
 
     // rest of add case
     // H = U2-U1
-    bls12_381_Fq2 H = U2 - U1; 
+    bls12_381_Fq2 H = U2 - U1;
     bls12_381_Fq2 S2_minus_S1 = S2 - S1;
     // I = (2 * H)^2
     bls12_381_Fq2 I = (H + H).squared();
@@ -192,13 +192,12 @@ bls12_381_G2 bls12_381_G2::operator+(const bls12_381_G2 &other) const
     // V = U1 * I
     bls12_381_Fq2 V = U1 * I;
     // X3 = r^2 - J - 2 * V
-    bls12_381_Fq2 X3 = r.squared() - J - (V + V); 
+    bls12_381_Fq2 X3 = r.squared() - J - (V + V);
     bls12_381_Fq2 S1_J = S1 * J;
     // Y3 = r * (V-X3)-2 S1 J
     bls12_381_Fq2 Y3 = r * (V - X3) - (S1_J + S1_J);
     // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2) * H
-    bls12_381_Fq2 Z3 = ((this->Z + other.Z).squared() - Z1Z1 - Z2Z2) *
-                       H; 
+    bls12_381_Fq2 Z3 = ((this->Z + other.Z).squared() - Z1Z1 - Z2Z2) * H;
 
     return bls12_381_G2(X3, Y3, Z3);
 }
@@ -257,7 +256,7 @@ bls12_381_G2 bls12_381_G2::mixed_add(const bls12_381_G2 &other) const
     // S1 = Y1 * Z2 * Z2Z2
     const bls12_381_Fq2 &S1 = (this->Y);
     // S2 = Y2 * Z1 * Z1Z1
-    const bls12_381_Fq2 S2 = (other.Y) * Z1_cubed; 
+    const bls12_381_Fq2 S2 = (other.Y) * Z1_cubed;
 
     if (U1 == U2 && S1 == S2) {
         // dbl case; nothing of above can be reused
@@ -275,23 +274,22 @@ bls12_381_G2 bls12_381_G2::mixed_add(const bls12_381_G2 &other) const
     // HH = H&2
     bls12_381_Fq2 HH = H.squared();
     // I = 4*HH
-    bls12_381_Fq2 I = HH + HH;        
+    bls12_381_Fq2 I = HH + HH;
     I = I + I;
     // J = H*I
     bls12_381_Fq2 J = H * I;
     // r = 2*(S2-Y1)
-    bls12_381_Fq2 r = S2 - (this->Y); 
+    bls12_381_Fq2 r = S2 - (this->Y);
     r = r + r;
     // V = X1*I
     bls12_381_Fq2 V = (this->X) * I;
     // X3 = r^2-J-2*V
     bls12_381_Fq2 X3 = r.squared() - J - V - V;
     // Y3 = r*(V-X3)-2*Y1*J
-    bls12_381_Fq2 Y3 = (this->Y) * J;           
+    bls12_381_Fq2 Y3 = (this->Y) * J;
     Y3 = r * (V - X3) - Y3 - Y3;
     // Z3 = (Z1+H)^2-Z1Z1-HH
-    bls12_381_Fq2 Z3 =
-        ((this->Z) + H).squared() - Z1Z1 - HH; 
+    bls12_381_Fq2 Z3 = ((this->Z) + H).squared() - Z1Z1 - HH;
 
     return bls12_381_G2(X3, Y3, Z3);
 }
@@ -314,7 +312,7 @@ bls12_381_G2 bls12_381_G2::dbl() const
     // B = Y1^2
     bls12_381_Fq2 B = (this->Y).squared();
     // C = B^2
-    bls12_381_Fq2 C = B.squared();         
+    bls12_381_Fq2 C = B.squared();
     bls12_381_Fq2 D = (this->X + B).squared() - A - C;
     // D = 2 * ((X1 + B)^2 - A - C)
     D = D + D;
@@ -323,15 +321,15 @@ bls12_381_G2 bls12_381_G2::dbl() const
     // F = E^2
     bls12_381_Fq2 F = E.squared();
     // X3 = F - 2 D
-    bls12_381_Fq2 X3 = F - (D + D); 
+    bls12_381_Fq2 X3 = F - (D + D);
     bls12_381_Fq2 eightC = C + C;
     eightC = eightC + eightC;
     eightC = eightC + eightC;
     // Y3 = E * (D - X3) - 8 * C
-    bls12_381_Fq2 Y3 = E * (D - X3) - eightC; 
+    bls12_381_Fq2 Y3 = E * (D - X3) - eightC;
     bls12_381_Fq2 Y1Z1 = (this->Y) * (this->Z);
     // Z3 = 2 * Y1 * Z1
-    bls12_381_Fq2 Z3 = Y1Z1 + Y1Z1; 
+    bls12_381_Fq2 Z3 = Y1Z1 + Y1Z1;
 
     return bls12_381_G2(X3, Y3, Z3);
 }
