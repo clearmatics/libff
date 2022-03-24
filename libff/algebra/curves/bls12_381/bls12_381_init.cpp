@@ -427,7 +427,8 @@ void init_bls12_381_params()
 {
     init_bls12_381_fields();
 
-    /* choice of short Weierstrass curve and its twist */
+    // Choice of short Weierstrass curve and its twist
+    // E(Fq): y^2 = x^3 + 4
 
     bls12_381_coeff_b = bls12_381_Fq("4");
     bls12_381_twist = bls12_381_Fq2(bls12_381_Fq("1"), bls12_381_Fq("1"));
@@ -461,6 +462,10 @@ void init_bls12_381_params()
             "6511423956333506472724655353366534992391756441569"),
         bls12_381_Fq::one());
 
+    // Curve coeffs
+    bls12_381_G1::coeff_a = bls12_381_Fq::zero();
+    bls12_381_G1::coeff_b = bls12_381_coeff_b;
+    
     // Cofactor
     bls12_381_G1::h =
         bigint<bls12_381_G1::h_limbs>("76329603384216526031706109802092473003");
@@ -540,6 +545,11 @@ void init_bls12_381_params()
                 "92755366549233245574720196577603788075774019345359297002502797"
                 "8793976877002675564980949289727957565575433344219582")),
         bls12_381_Fq2::one());
+
+    // Curve twist coeffs
+    bls12_381_G2::coeff_a = bls12_381_Fq2::zero();
+    bls12_381_G2::coeff_b = bls12_381_twist_coeff_b;
+    
     // Cofactor
     bls12_381_G2::h = bigint<bls12_381_G2::h_limbs>(
         "3055023339312683442009997531931215042144660192541881426676640329822676"
