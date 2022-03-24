@@ -275,7 +275,6 @@ Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
         my_Fp6(z0, z4, z3), my_Fp6(z2, z1, z5));
 }
 
-// bls12-381 from scipr-lab (VV)
 template<mp_size_t n, const bigint<n> &modulus>
 Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
     mul_by_045(
@@ -283,23 +282,6 @@ Fp12_2over3over2_model<n, modulus> Fp12_2over3over2_model<n, modulus>::
         const Fp2_model<n, modulus> &ell_VW,
         const Fp2_model<n, modulus> &ell_VV) const
 {
-    /*
-    // OLD
-    Fp12_2over3over2_model<n,modulus> a(my_Fp6(ell_VW, my_Fp2::zero(),
-    my_Fp2::zero()), my_Fp6(my_Fp2::zero(), ell_0, ell_VV));
-
-    return (*this) * a;
-    */
-
-    // (VV)
-    //    my_Fp2 z0 = this->c0.c0;
-    //    my_Fp2 z1 = this->c0.c1;
-    //    my_Fp2 z2 = this->c0.c2;
-    //    my_Fp2 z3 = this->c1.c0;
-    //    my_Fp2 z4 = this->c1.c1;
-    //    my_Fp2 z5 = this->c1.c2;
-
-    // bls12-681 migrate (VV)
     my_Fp2 z0 = this->coeffs[0].coeffs[0];
     my_Fp2 z1 = this->coeffs[0].coeffs[1];
     my_Fp2 z2 = this->coeffs[0].coeffs[2];

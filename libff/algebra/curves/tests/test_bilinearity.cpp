@@ -13,7 +13,7 @@
 #endif
 #include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
-#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp> // VV
+#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp>
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
@@ -25,9 +25,7 @@ template<typename ppT> void pairing_test()
     GT<ppT> GT_one = GT<ppT>::one();
 
     printf("Running bilinearity tests:\n");
-    // G1<ppT> P = (Fr<ppT>::random_element()) * G1<ppT>::one();
     G1<ppT> P = Fr<ppT>("2") * G1<ppT>::one();
-    // G2<ppT> Q = (Fr<ppT>::random_element()) * G2<ppT>::one();
     G2<ppT> Q = Fr<ppT>("3") * G2<ppT>::one();
 
     printf("P:\n");
@@ -38,7 +36,6 @@ template<typename ppT> void pairing_test()
     Q.print_coordinates();
     printf("\n\n");
 
-    // Fr<ppT> s = Fr<ppT>::random_element(); // VV
     Fr<ppT> s = Fr<ppT>("2");
     G1<ppT> sP = s * P;
     G2<ppT> sQ = s * Q;
