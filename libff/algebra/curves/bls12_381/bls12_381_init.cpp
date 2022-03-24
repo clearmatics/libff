@@ -32,7 +32,7 @@ bigint<12 * bls12_381_q_limbs> bls12_381_final_exponent;
 bigint<bls12_381_q_limbs> bls12_381_final_exponent_z;
 bool bls12_381_final_exponent_is_z_neg;
 
-void init_bls12_381_fields()
+void init_bls12_381_params()
 {
     using bigint_r = bigint<bls12_381_r_limbs>;
     using bigint_q = bigint<bls12_381_q_limbs>;
@@ -421,11 +421,6 @@ void init_bls12_381_fields()
         bls12_381_Fq(
             "312533259417105942490810809620464897857011828197757543583242263160"
             "1824034463382777937621250592425535493320683825557"));
-}
-
-void init_bls12_381_params()
-{
-    init_bls12_381_fields();
 
     // Choice of short Weierstrass curve and its twist
     // E(Fq): y^2 = x^3 + 4
