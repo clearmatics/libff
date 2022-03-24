@@ -40,6 +40,8 @@ decltype(((GroupT *)nullptr)->X) curve_point_y_at_x(
     const base_field x_cubed = x_squared * x;
     const base_field y_squared =
         x_cubed + (GroupT::coeff_a * x) + GroupT::coeff_b;
+    // Check that y_squared is a quadratic residue (ensuring that sqrt()
+    // terminates).
     return y_squared.sqrt();
 }
 
