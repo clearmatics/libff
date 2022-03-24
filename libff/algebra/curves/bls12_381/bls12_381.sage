@@ -3,34 +3,34 @@
 from sage.all import *
 import sys
 
-#Prime order of the subgroup we work in
+# Prime order of the subgroup we work in
 def r(x):
     return x**4 - x**2 + 1
 
-#Prime used to generate the base finite field
+# Prime used to generate the base finite field
 def q(x):
     return (x - 1)**2 * (x**4 - x**2 + 1) // 3 + x
 
-#Compute G1 cofactor
+# Compute G1 cofactor
 def g1_h(x):
     return (x - 1)**2 // 3
 
-#Compute G2 cofactor
+# Compute G2 cofactor
 def g2_h(x):
     return (x**8 - 4*x**7 + 5*x**6 - 4*x**4 + 6*x**3 - 4*x**2 - 4*x + 13) // 9
 
-#Computes the order of G1, the safe subgroup of E / Fq
+# Computes the order of G1, the safe subgroup of E / Fq
 def g1_order(curve_order):
     decomposition = factor(curve_order)
-    #Factor returns the prime decomposition and orders prime
-    #factors from smaller to biggest
+    # Factor returns the prime decomposition and orders prime
+    # factors from smaller to biggest
     biggest_factor = decomposition[-1]
     assert(biggest_factor[1] == 1)
     return biggest_factor[0]
 
 def main():
     print("Generating parameters for bls12_381")
-    #Curve parameter
+    # Curve parameter
     param = -0xd201000000010000
 
     prime_r = r(param)
@@ -42,21 +42,21 @@ def main():
     if(mod(prime_q, 6) != 1):
         raise BaseException("Unexpected: q should be = 1 (mod 6).")
 
-    #Scalar field
+    # Scalar field
     print('prime_r = {}'.format(prime_r))
-    #params_generator.generate_libff_Fp_model_params(prime_r)
+    # params_generator.generate_libff_Fp_model_params(prime_r)
     Fr = GF(prime_r)
 
-    #Base field
+    # Base field
     print('prime_q = {}'.format(prime_q))
-    #params_generator.generate_libff_Fp_model_params(prime_q)
+    # params_generator.generate_libff_Fp_model_params(prime_q)
     Fq = GF(prime_q)
 
-    #E / Fq
+    # E / Fq
     curve = EllipticCurve(Fq, [ 0, 4 ])
     curve_order = curve.order()
 
-    #Cofactors
+    # Cofactors
     _h1 = curve_order // g1_order(curve_order)
     h1 = g1_h(param)
     assert(_h1 == h1)
