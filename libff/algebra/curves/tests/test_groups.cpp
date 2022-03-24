@@ -203,15 +203,15 @@ template<typename GroupT> void test_serialize_group_element(const GroupT &v)
 
 template<typename GroupT> void test_serialize_group()
 {
-    test_serialize_group_element(GroupT::zero());
-    test_serialize_group_element(GroupT::one());
-    test_serialize_group_element(GroupT::zero() - GroupT::one());
-    test_serialize_group_element(
-        GroupT::zero() - GroupT::one() - GroupT::one());
-    test_serialize_group_element(GroupT::random_element());
-    test_serialize_group_element(GroupT::random_element());
-    test_serialize_group_element(GroupT::random_element());
-    test_serialize_group_element(GroupT::random_element());
+  test_serialize_group_element(GroupT::zero());
+  test_serialize_group_element(GroupT::one());
+  test_serialize_group_element(GroupT::zero() - GroupT::one());
+  test_serialize_group_element(
+	 GroupT::zero() - GroupT::one() - GroupT::one());
+  test_serialize_group_element(GroupT::random_element());
+  test_serialize_group_element(GroupT::random_element());
+  test_serialize_group_element(GroupT::random_element());
+  test_serialize_group_element(GroupT::random_element());
 }
 
 template<typename ppT> void test_serialize()
@@ -317,7 +317,48 @@ void test_bls12_377()
     ASSERT_EQ(bls12_377_G2::zero(), z);
 }
 
-#if 1 // BLS12_381 debug (VV)
+void test_bls12_381()
+{
+  using GroupT = typename std::decay<G1<bls12_381_pp>>::type;
+  // test that some elements e.g. 1,-1,2,random satisfy the curve
+  // equation Y^2 = X^3 + a X + b P = 1
+  // P = 1
+  {
+    GroupT P = GroupT::one();
+    P.to_affine_coordinates();
+    using Fq = typename std::decay<decltype(P.X)>::type;
+    Fq LHS = (P.Y * P.Y);
+    Fq RHS = ((P.X * P.X * P.X) + (GroupT::coeff_a * P.X) + GroupT::coeff_b);
+    ASSERT_EQ(LHS, RHS);
+  }
+  // P = -1
+  {
+    GroupT P = bigint<1>(-1l) * GroupT::one();
+    P.to_affine_coordinates();
+    using Fq = typename std::decay<decltype(P.X)>::type;
+    Fq LHS = (P.Y * P.Y);
+    Fq RHS = ((P.X * P.X * P.X) + (GroupT::coeff_a * P.X) + GroupT::coeff_b);
+    ASSERT_EQ(LHS, RHS);
+  }
+  // P = 2
+  {
+    GroupT P = bigint<1>(2l) * GroupT::one();
+    P.to_affine_coordinates();
+    using Fq = typename std::decay<decltype(P.X)>::type;
+    Fq LHS = (P.Y * P.Y);
+    Fq RHS = ((P.X * P.X * P.X) + (GroupT::coeff_a * P.X) + GroupT::coeff_b);
+    ASSERT_EQ(LHS, RHS);
+  }
+  // P = random
+  {
+    GroupT P = GroupT::random_element();
+    P.to_affine_coordinates();
+    using Fq = typename std::decay<decltype(P.X)>::type;
+    Fq LHS = (P.Y * P.Y);
+    Fq RHS = ((P.X * P.X * P.X) + (GroupT::coeff_a * P.X) + GroupT::coeff_b);
+    ASSERT_EQ(LHS, RHS);
+  }
+}
 
 TEST(TestGroups, Edwards)
 {
@@ -415,18 +456,15 @@ TEST(TestGroups, BN128)
 }
 #endif
 
-#endif // #if 0 // BLS12_381 debug (VV)
-
 TEST(TestGroups, BLS12_381)
-{
+{  
     bls12_381_pp::init_public_params();
+    test_bls12_381();
     test_group<G1<bls12_381_pp>>();
     test_output<G1<bls12_381_pp>>();
     test_group<G2<bls12_381_pp>>();
     test_output<G2<bls12_381_pp>>();
-#if 0  // bls12-381: temporary disable for debug (VV)
-    test_serialize<bls12_381_pp>(); // does not terminate
-#endif // #if 0 // bls12-381: temporary disable for debug (VV)
+    test_serialize<bls12_381_pp>();
     test_mul_by_q<G2<bls12_381_pp>>();
     test_check_membership<bls12_381_pp>();
     test_mul_by_cofactor<G1<bls12_381_pp>>();
