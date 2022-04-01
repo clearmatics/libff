@@ -32,14 +32,14 @@ public:
     static bls12_381_Fq coeff_a;
     static bls12_381_Fq coeff_b;
 
+    typedef bls12_381_Fq base_field;
+    typedef bls12_381_Fr scalar_field;
+
     // Cofactor
     static const mp_size_t h_bitcount = 126;
     static const mp_size_t h_limbs =
         (h_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
     static bigint<h_limbs> h;
-
-    typedef bls12_381_Fq base_field;
-    typedef bls12_381_Fr scalar_field;
 
     bls12_381_Fq X, Y, Z;
 
@@ -77,8 +77,8 @@ public:
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
 
-    static bls12_381_G1 zero();
-    static bls12_381_G1 one();
+    static const bls12_381_G1 &zero();
+    static const bls12_381_G1 &one();
     static bls12_381_G1 random_element();
 
     static std::size_t size_in_bits() { return base_field::size_in_bits() + 1; }
@@ -119,4 +119,5 @@ std::ostream &operator<<(std::ostream &out, const std::vector<bls12_381_G1> &v);
 std::istream &operator>>(std::istream &in, std::vector<bls12_381_G1> &v);
 
 } // namespace libff
+
 #endif // BLS12_381_G1_HPP_

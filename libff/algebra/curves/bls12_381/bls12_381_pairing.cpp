@@ -220,8 +220,8 @@ bls12_381_GT bls12_381_final_exponentiation(const bls12_381_Fq12 &elt)
     /* OLD naive version:
         bls12_381_GT result = elt^bls12_381_final_exponent;
     */
-    bls12_381_Fq12 A = bls12_381_final_exponentiation_first_chunk(elt);
-    bls12_381_GT result = bls12_381_final_exponentiation_last_chunk(A);
+    bls12_381_Fq12 first = bls12_381_final_exponentiation_first_chunk(elt);
+    bls12_381_GT result = bls12_381_final_exponentiation_last_chunk(first);
 
     leave_block("Call to bls12_381_final_exponentiation");
     return result;
@@ -229,6 +229,7 @@ bls12_381_GT bls12_381_final_exponentiation(const bls12_381_Fq12 &elt)
 
 /* ate pairing */
 
+// TODO: Rename bls12_381_doubling_step_for_miller_loop
 void doubling_step_for_miller_loop(
     const bls12_381_Fq two_inv,
     bls12_381_G2 &current,
@@ -273,6 +274,7 @@ void doubling_step_for_miller_loop(
     c.ell_VV = J + J + J;
 }
 
+// TODO: Rename bls12_381_mixed_addition_step_for_miller_loop
 void mixed_addition_step_for_miller_loop(
     const bls12_381_G2 base, bls12_381_G2 &current, bls12_381_ate_ell_coeffs &c)
 {

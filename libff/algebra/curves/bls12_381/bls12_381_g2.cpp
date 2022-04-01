@@ -120,15 +120,14 @@ bool bls12_381_G2::operator==(const bls12_381_G2 &other) const
 
     bls12_381_Fq2 Z1_squared = (this->Z).squared();
     bls12_381_Fq2 Z2_squared = (other.Z).squared();
-
-    if ((this->X * Z2_squared) != (other.X * Z1_squared)) {
+    bls12_381_Fq2 Z1_cubed = (this->Z) * Z1_squared;
+    bls12_381_Fq2 Z2_cubed = (other.Z) * Z2_squared;
+    if (((this->X * Z2_squared) != (other.X * Z1_squared)) ||
+        ((this->Y * Z2_cubed) != (other.Y * Z1_cubed))) {
         return false;
     }
 
-    bls12_381_Fq2 Z1_cubed = (this->Z) * Z1_squared;
-    bls12_381_Fq2 Z2_cubed = (other.Z) * Z2_squared;
-
-    return !((this->Y * Z2_cubed) != (other.Y * Z1_cubed));
+    return true;
 }
 
 bool bls12_381_G2::operator!=(const bls12_381_G2 &other) const
@@ -166,13 +165,10 @@ bls12_381_G2 bls12_381_G2::operator+(const bls12_381_G2 &other) const
     bls12_381_Fq2 U1 = this->X * Z2Z2;
     bls12_381_Fq2 U2 = other.X * Z1Z1;
 
-    bls12_381_Fq2 Z1_cubed = (this->Z) * Z1Z1;
-    bls12_381_Fq2 Z2_cubed = (other.Z) * Z2Z2;
-
-    // S1 = Y1 * Z2 * Z2Z2
-    bls12_381_Fq2 S1 = (this->Y) * Z2_cubed;
-    // S2 = Y2 * Z1 * Z1Z1
-    bls12_381_Fq2 S2 = (other.Y) * Z1_cubed;
+    // S1 = Y1*Z2*Z2Z2
+    bls12_381_Fq2 S1 = (this->Y) * ((other.Z) * Z2Z2);
+    // S2 = Y2*Z1*Z1Z1
+    bls12_381_Fq2 S2 = (other.Y) * ((this->Z) * Z1Z1);
 
     if (U1 == U2 && S1 == S2) {
         // dbl case; nothing of above can be reused
@@ -182,12 +178,12 @@ bls12_381_G2 bls12_381_G2::operator+(const bls12_381_G2 &other) const
     // rest of add case
     // H = U2-U1
     bls12_381_Fq2 H = U2 - U1;
-    bls12_381_Fq2 S2_minus_S1 = S2 - S1;
     // I = (2 * H)^2
     bls12_381_Fq2 I = (H + H).squared();
     // J = H * I
     bls12_381_Fq2 J = H * I;
     // r = 2 * (S2-S1)
+    bls12_381_Fq2 S2_minus_S1 = S2 - S1;
     bls12_381_Fq2 r = S2_minus_S1 + S2_minus_S1;
     // V = U1 * I
     bls12_381_Fq2 V = U1 * I;
@@ -247,18 +243,10 @@ bls12_381_G2 bls12_381_G2::mixed_add(const bls12_381_G2 &other) const
     // we know that Z2 = 1
 
     const bls12_381_Fq2 Z1Z1 = (this->Z).squared();
-
-    const bls12_381_Fq2 &U1 = this->X;
     const bls12_381_Fq2 U2 = other.X * Z1Z1;
+    const bls12_381_Fq2 S2 = (other.Y) * ((this->Z) * Z1Z1);
 
-    const bls12_381_Fq2 Z1_cubed = (this->Z) * Z1Z1;
-
-    // S1 = Y1 * Z2 * Z2Z2
-    const bls12_381_Fq2 &S1 = (this->Y);
-    // S2 = Y2 * Z1 * Z1Z1
-    const bls12_381_Fq2 S2 = (other.Y) * Z1_cubed;
-
-    if (U1 == U2 && S1 == S2) {
+    if (this->X == U2 && this->Y == S2) {
         // dbl case; nothing of above can be reused
         return this->dbl();
     }
@@ -423,9 +411,9 @@ bool bls12_381_G2::is_in_safe_subgroup() const
     return zero() == scalar_field::mod * (*this);
 }
 
-bls12_381_G2 bls12_381_G2::zero() { return G2_zero; }
+const bls12_381_G2 &bls12_381_G2::zero() { return G2_zero; }
 
-bls12_381_G2 bls12_381_G2::one() { return G2_one; }
+const bls12_381_G2 &bls12_381_G2::one() { return G2_one; }
 
 bls12_381_G2 bls12_381_G2::random_element()
 {
@@ -501,59 +489,21 @@ void bls12_381_G2::read_compressed(std::istream &in, bls12_381_G2 &g)
 
 std::ostream &operator<<(std::ostream &out, const bls12_381_G2 &g)
 {
-    bls12_381_G2 copy(g);
-    copy.to_affine_coordinates();
-    out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
 #ifdef NO_PT_COMPRESSION
-    out << copy.X << OUTPUT_SEPARATOR << copy.Y;
+    g.write_uncompressed(out);
 #else
-    /* storing LSB of Y */
-    out << copy.X << OUTPUT_SEPARATOR
-        << (copy.Y.coeffs[0].as_bigint().data[0] & 1);
+    g.write_compressed(out);
 #endif
-
     return out;
 }
 
 std::istream &operator>>(std::istream &in, bls12_381_G2 &g)
 {
-    char is_zero;
-    bls12_381_Fq2 tX, tY;
-
 #ifdef NO_PT_COMPRESSION
-    in >> is_zero >> tX >> tY;
-    is_zero -= '0';
+    bls12_381_G2::read_uncompressed(in, g);
 #else
-    in.read((char *)&is_zero, 1); // this reads is_zero;
-    is_zero -= '0';
-    consume_OUTPUT_SEPARATOR(in);
-
-    unsigned char Y_lsb;
-    in >> tX;
-    consume_OUTPUT_SEPARATOR(in);
-    in.read((char *)&Y_lsb, 1);
-    Y_lsb -= '0';
-
-    // y = +/- sqrt(x^3 + b)
-    if (is_zero == 0) {
-        bls12_381_Fq2 tX2 = tX.squared();
-        bls12_381_Fq2 tY2 = tX2 * tX + bls12_381_twist_coeff_b;
-        tY = tY2.sqrt();
-
-        if ((tY.coeffs[0].as_bigint().data[0] & 1) != Y_lsb) {
-            tY = -tY;
-        }
-    }
+    bls12_381_G2::read_compressed(in, g);
 #endif
-    // using projective coordinates
-    if (is_zero == 0) {
-        g.X = tX;
-        g.Y = tY;
-        g.Z = bls12_381_Fq2::one();
-    } else {
-        g = bls12_381_G2::zero();
-    }
-
     return in;
 }
 

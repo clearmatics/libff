@@ -94,24 +94,20 @@ bool bls12_381_G1::operator==(const bls12_381_G1 &other) const
 
     /* now neither is O */
 
-    // using Jacobian coordinates so:
-    // (X1:Y1:Z1) = (X2:Y2:Z2)
-    // iff
-    // X1/Z1^2 == X2/Z2^2 and Y1/Z1^3 == Y2/Z2^3
-    // iff
-    // X1 * Z2^2 == X2 * Z1^2 and Y1 * Z2^3 == Y2 * Z1^3
-
+    // Using Jacobian coordinates so:
+    //   (X1:Y1:Z1) = (X2:Y2:Z2) <=>
+    //   X1/Z1^2 == X2/Z2^2 AND Y1/Z1^3 == Y2/Z2^3 <=>
+    //   X1 * Z2^2 == X2 * Z1^2 and Y1 * Z2^3 == Y2 * Z1^3
     bls12_381_Fq Z1_squared = (this->Z).squared();
     bls12_381_Fq Z2_squared = (other.Z).squared();
-
-    if ((this->X * Z2_squared) != (other.X * Z1_squared)) {
+    bls12_381_Fq Z1_cubed = (this->Z) * Z1_squared;
+    bls12_381_Fq Z2_cubed = (other.Z) * Z2_squared;
+    if (((this->X * Z2_squared) != (other.X * Z1_squared)) ||
+        ((this->Y * Z2_cubed) != (other.Y * Z1_cubed))) {
         return false;
     }
 
-    bls12_381_Fq Z1_cubed = (this->Z) * Z1_squared;
-    bls12_381_Fq Z2_cubed = (other.Z) * Z2_squared;
-
-    return !((this->Y * Z2_cubed) != (other.Y * Z1_cubed));
+    return true;
 }
 
 bool bls12_381_G1::operator!=(const bls12_381_G1 &other) const
@@ -149,13 +145,10 @@ bls12_381_G1 bls12_381_G1::operator+(const bls12_381_G1 &other) const
     bls12_381_Fq U1 = this->X * Z2Z2;
     bls12_381_Fq U2 = other.X * Z1Z1;
 
-    bls12_381_Fq Z1_cubed = (this->Z) * Z1Z1;
-    bls12_381_Fq Z2_cubed = (other.Z) * Z2Z2;
-
     // S1 = Y1 * Z2 * Z2Z2
-    bls12_381_Fq S1 = (this->Y) * Z2_cubed;
+    bls12_381_Fq S1 = (this->Y) * ((other.Z) * Z2Z2);
     // S2 = Y2 * Z1 * Z1Z1
-    bls12_381_Fq S2 = (other.Y) * Z1_cubed;
+    bls12_381_Fq S2 = (other.Y) * ((this->Z) * Z1Z1);
 
     if (U1 == U2 && S1 == S2) {
         // dbl case; nothing of above can be reused
@@ -165,12 +158,12 @@ bls12_381_G1 bls12_381_G1::operator+(const bls12_381_G1 &other) const
     // rest of add case
     // H = U2-U1
     bls12_381_Fq H = U2 - U1;
-    bls12_381_Fq S2_minus_S1 = S2 - S1;
     // I = (2 * H)^2
     bls12_381_Fq I = (H + H).squared();
     // J = H * I
     bls12_381_Fq J = H * I;
     // r = 2 * (S2-S1)
+    bls12_381_Fq S2_minus_S1 = S2 - S1;
     bls12_381_Fq r = S2_minus_S1 + S2_minus_S1;
     // V = U1 * I
     bls12_381_Fq V = U1 * I;
@@ -230,18 +223,12 @@ bls12_381_G1 bls12_381_G1::mixed_add(const bls12_381_G1 &other) const
     // we know that Z2 = 1
 
     const bls12_381_Fq Z1Z1 = (this->Z).squared();
-
-    const bls12_381_Fq &U1 = this->X;
+    // U2 = X2*Z1Z1
     const bls12_381_Fq U2 = other.X * Z1Z1;
-
-    const bls12_381_Fq Z1_cubed = (this->Z) * Z1Z1;
-
-    // S1 = Y1 * Z2 * Z2Z2
-    const bls12_381_Fq &S1 = (this->Y);
     // S2 = Y2 * Z1 * Z1Z1
-    const bls12_381_Fq S2 = (other.Y) * Z1_cubed;
+    const bls12_381_Fq S2 = (other.Y) * ((this->Z) * Z1Z1);
 
-    if (U1 == U2 && S1 == S2) {
+    if (this->X == U2 && this->Y == S2) {
         // dbl case; nothing of above can be reused
         return this->dbl();
     }
@@ -338,10 +325,12 @@ bool bls12_381_G1::is_well_formed() const
     if (this->is_zero()) {
         return true;
     }
-    // y^2 = x^3 + b
-    // We are using Jacobian coordinates, so equation we need to check is
-    // actually (y/z^3)^2 = (x/z^2)^3 + b y^2 / z^6 = x^3 / z^6 + b y^2 = x^3 +
-    // b z^6
+
+    // The curve equation is
+    // E': y^2 = x^3 + ax + b, where a=0
+    // We are using Jacobian coordinates. As such, the equation becomes:
+    // y^2/z^6 = x^3/z^6 + b
+    // = y^2 = x^3  + b z^6
     bls12_381_Fq X2 = this->X.squared();
     bls12_381_Fq Y2 = this->Y.squared();
     bls12_381_Fq Z2 = this->Z.squared();
@@ -358,9 +347,9 @@ bool bls12_381_G1::is_in_safe_subgroup() const
     return zero() == scalar_field::mod * (*this);
 }
 
-bls12_381_G1 bls12_381_G1::zero() { return G1_zero; }
+const bls12_381_G1 &bls12_381_G1::zero() { return G1_zero; }
 
-bls12_381_G1 bls12_381_G1::one() { return G1_one; }
+const bls12_381_G1 &bls12_381_G1::one() { return G1_one; }
 
 bls12_381_G1 bls12_381_G1::random_element()
 {
@@ -441,59 +430,21 @@ void bls12_381_G1::read_compressed(std::istream &in, bls12_381_G1 &g)
 
 std::ostream &operator<<(std::ostream &out, const bls12_381_G1 &g)
 {
-    bls12_381_G1 copy(g);
-    copy.to_affine_coordinates();
-
-    out << (copy.is_zero() ? 1 : 0) << OUTPUT_SEPARATOR;
 #ifdef NO_PT_COMPRESSION
-    out << copy.X << OUTPUT_SEPARATOR << copy.Y;
+    g.write_uncompressed(out);
 #else
-    /* storing LSB of Y */
-    out << copy.X << OUTPUT_SEPARATOR << (copy.Y.as_bigint().data[0] & 1);
+    g.write_compressed(out);
 #endif
-
     return out;
 }
 
 std::istream &operator>>(std::istream &in, bls12_381_G1 &g)
 {
-    char is_zero;
-    bls12_381_Fq tX, tY;
-
 #ifdef NO_PT_COMPRESSION
-    in >> is_zero >> tX >> tY;
-    is_zero -= '0';
+    bls12_381_G1::read_uncompressed(in, g);
 #else
-    in.read((char *)&is_zero, 1); // this reads is_zero;
-    is_zero -= '0';
-    consume_OUTPUT_SEPARATOR(in);
-
-    unsigned char Y_lsb;
-    in >> tX;
-    consume_OUTPUT_SEPARATOR(in);
-    in.read((char *)&Y_lsb, 1);
-    Y_lsb -= '0';
-
-    // y = +/- sqrt(x^3 + b)
-    if (is_zero == 0) {
-        bls12_381_Fq tX2 = tX.squared();
-        bls12_381_Fq tY2 = tX2 * tX + bls12_381_coeff_b;
-        tY = tY2.sqrt();
-
-        if ((tY.as_bigint().data[0] & 1) != Y_lsb) {
-            tY = -tY;
-        }
-    }
+    bls12_381_G1::read_compressed(in, g);
 #endif
-    // using Jacobian coordinates
-    if (is_zero == 0) {
-        g.X = tX;
-        g.Y = tY;
-        g.Z = bls12_381_Fq::one();
-    } else {
-        g = bls12_381_G1::zero();
-    }
-
     return in;
 }
 
