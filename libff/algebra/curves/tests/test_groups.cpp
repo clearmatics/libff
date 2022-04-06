@@ -317,9 +317,9 @@ void test_bls12_377()
     ASSERT_EQ(bls12_377_G2::zero(), z);
 }
 
-void test_bls12_381()
+template<typename GroupT> void test_bls12_381()
 {
-    using GroupT = typename std::decay<G1<bls12_381_pp>>::type;
+  //    using GroupT = typename std::decay<G1<bls12_381_pp>>::type;
     // test that some elements e.g. 1,-1,2,random satisfy the curve
     // equation Y^2 = X^3 + a X + b P = 1
     // P = 1
@@ -364,6 +364,7 @@ void test_bls12_381()
     }
 }
 
+#if 0
 TEST(TestGroups, Edwards)
 {
     edwards_pp::init_public_params();
@@ -459,11 +460,13 @@ TEST(TestGroups, BN128)
     test_mul_by_cofactor<G2<bn128_pp>>();
 }
 #endif
+#endif // VV
 
 TEST(TestGroups, BLS12_381)
 {
     bls12_381_pp::init_public_params();
-    test_bls12_381();
+    test_bls12_381<G1<bls12_381_pp>>();
+    test_bls12_381<G2<bls12_381_pp>>();
     test_group<G1<bls12_381_pp>>();
     test_output<G1<bls12_381_pp>>();
     test_group<G2<bls12_381_pp>>();
