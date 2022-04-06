@@ -136,12 +136,12 @@ public:
         if (0 == (flags & 0x2)) {
 
 #ifdef DEBUG
-	    // This check has efficiency penalty under normal
-	    // executuion, so we only enable it in debug for
-	    // now. TODO: this is a temporary solution that needs to
-	    // be fixed in the long term: see issues #55
-	    // https://github.com/clearmatics/libff/issues/55 and #70
-	    // https://github.com/clearmatics/libff/issues/70
+            // This check has efficiency penalty under normal
+            // executuion, so we only enable it in debug for
+            // now. TODO: this is a temporary solution that needs to
+            // be fixed in the long term: see issues #55
+            // https://github.com/clearmatics/libff/issues/55 and #70
+            // https://github.com/clearmatics/libff/issues/70
             Fq x = group_el.X;
             Fq x_squared = x * x;
             Fq x_cubed = x_squared * x;
@@ -152,7 +152,7 @@ public:
             }
             printf("Y is a square, safe to continue!\n");
 #endif // #ifdef DEBUG
-	    
+
             group_el.Y = curve_point_y_at_x<GroupT>(group_el.X);
             const mp_limb_t Y_lsb =
                 field_get_component_0(group_el.Y).mont_repr.data[0] & 1;

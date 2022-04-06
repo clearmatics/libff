@@ -47,7 +47,7 @@ public:
     // a quadratic nonresidue in Fp12
     static Fp12_2over3over2_model<n, modulus> nqr;
     // nqr^t
-    static Fp12_2over3over2_model<n, modulus> nqr_to_t; 
+    static Fp12_2over3over2_model<n, modulus> nqr_to_t;
 
     typedef Fp_model<n, modulus> my_Fp;
     typedef Fp2_model<n, modulus> my_Fp2;

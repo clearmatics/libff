@@ -47,7 +47,7 @@ public:
     // a quadratic nonresidue in Fp6
     static Fp6_3over2_model<n, modulus> nqr;
     // nqr^t
-    static Fp6_3over2_model<n, modulus> nqr_to_t; 
+    static Fp6_3over2_model<n, modulus> nqr_to_t;
 
     static my_Fp2 non_residue;
     /// non_residue^((modulus^i-1)/3)   for i=0,1,2,3,4,5

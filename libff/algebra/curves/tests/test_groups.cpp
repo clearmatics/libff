@@ -321,21 +321,20 @@ void test_bls12_377()
 // equation Y^2 = X^3 + a X + b; used in test_bls12_381
 template<typename GroupT> void check_curve_equation(GroupT P)
 {
-  P.to_affine_coordinates();
-  using Fq = typename std::decay<decltype(P.X)>::type;
-  Fq LHS = (P.Y * P.Y);
-  Fq RHS =
-    ((P.X * P.X * P.X) + (GroupT::coeff_a * P.X) + GroupT::coeff_b);
-  ASSERT_EQ(LHS, RHS);
+    P.to_affine_coordinates();
+    using Fq = typename std::decay<decltype(P.X)>::type;
+    Fq LHS = (P.Y * P.Y);
+    Fq RHS = ((P.X * P.X * P.X) + (GroupT::coeff_a * P.X) + GroupT::coeff_b);
+    ASSERT_EQ(LHS, RHS);
 }
 
 template<typename GroupT> void test_bls12_381()
 {
-  using Fr = typename GroupT::scalar_field;
-  check_curve_equation(GroupT::one());
-  check_curve_equation(Fr(-1l) * GroupT::one());
-  check_curve_equation(Fr(2l) * GroupT::one());
-  check_curve_equation(GroupT::random_element());
+    using Fr = typename GroupT::scalar_field;
+    check_curve_equation(GroupT::one());
+    check_curve_equation(Fr(-1l) * GroupT::one());
+    check_curve_equation(Fr(2l) * GroupT::one());
+    check_curve_equation(GroupT::random_element());
 }
 
 TEST(TestGroups, Edwards)
