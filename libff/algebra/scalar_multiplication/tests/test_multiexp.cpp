@@ -389,7 +389,7 @@ int main(int argc, char **argv)
 {
     libff::alt_bn128_pp::init_public_params();
     libff::bls12_377_pp::init_public_params();
-    libff::bls12_381_pp::init_public_params(); // VV
+    libff::bls12_381_pp::init_public_params();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
