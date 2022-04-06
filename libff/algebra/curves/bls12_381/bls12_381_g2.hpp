@@ -72,7 +72,6 @@ public:
     bls12_381_G2 mixed_add(const bls12_381_G2 &other) const;
     bls12_381_G2 dbl() const;
     bls12_381_G2 mul_by_q() const;
-    bls12_381_G2 untwist_frobenius_twist() const;
     bls12_381_G2 mul_by_cofactor() const;
 
     bool is_well_formed() const;
