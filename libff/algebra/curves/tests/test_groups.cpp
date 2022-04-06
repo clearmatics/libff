@@ -338,7 +338,6 @@ template<typename GroupT> void test_bls12_381()
   check_curve_equation(GroupT::random_element());
 }
 
-#if 0
 TEST(TestGroups, Edwards)
 {
     edwards_pp::init_public_params();
@@ -434,7 +433,6 @@ TEST(TestGroups, BN128)
     test_mul_by_cofactor<G2<bn128_pp>>();
 }
 #endif
-#endif // VV
 
 TEST(TestGroups, BLS12_381)
 {
