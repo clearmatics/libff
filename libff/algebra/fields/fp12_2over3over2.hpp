@@ -36,13 +36,18 @@ std::istream &operator>>(std::istream &, Fp12_2over3over2_model<n, modulus> &);
 template<mp_size_t n, const bigint<n> &modulus> class Fp12_2over3over2_model
 {
 public:
-    static bigint<12 * n> euler;            // (modulus^12-1)/2
-    static std::size_t s;                   // modulus^12 = 2^s * t + 1
-    static bigint<12 * n> t;                // with t odd
-    static bigint<12 * n> t_minus_1_over_2; // (t-1)/2
-    static Fp12_2over3over2_model<n, modulus>
-        nqr; // a quadratic nonresidue in Fp12
-    static Fp12_2over3over2_model<n, modulus> nqr_to_t; // nqr^t
+    // (modulus^12-1)/2
+    static bigint<12 * n> euler;
+    // modulus^12 = 2^s * t + 1
+    static std::size_t s;
+    // with t odd
+    static bigint<12 * n> t;
+    // (t-1)/2
+    static bigint<12 * n> t_minus_1_over_2;
+    // a quadratic nonresidue in Fp12
+    static Fp12_2over3over2_model<n, modulus> nqr;
+    // nqr^t
+    static Fp12_2over3over2_model<n, modulus> nqr_to_t; 
 
     typedef Fp_model<n, modulus> my_Fp;
     typedef Fp2_model<n, modulus> my_Fp2;
