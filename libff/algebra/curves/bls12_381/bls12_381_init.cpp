@@ -19,12 +19,6 @@ bls12_381_Fq2 bls12_381_twist_mul_by_q_Y;
 
 bigint<bls12_381_r_limbs> bls12_381_g1_safe_subgroup_check_c1;
 
-// Coefficients for G2 untwist-frobenius-twist
-bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_v;
-bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_w_3;
-bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_v_inverse;
-bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_w_3_inverse;
-
 bigint<bls12_381_q_limbs> bls12_381_ate_loop_count;
 bool bls12_381_ate_is_loop_count_neg;
 bigint<12 * bls12_381_q_limbs> bls12_381_final_exponent;

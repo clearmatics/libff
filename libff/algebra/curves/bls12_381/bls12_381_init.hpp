@@ -48,12 +48,6 @@ extern bls12_381_Fq2 bls12_381_twist_mul_by_q_Y;
 
 extern bigint<bls12_381_r_limbs> bls12_381_g1_safe_subgroup_check_c1;
 
-// Coefficients for G2 untwist-frobenius-twist
-extern bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_v;
-extern bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_w_3;
-extern bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_v_inverse;
-extern bls12_381_Fq12 bls12_381_g2_untwist_frobenius_twist_w_3_inverse;
-
 // parameters for pairing
 extern bigint<bls12_381_q_limbs> bls12_381_ate_loop_count;
 extern bool bls12_381_ate_is_loop_count_neg;
