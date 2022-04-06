@@ -325,14 +325,6 @@ bls12_381_G1 bls12_381_G1::mul_by_cofactor() const
     return bls12_381_G1::h * (*this);
 }
 
-bls12_381_G1 bls12_381_G1::sigma() const
-{
-    bls12_381_G1 result = *this;
-    result.to_affine_coordinates();
-    result.X = bls12_381_g1_endomorphism_beta * result.X;
-    return result;
-}
-
 bool bls12_381_G1::is_well_formed() const
 {
     if (this->is_zero()) {

@@ -70,10 +70,6 @@ public:
     bls12_381_G1 dbl() const;
     bls12_381_G1 mul_by_cofactor() const;
 
-    // Endomorphism (x, y) -> (\beta * x, y) for \beta an element of Fq with
-    // order 3.
-    bls12_381_G1 sigma() const;
-
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
 
