@@ -229,8 +229,7 @@ bls12_381_GT bls12_381_final_exponentiation(const bls12_381_Fq12 &elt)
 
 /* ate pairing */
 
-// TODO: Rename bls12_381_doubling_step_for_miller_loop
-void doubling_step_for_miller_loop(
+void bls12_381_doubling_step_for_miller_loop(
     const bls12_381_Fq two_inv,
     bls12_381_G2 &current,
     bls12_381_ate_ell_coeffs &c)
@@ -274,8 +273,7 @@ void doubling_step_for_miller_loop(
     c.ell_VV = J + J + J;
 }
 
-// TODO: Rename bls12_381_mixed_addition_step_for_miller_loop
-void mixed_addition_step_for_miller_loop(
+void bls12_381_mixed_addition_step_for_miller_loop(
     const bls12_381_G2 base, bls12_381_G2 &current, bls12_381_ate_ell_coeffs &c)
 {
     const bls12_381_Fq2 X1 = current.X, Y1 = current.Y, Z1 = current.Z;
@@ -357,11 +355,11 @@ bls12_381_ate_G2_precomp bls12_381_ate_precompute_G2(const bls12_381_G2 &Q)
             continue;
         }
 
-        doubling_step_for_miller_loop(two_inv, R, c);
+        bls12_381_doubling_step_for_miller_loop(two_inv, R, c);
         result.coeffs.push_back(c);
 
         if (bit) {
-            mixed_addition_step_for_miller_loop(Qcopy, R, c);
+            bls12_381_mixed_addition_step_for_miller_loop(Qcopy, R, c);
             result.coeffs.push_back(c);
         }
     }
