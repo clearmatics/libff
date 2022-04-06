@@ -61,4 +61,5 @@ class bls12_381_G1;
 class bls12_381_G2;
 
 } // namespace libff
+
 #endif // BLS12_381_INIT_HPP_

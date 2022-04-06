@@ -123,4 +123,5 @@ bls12_381_G2 operator*(
 }
 
 } // namespace libff
+
 #endif // BLS12_381_G2_HPP_
