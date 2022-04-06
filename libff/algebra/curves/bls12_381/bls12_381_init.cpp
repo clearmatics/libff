@@ -27,12 +27,11 @@ bool bls12_381_final_exponent_is_z_neg;
 
 void init_bls12_381_params()
 {
-    using bigint_r = bigint<bls12_381_r_limbs>;
-    using bigint_q = bigint<bls12_381_q_limbs>;
+    typedef bigint<bls12_381_r_limbs> bigint_r;
+    typedef bigint<bls12_381_q_limbs> bigint_q;
 
-    assert(
-        sizeof(mp_limb_t) == 8 ||
-        sizeof(mp_limb_t) == 4); // Montgomery assumes this
+    // Montgomery assumes this
+    assert(sizeof(mp_limb_t) == 8 || sizeof(mp_limb_t) == 4);
 
     /* parameters for scalar field Fr */
 
@@ -60,9 +59,9 @@ void init_bls12_381_params()
     bls12_381_Fr::num_bits = 255;
     bls12_381_Fr::euler = bigint_r("2621793758756309523972387025409298291884527"
                                    "6250263818911301829349969290592256");
-    bls12_381_Fr::s = 32; // 2-adic order of modulus-1
-    bls12_381_Fr::t = bigint_r("12208678567578594777604504606729831043093128246"
-                               "378069236549469339647"); //(modulus-1)/2^s
+    bls12_381_Fr::s = 32;
+    bls12_381_Fr::t = bigint_r(
+        "12208678567578594777604504606729831043093128246378069236549469339647");
     bls12_381_Fr::t_minus_1_over_2 = bigint_r(
         "6104339283789297388802252303364915521546564123189034618274734669823");
     bls12_381_Fr::multiplicative_generator = bls12_381_Fr("7");

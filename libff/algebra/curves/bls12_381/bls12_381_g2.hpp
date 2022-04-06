@@ -32,15 +32,15 @@ public:
     static bls12_381_Fq2 coeff_a;
     static bls12_381_Fq2 coeff_b;
 
+    typedef bls12_381_Fq base_field;
+    typedef bls12_381_Fq2 twist_field;
+    typedef bls12_381_Fr scalar_field;
+
     // Cofactor
     static const mp_size_t h_bitcount = 507;
     static const mp_size_t h_limbs =
         (h_bitcount + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
     static bigint<h_limbs> h;
-
-    typedef bls12_381_Fq base_field;
-    typedef bls12_381_Fq2 twist_field;
-    typedef bls12_381_Fr scalar_field;
 
     bls12_381_Fq2 X, Y, Z;
 
@@ -77,8 +77,8 @@ public:
     bool is_well_formed() const;
     bool is_in_safe_subgroup() const;
 
-    static bls12_381_G2 zero();
-    static bls12_381_G2 one();
+    static const bls12_381_G2 &zero();
+    static const bls12_381_G2 &one();
     static bls12_381_G2 random_element();
 
     static std::size_t size_in_bits()
@@ -89,15 +89,12 @@ public:
     {
         return base_field::field_char();
     }
-    static bigint<base_field::num_limbs> field_char()
-    {
-        return base_field::field_char();
-    }
     static bigint<scalar_field::num_limbs> order()
     {
         return scalar_field::field_char();
     }
 
+    // We don't have these in the other groups.
     friend std::ostream &operator<<(std::ostream &out, const bls12_381_G2 &g);
     friend std::istream &operator>>(std::istream &in, bls12_381_G2 &g);
 
