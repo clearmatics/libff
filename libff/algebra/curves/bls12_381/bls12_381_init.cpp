@@ -17,7 +17,7 @@ bls12_381_Fq bls12_381_twist_mul_by_b_c1;
 bls12_381_Fq2 bls12_381_twist_mul_by_q_X;
 bls12_381_Fq2 bls12_381_twist_mul_by_q_Y;
 
-bigint<bls12_381_r_limbs> bls12_381_g1_safe_subgroup_check_c1;
+//bigint<bls12_381_r_limbs> bls12_381_g1_safe_subgroup_check_c1;
 
 bigint<bls12_381_q_limbs> bls12_381_ate_loop_count;
 bool bls12_381_ate_is_loop_count_neg;
