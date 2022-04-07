@@ -15,8 +15,6 @@
 namespace libff
 {
 
-using std::size_t;
-
 bool bls12_381_ate_G1_precomp::operator==(
     const bls12_381_ate_G1_precomp &other) const
 {
