@@ -147,10 +147,8 @@ public:
             Fq x_cubed = x_squared * x;
             Fq y_squared = x_cubed + (GroupT::coeff_a * x) + GroupT::coeff_b;
             if ((y_squared ^ Fq::euler) != Fq::one()) {
-                printf("ERROR: Curve eq not sat\n\n");
                 throw std::runtime_error("curve eqn has no solution at x");
             }
-            printf("Y is a square, safe to continue!\n");
 #endif // #ifdef DEBUG
 
             group_el.Y = curve_point_y_at_x<GroupT>(group_el.X);
