@@ -25,8 +25,10 @@ template<typename ppT> void pairing_test()
     GT<ppT> GT_one = GT<ppT>::one();
 
     printf("Running bilinearity tests:\n");
-    G1<ppT> P = Fr<ppT>("2") * G1<ppT>::one();
-    G2<ppT> Q = Fr<ppT>("3") * G2<ppT>::one();
+    //    G1<ppT> P = Fr<ppT>("2") * G1<ppT>::one();
+    //    G2<ppT> Q = Fr<ppT>("3") * G2<ppT>::one();
+    G1<ppT> P = (Fr<ppT>::random_element()) * G1<ppT>::one();
+    G2<ppT> Q = (Fr<ppT>::random_element()) * G2<ppT>::one();
 
     printf("P:\n");
     P.print();
