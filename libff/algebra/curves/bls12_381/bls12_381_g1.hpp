@@ -78,7 +78,7 @@ public:
     static bls12_381_G1 random_element();
 
     static std::size_t size_in_bits() { return base_field::size_in_bits() + 1; }
-    static bigint<base_field::num_limbs> field_char()
+    static bigint<base_field::num_limbs> base_field_char()
     {
         return base_field::field_char();
     }
