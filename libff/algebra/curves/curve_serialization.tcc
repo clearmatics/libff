@@ -137,7 +137,7 @@ public:
 
 #ifdef DEBUG
             // This check has efficiency penalty under normal
-            // executuion, so we only enable it in debug for
+            // execution, so we only enable it in debug for
             // now. TODO: this is a temporary solution that needs to
             // be fixed in the long term: see issues #55
             // https://github.com/clearmatics/libff/issues/55 and #70
