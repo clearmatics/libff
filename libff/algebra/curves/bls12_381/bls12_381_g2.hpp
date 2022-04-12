@@ -95,8 +95,9 @@ public:
     }
 
     // We don't have these in the other groups.
-  //    friend std::ostream &operator<<(std::ostream &out, const bls12_381_G2 &g);
-  //    friend std::istream &operator>>(std::istream &in, bls12_381_G2 &g);
+    //    friend std::ostream &operator<<(std::ostream &out, const bls12_381_G2
+    //    &g); friend std::istream &operator>>(std::istream &in, bls12_381_G2
+    //    &g);
 
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
