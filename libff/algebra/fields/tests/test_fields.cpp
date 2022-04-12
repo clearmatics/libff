@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
-#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp> // VV
+#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp>
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
@@ -590,9 +590,9 @@ TEST(FieldsTest, BLS12_381)
     test_field<bls12_381_Fq6>();
     test_all_fields<bls12_381_pp>();
     test_Fp12_2over3over2_mul_by_024<bls12_381_Fq12>();
-#if 0  // disabled for BLS12_381 (VV)
+#if 0  // disabled for BLS12_381
     // disabled due to issue #69:
     // https://github.com/clearmatics/libff/issues/69#issuecomment-1071174423
     test_signed_digits<bls12_381_Fr>();
-#endif // #if 0 // disabled for BLS12_381 (VV)
+#endif // #if 0 // disabled for BLS12_381
 }
