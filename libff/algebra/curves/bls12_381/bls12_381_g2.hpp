@@ -94,11 +94,6 @@ public:
         return scalar_field::field_char();
     }
 
-    // We don't have these in the other groups.
-    //    friend std::ostream &operator<<(std::ostream &out, const bls12_381_G2
-    //    &g); friend std::istream &operator>>(std::istream &in, bls12_381_G2
-    //    &g);
-
     void write_uncompressed(std::ostream &) const;
     void write_compressed(std::ostream &) const;
     static void read_uncompressed(std::istream &, bls12_381_G2 &);
