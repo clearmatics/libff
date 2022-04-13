@@ -36,7 +36,7 @@ template<typename ppT> void pairing_test()
     Q.print_coordinates();
     printf("\n\n");
 
-    Fr<ppT> s = Fr<ppT>("2");
+    Fr<ppT> s = Fr<ppT>::random_element();
     G1<ppT> sP = s * P;
     G2<ppT> sQ = s * Q;
 
