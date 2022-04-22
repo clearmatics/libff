@@ -323,8 +323,8 @@ template<typename GroupT> void check_curve_equation(GroupT P)
 {
     P.to_affine_coordinates();
     using Fq = typename std::decay<decltype(P.X)>::type;
-    Fq LHS = (P.Y * P.Y);
-    Fq RHS = ((P.X * P.X * P.X) + (GroupT::coeff_a * P.X) + GroupT::coeff_b);
+    Fq lhs = (P.Y * P.Y);
+    Fq rhs = ((P.X * P.X * P.X) + (GroupT::coeff_a * P.X) + GroupT::coeff_b);
     ASSERT_EQ(LHS, RHS);
 }
 
