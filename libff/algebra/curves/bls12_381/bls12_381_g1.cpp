@@ -418,7 +418,6 @@ void bls12_381_G1::read_compressed(std::istream &in, bls12_381_G1 &g)
     }
 }
 
-
 std::ostream &operator<<(std::ostream &out, const bls12_381_G1 &g)
 {
 #ifdef NO_PT_COMPRESSION
