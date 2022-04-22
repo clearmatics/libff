@@ -418,6 +418,7 @@ void bls12_381_G1::read_compressed(std::istream &in, bls12_381_G1 &g)
     }
 }
 
+
 std::ostream &operator<<(std::ostream &out, const bls12_381_G1 &g)
 {
 #ifdef NO_PT_COMPRESSION
@@ -435,36 +436,6 @@ std::istream &operator>>(std::istream &in, bls12_381_G1 &g)
 #else
     bls12_381_G1::read_compressed(in, g);
 #endif
-    return in;
-}
-
-std::ostream &operator<<(std::ostream &out, const std::vector<bls12_381_G1> &v)
-{
-    out << v.size() << "\n";
-    for (const bls12_381_G1 &t : v) {
-        out << t << OUTPUT_NEWLINE;
-    }
-
-    return out;
-}
-
-std::istream &operator>>(std::istream &in, std::vector<bls12_381_G1> &v)
-{
-    v.clear();
-
-    size_t s;
-    in >> s;
-    consume_newline(in);
-
-    v.reserve(s);
-
-    for (size_t i = 0; i < s; ++i) {
-        bls12_381_G1 g;
-        in >> g;
-        consume_OUTPUT_NEWLINE(in);
-        v.emplace_back(g);
-    }
-
     return in;
 }
 

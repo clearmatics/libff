@@ -108,9 +108,6 @@ bls12_381_G1 operator*(
     return scalar_mul<bls12_381_G1, m>(rhs, lhs.as_bigint());
 }
 
-std::ostream &operator<<(std::ostream &out, const std::vector<bls12_381_G1> &v);
-std::istream &operator>>(std::istream &in, std::vector<bls12_381_G1> &v);
-
 } // namespace libff
 
 #endif // BLS12_381_G1_HPP_
