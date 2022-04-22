@@ -317,7 +317,7 @@ void test_bls12_377()
     ASSERT_EQ(bls12_377_G2::zero(), z);
 }
 
-// chack that some elements e.g. 1,-1,2,random satisfy the curve
+// check that some elements e.g. 1,-1,2,random satisfy the curve
 // equation Y^2 = X^3 + a X + b; used in test_bls12_381
 template<typename GroupT> void check_curve_equation(GroupT P)
 {
