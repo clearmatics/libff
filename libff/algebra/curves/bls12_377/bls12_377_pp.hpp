@@ -19,6 +19,8 @@ namespace libff
 class bls12_377_pp
 {
 public:
+    static const std::string name;
+
     typedef bls12_377_Fr Fp_type;
     typedef bls12_377_G1 G1_type;
     typedef bls12_377_G2 G2_type;

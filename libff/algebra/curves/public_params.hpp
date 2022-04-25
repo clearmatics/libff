@@ -27,7 +27,9 @@ namespace libff
 ///    Fqk_type
 ///    GT_type
 ///
-///  one should also define the following static methods:
+///  one should also define the following static elements and methods:
+///
+///    const std::string name;
 ///
 ///    void init_public_params();
 ///

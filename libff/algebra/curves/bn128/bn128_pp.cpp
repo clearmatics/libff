@@ -11,6 +11,8 @@
 namespace libff
 {
 
+const std::string bn128_pp::name("bn128");
+
 void bn128_pp::init_public_params() { init_bn128_params(); }
 
 bn128_GT bn128_pp::final_exponentiation(const bn128_GT &elt)

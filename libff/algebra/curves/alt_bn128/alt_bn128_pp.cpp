@@ -10,6 +10,8 @@
 namespace libff
 {
 
+const std::string alt_bn128_pp::name("alt_bn128");
+
 void alt_bn128_pp::init_public_params() { init_alt_bn128_params(); }
 
 alt_bn128_GT alt_bn128_pp::final_exponentiation(const alt_bn128_Fq12 &elt)

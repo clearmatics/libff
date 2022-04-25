@@ -19,6 +19,8 @@ namespace libff
 class edwards_pp
 {
 public:
+    static const std::string name;
+
     typedef edwards_Fr Fp_type;
     typedef edwards_G1 G1_type;
     typedef edwards_G2 G2_type;

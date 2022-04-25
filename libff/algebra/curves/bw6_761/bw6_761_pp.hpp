@@ -13,6 +13,8 @@ namespace libff
 class bw6_761_pp
 {
 public:
+    static const std::string name;
+
     typedef bw6_761_Fr Fp_type;
     typedef bw6_761_G1 G1_type;
     typedef bw6_761_G2 G2_type;

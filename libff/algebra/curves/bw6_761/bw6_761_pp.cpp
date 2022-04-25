@@ -3,6 +3,8 @@
 namespace libff
 {
 
+const std::string bw6_761_pp::name("bw6_761");
+
 void bw6_761_pp::init_public_params() { init_bw6_761_params(); }
 
 bw6_761_GT bw6_761_pp::final_exponentiation(const bw6_761_Fq6 &elt)
