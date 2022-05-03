@@ -328,7 +328,6 @@ template<typename GroupT> void check_curve_equation(GroupT P)
     ASSERT_EQ(lhs, rhs);
 }
 
-// template<typename GroupT> void test_curve_equation()
 template<typename GroupT> void test_curve_equation()
 {
     using Fr = typename GroupT::scalar_field;
