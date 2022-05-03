@@ -328,7 +328,8 @@ template<typename GroupT> void check_curve_equation(GroupT P)
     ASSERT_EQ(lhs, rhs);
 }
 
-template<typename GroupT> void test_bls12_381()
+// template<typename GroupT> void test_curve_equation()
+template<typename GroupT> void test_curve_equation()
 {
     using Fr = typename GroupT::scalar_field;
     check_curve_equation(GroupT::one());
@@ -350,6 +351,8 @@ TEST(TestGroups, Edwards)
 TEST(TestGroups, Mnt4)
 {
     mnt4_pp::init_public_params();
+    test_curve_equation<G1<mnt4_pp>>();
+    test_curve_equation<G2<mnt4_pp>>();
     test_group<G1<mnt4_pp>>();
     test_output<G1<mnt4_pp>>();
     test_group<G2<mnt4_pp>>();
@@ -364,6 +367,8 @@ TEST(TestGroups, Mnt4)
 TEST(TestGroups, Mnt6)
 {
     mnt6_pp::init_public_params();
+    test_curve_equation<G1<mnt6_pp>>();
+    test_curve_equation<G2<mnt6_pp>>();
     test_group<G1<mnt6_pp>>();
     test_output<G1<mnt6_pp>>();
     test_group<G2<mnt6_pp>>();
@@ -378,6 +383,8 @@ TEST(TestGroups, Mnt6)
 TEST(TestGroups, Alt_BN128)
 {
     alt_bn128_pp::init_public_params();
+    test_curve_equation<G1<alt_bn128_pp>>();
+    test_curve_equation<G2<alt_bn128_pp>>();
     test_group<G1<alt_bn128_pp>>();
     test_output<G1<alt_bn128_pp>>();
     test_group<G2<alt_bn128_pp>>();
@@ -393,6 +400,8 @@ TEST(TestGroups, BLS12_377)
 {
     bls12_377_pp::init_public_params();
     test_bls12_377();
+    test_curve_equation<G1<bls12_377_pp>>();
+    test_curve_equation<G2<bls12_377_pp>>();
     test_group<G1<bls12_377_pp>>();
     test_output<G1<bls12_377_pp>>();
     test_group<G2<bls12_377_pp>>();
@@ -407,6 +416,8 @@ TEST(TestGroups, BLS12_377)
 TEST(TestGroups, BW6_761)
 {
     bw6_761_pp::init_public_params();
+    test_curve_equation<G1<bw6_761_pp>>();
+    test_curve_equation<G2<bw6_761_pp>>();
     test_group<G1<bw6_761_pp>>();
     test_output<G1<bw6_761_pp>>();
     test_group<G2<bw6_761_pp>>();
@@ -436,8 +447,8 @@ TEST(TestGroups, BN128)
 TEST(TestGroups, BLS12_381)
 {
     bls12_381_pp::init_public_params();
-    test_bls12_381<G1<bls12_381_pp>>();
-    test_bls12_381<G2<bls12_381_pp>>();
+    test_curve_equation<G1<bls12_381_pp>>();
+    test_curve_equation<G2<bls12_381_pp>>();
     test_group<G1<bls12_381_pp>>();
     test_output<G1<bls12_381_pp>>();
     test_group<G2<bls12_381_pp>>();
