@@ -3,6 +3,8 @@
 namespace libff
 {
 
+const std::string bls12_381_pp::name("bls12_381");
+
 void bls12_381_pp::init_public_params() { init_bls12_381_params(); }
 
 bls12_381_GT bls12_381_pp::final_exponentiation(const bls12_381_Fq12 &elt)

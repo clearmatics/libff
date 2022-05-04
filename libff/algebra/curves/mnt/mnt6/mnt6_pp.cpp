@@ -16,6 +16,8 @@
 namespace libff
 {
 
+const std::string mnt6_pp::name("mnt6");
+
 void mnt6_pp::init_public_params() { init_mnt6_params(); }
 
 mnt6_GT mnt6_pp::final_exponentiation(const mnt6_Fq6 &elt)

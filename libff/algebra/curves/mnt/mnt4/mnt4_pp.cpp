@@ -16,6 +16,8 @@
 namespace libff
 {
 
+const std::string mnt4_pp::name("mnt4");
+
 void mnt4_pp::init_public_params() { init_mnt4_params(); }
 
 mnt4_GT mnt4_pp::final_exponentiation(const mnt4_Fq4 &elt)

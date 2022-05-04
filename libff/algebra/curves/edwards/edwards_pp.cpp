@@ -10,6 +10,8 @@
 namespace libff
 {
 
+const std::string edwards_pp::name("edwards");
+
 void edwards_pp::init_public_params() { init_edwards_params(); }
 
 edwards_GT edwards_pp::final_exponentiation(const edwards_Fq6 &elt)
