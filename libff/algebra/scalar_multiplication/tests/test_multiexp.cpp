@@ -283,29 +283,29 @@ template<typename GroupT> void test_multi_exp()
     test_multi_exp_group_method<GroupT, multi_exp_method_BDLO12_signed>();
 }
 
-// TEST(MultiExpTest, TestMultiExpAccumulateBucketsAltBN128)
-// {
-//     test_multiexp_accumulate_buckets<alt_bn128_G1>();
-//     test_multiexp_accumulate_buckets<alt_bn128_G2>();
-// }
+TEST(MultiExpTest, TestMultiExpAccumulateBucketsAltBN128)
+{
+    test_multiexp_accumulate_buckets<alt_bn128_G1>();
+    test_multiexp_accumulate_buckets<alt_bn128_G2>();
+}
 
-// TEST(MultiExpTest, TestMultiExpAccumulateBucketsBLS12_377)
-// {
-//     test_multiexp_accumulate_buckets<bls12_377_G1>();
-//     test_multiexp_accumulate_buckets<bls12_377_G2>();
-// }
+TEST(MultiExpTest, TestMultiExpAccumulateBucketsBLS12_377)
+{
+    test_multiexp_accumulate_buckets<bls12_377_G1>();
+    test_multiexp_accumulate_buckets<bls12_377_G2>();
+}
 
-// TEST(MultiExpTest, TestMultiExpSignedDigitsRoundAltBN128)
-// {
-//     test_multiexp_signed_digits_round<alt_bn128_G1>();
-//     test_multiexp_signed_digits_round<alt_bn128_G2>();
-// }
+TEST(MultiExpTest, TestMultiExpSignedDigitsRoundAltBN128)
+{
+    test_multiexp_signed_digits_round<alt_bn128_G1>();
+    test_multiexp_signed_digits_round<alt_bn128_G2>();
+}
 
-// TEST(MultiExpTest, TestMultiExpSignedDigitsRoundBLS12_377)
-// {
-//     test_multiexp_signed_digits_round<bls12_377_G1>();
-//     test_multiexp_signed_digits_round<bls12_377_G2>();
-// }
+TEST(MultiExpTest, TestMultiExpSignedDigitsRoundBLS12_377)
+{
+    test_multiexp_signed_digits_round<bls12_377_G1>();
+    test_multiexp_signed_digits_round<bls12_377_G2>();
+}
 
 TEST(MultiExpTest, TestMultiExpAltBN128)
 {
@@ -313,11 +313,17 @@ TEST(MultiExpTest, TestMultiExpAltBN128)
     test_multi_exp<alt_bn128_G2>();
 }
 
-// TEST(MultiExpTest, TestMultiExpBLS12_377)
-// {
-//     test_multi_exp<bls12_377_G1>();
-//     test_multi_exp<bls12_377_G2>();
-// }
+TEST(MultiExpTest, TestMultiExpBLS12_377)
+{
+    test_multi_exp<bls12_377_G1>();
+    test_multi_exp<bls12_377_G2>();
+}
+
+TEST(MultiExpTest, TestMultiExpBLS12_381)
+{
+    test_multi_exp<bls12_381_G1>();
+    test_multi_exp<bls12_381_G2>();
+}
 
 alt_bn128_Fr fr_from_string(const std::string &str)
 {
