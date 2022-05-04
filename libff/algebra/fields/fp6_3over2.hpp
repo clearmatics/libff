@@ -36,6 +36,19 @@ public:
     typedef Fp_model<n, modulus> my_Fp;
     typedef Fp2_model<n, modulus> my_Fp2;
 
+    // (modulus^6-1)/2
+    static bigint<6 * n> euler;
+    // modulus^6 = 2^s * t + 1
+    static std::size_t s;
+    // with t odd
+    static bigint<6 * n> t;
+    // (t-1)/2
+    static bigint<6 * n> t_minus_1_over_2;
+    // a quadratic nonresidue in Fp6
+    static Fp6_3over2_model<n, modulus> nqr;
+    // nqr^t
+    static Fp6_3over2_model<n, modulus> nqr_to_t;
+
     static my_Fp2 non_residue;
     /// non_residue^((modulus^i-1)/3)   for i=0,1,2,3,4,5
     static my_Fp2 Frobenius_coeffs_c1[6];
@@ -117,6 +130,24 @@ Fp6_3over2_model<n, modulus> operator*(
 template<mp_size_t n, const bigint<n> &modulus>
 Fp6_3over2_model<n, modulus> operator*(
     const Fp2_model<n, modulus> &lhs, const Fp6_3over2_model<n, modulus> &rhs);
+
+template<mp_size_t n, const bigint<n> &modulus>
+bigint<6 * n> Fp6_3over2_model<n, modulus>::euler;
+
+template<mp_size_t n, const bigint<n> &modulus>
+size_t Fp6_3over2_model<n, modulus>::s;
+
+template<mp_size_t n, const bigint<n> &modulus>
+bigint<6 * n> Fp6_3over2_model<n, modulus>::t;
+
+template<mp_size_t n, const bigint<n> &modulus>
+bigint<6 * n> Fp6_3over2_model<n, modulus>::t_minus_1_over_2;
+
+template<mp_size_t n, const bigint<n> &modulus>
+Fp6_3over2_model<n, modulus> Fp6_3over2_model<n, modulus>::nqr;
+
+template<mp_size_t n, const bigint<n> &modulus>
+Fp6_3over2_model<n, modulus> Fp6_3over2_model<n, modulus>::nqr_to_t;
 
 template<mp_size_t n, const bigint<n> &modulus>
 Fp2_model<n, modulus> Fp6_3over2_model<n, modulus>::non_residue;

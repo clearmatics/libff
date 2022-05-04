@@ -1,5 +1,6 @@
 #include "libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp"
 #include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
+#include "libff/algebra/curves/bls12_381/bls12_381_pp.hpp"
 #include "libff/algebra/scalar_multiplication/multiexp.hpp"
 
 #include <gtest/gtest.h>
@@ -388,6 +389,7 @@ int main(int argc, char **argv)
 {
     libff::alt_bn128_pp::init_public_params();
     libff::bls12_377_pp::init_public_params();
+    libff::bls12_381_pp::init_public_params();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
+#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp>
 #include <libff/algebra/curves/edwards/edwards_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
@@ -369,6 +370,7 @@ void do_test_signed_digits(const FieldT &value, const size_t digit_size)
     //   c = digit size and
     //   d_i = i-th signed digit of size c
     FieldT accum = FieldT::zero();
+
     for (size_t i = 0; i < num_digits; ++i) {
         accum = accum * FieldT((long)1 << digit_size);
         ssize_t digit =
@@ -580,3 +582,17 @@ TEST(FieldsTest, BN128)
     test_field<Fq<bn128_pp>>();
 }
 #endif
+
+TEST(FieldsTest, BLS12_381)
+{
+    bls12_381_pp::init_public_params();
+    test_serialization<bls12_381_pp>();
+    test_field<bls12_381_Fq6>();
+    test_all_fields<bls12_381_pp>();
+    test_Fp12_2over3over2_mul_by_024<bls12_381_Fq12>();
+#if 0  // disabled for BLS12_381
+    // disabled due to issue #69:
+    // https://github.com/clearmatics/libff/issues/69#issuecomment-1071174423
+    test_signed_digits<bls12_381_Fr>();
+#endif // #if 0 // disabled for BLS12_381
+}

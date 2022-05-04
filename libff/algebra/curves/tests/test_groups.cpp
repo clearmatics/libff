@@ -14,6 +14,7 @@
 #endif
 #include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
+#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp>
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
 #include <libff/algebra/curves/curve_serialization.hpp>
 #include <libff/algebra/curves/curve_utils.hpp>
@@ -181,7 +182,6 @@ void test_serialize_group_config(const GroupT &v)
 template<typename GroupT> void test_serialize_group_element(const GroupT &v)
 {
     // Missing combinations are unsupported.
-
     test_serialize_group_config<encoding_binary, form_plain, compression_on>(v);
     test_serialize_group_config<encoding_binary, form_plain, compression_off>(
         v);
@@ -317,6 +317,26 @@ void test_bls12_377()
     ASSERT_EQ(bls12_377_G2::zero(), z);
 }
 
+// check that some elements e.g. 1,-1,2,random satisfy the curve
+// equation Y^2 = X^3 + a X + b; used in test_bls12_381
+template<typename GroupT> void check_curve_equation(GroupT P)
+{
+    P.to_affine_coordinates();
+    using Fq = typename std::decay<decltype(P.X)>::type;
+    Fq lhs = (P.Y * P.Y);
+    Fq rhs = ((P.X * P.X * P.X) + (GroupT::coeff_a * P.X) + GroupT::coeff_b);
+    ASSERT_EQ(lhs, rhs);
+}
+
+template<typename GroupT> void test_curve_equation()
+{
+    using Fr = typename GroupT::scalar_field;
+    check_curve_equation(GroupT::one());
+    check_curve_equation(Fr(-1l) * GroupT::one());
+    check_curve_equation(Fr(2l) * GroupT::one());
+    check_curve_equation(GroupT::random_element());
+}
+
 TEST(TestGroups, Edwards)
 {
     edwards_pp::init_public_params();
@@ -330,6 +350,8 @@ TEST(TestGroups, Edwards)
 TEST(TestGroups, Mnt4)
 {
     mnt4_pp::init_public_params();
+    test_curve_equation<G1<mnt4_pp>>();
+    test_curve_equation<G2<mnt4_pp>>();
     test_group<G1<mnt4_pp>>();
     test_output<G1<mnt4_pp>>();
     test_group<G2<mnt4_pp>>();
@@ -344,6 +366,8 @@ TEST(TestGroups, Mnt4)
 TEST(TestGroups, Mnt6)
 {
     mnt6_pp::init_public_params();
+    test_curve_equation<G1<mnt6_pp>>();
+    test_curve_equation<G2<mnt6_pp>>();
     test_group<G1<mnt6_pp>>();
     test_output<G1<mnt6_pp>>();
     test_group<G2<mnt6_pp>>();
@@ -358,6 +382,8 @@ TEST(TestGroups, Mnt6)
 TEST(TestGroups, Alt_BN128)
 {
     alt_bn128_pp::init_public_params();
+    test_curve_equation<G1<alt_bn128_pp>>();
+    test_curve_equation<G2<alt_bn128_pp>>();
     test_group<G1<alt_bn128_pp>>();
     test_output<G1<alt_bn128_pp>>();
     test_group<G2<alt_bn128_pp>>();
@@ -373,6 +399,8 @@ TEST(TestGroups, BLS12_377)
 {
     bls12_377_pp::init_public_params();
     test_bls12_377();
+    test_curve_equation<G1<bls12_377_pp>>();
+    test_curve_equation<G2<bls12_377_pp>>();
     test_group<G1<bls12_377_pp>>();
     test_output<G1<bls12_377_pp>>();
     test_group<G2<bls12_377_pp>>();
@@ -387,6 +415,8 @@ TEST(TestGroups, BLS12_377)
 TEST(TestGroups, BW6_761)
 {
     bw6_761_pp::init_public_params();
+    test_curve_equation<G1<bw6_761_pp>>();
+    test_curve_equation<G2<bw6_761_pp>>();
     test_group<G1<bw6_761_pp>>();
     test_output<G1<bw6_761_pp>>();
     test_group<G2<bw6_761_pp>>();
@@ -412,3 +442,19 @@ TEST(TestGroups, BN128)
     test_mul_by_cofactor<G2<bn128_pp>>();
 }
 #endif
+
+TEST(TestGroups, BLS12_381)
+{
+    bls12_381_pp::init_public_params();
+    test_curve_equation<G1<bls12_381_pp>>();
+    test_curve_equation<G2<bls12_381_pp>>();
+    test_group<G1<bls12_381_pp>>();
+    test_output<G1<bls12_381_pp>>();
+    test_group<G2<bls12_381_pp>>();
+    test_output<G2<bls12_381_pp>>();
+    test_serialize<bls12_381_pp>();
+    test_mul_by_q<G2<bls12_381_pp>>();
+    test_check_membership<bls12_381_pp>();
+    test_mul_by_cofactor<G1<bls12_381_pp>>();
+    test_mul_by_cofactor<G2<bls12_381_pp>>();
+}

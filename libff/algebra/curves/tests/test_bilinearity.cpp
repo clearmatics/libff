@@ -13,6 +13,7 @@
 #endif
 #include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
 #include <libff/algebra/curves/bls12_377/bls12_377_pp.hpp>
+#include <libff/algebra/curves/bls12_381/bls12_381_pp.hpp>
 #include <libff/algebra/curves/bw6_761/bw6_761_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
@@ -55,7 +56,6 @@ template<typename ppT> void pairing_test()
               << std::endl;
     std::cout << "**** RES (ans2 == ans3) : " << (ans2 == ans3) << " ****"
               << std::endl;
-
     ASSERT_NE(ans1, GT_one);
     ASSERT_EQ(ans1 ^ Fr<ppT>::field_char(), GT_one);
     printf("\n\n");
@@ -179,3 +179,10 @@ TEST(TestBiliearity, BN128)
     double_miller_loop_test<bn128_pp>();
 }
 #endif
+
+TEST(TestBiliearity, BLS12_381)
+{
+    bls12_381_pp::init_public_params();
+    pairing_test<bls12_381_pp>();
+    double_miller_loop_test<bls12_381_pp>();
+}

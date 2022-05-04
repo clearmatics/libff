@@ -134,8 +134,24 @@ public:
         mp_limb_t flags;
         field_read_with_flags<encoding_binary, Form>(group_el.X, flags, in_s);
         if (0 == (flags & 0x2)) {
-            group_el.Y = curve_point_y_at_x<GroupT>(group_el.X);
 
+#ifdef DEBUG
+            // This check has efficiency penalty under normal
+            // execution, so we only enable it in debug for
+            // now. TODO: this is a temporary solution that needs to
+            // be fixed in the long term: see issues #55
+            // https://github.com/clearmatics/libff/issues/55 and #70
+            // https://github.com/clearmatics/libff/issues/70
+            Fq x = group_el.X;
+            Fq x_squared = x * x;
+            Fq x_cubed = x_squared * x;
+            Fq y_squared = x_cubed + (GroupT::coeff_a * x) + GroupT::coeff_b;
+            if ((y_squared ^ Fq::euler) != Fq::one()) {
+                throw std::runtime_error("curve eqn has no solution at x");
+            }
+#endif // #ifdef DEBUG
+
+            group_el.Y = curve_point_y_at_x<GroupT>(group_el.X);
             const mp_limb_t Y_lsb =
                 field_get_component_0(group_el.Y).mont_repr.data[0] & 1;
             if ((flags & 1) != Y_lsb) {
