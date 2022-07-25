@@ -102,6 +102,9 @@ template<
     const bigint<nn> &nmodulus>
 void fp_from_fp(Fp_model<wn, wmodulus> &wfp, const Fp_model<nn, nmodulus> &nfp);
 
+/// print the elements of a vector
+template<typename FieldT> void print_vector(const std::vector<FieldT> &v);
+
 } // namespace libff
 
 #include <libff/algebra/fields/field_utils.tcc>
