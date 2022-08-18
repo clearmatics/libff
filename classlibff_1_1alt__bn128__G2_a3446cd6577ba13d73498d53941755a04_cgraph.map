@@ -1,0 +1,9 @@
+<map id="libff::alt_bn128_G2::to_affine_coordinates" name="libff::alt_bn128_G2::to_affine_coordinates">
+<area shape="rect" id="node1" title=" " alt="" coords="5,130,176,171"/>
+<area shape="rect" id="node2" href="$classlibff_1_1Fp2__model.html#a7675b3ac055769d005423724cb0c1e43" title=" " alt="" coords="232,5,415,32"/>
+<area shape="rect" id="node3" href="$classlibff_1_1alt__bn128__G2.html#a72b51605d8f56288e0b1a894e4c1ab6c" title=" " alt="" coords="251,57,395,98"/>
+<area shape="rect" id="node5" href="$classlibff_1_1Fp2__model.html#ac42a14a6e60e75eb2cfcee430430cc36" title=" " alt="" coords="224,123,423,179"/>
+<area shape="rect" id="node6" href="$classlibff_1_1Fp2__model.html#aaccdb66043e8f15334350d7a7ed4fcd5" title="default is squared_complex" alt="" coords="230,203,417,229"/>
+<area shape="rect" id="node7" href="$classlibff_1_1Fp2__model.html#a6e82d7b6b438ee942eaff351e8613ca8" title=" " alt="" coords="224,253,423,309"/>
+<area shape="rect" id="node4" href="$classlibff_1_1Fp2__model.html#a0a31f5770e3ce400fff50b54f5048f92" title=" " alt="" coords="471,64,652,91"/>
+</map>

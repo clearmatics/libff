@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['_5factive_5fbatch_1704',['_active_batch',['../classbatched__aio__reader.html#a4b2c4c4593ef1d313a08729e2f51671d',1,'batched_aio_reader']]],
+  ['_5fbatch1_1705',['_batch1',['../classbatched__aio__reader.html#ae0e8eb231c9e9e45ca31583030e17917',1,'batched_aio_reader']]],
+  ['_5fbatch1_5fptrs_1706',['_batch1_ptrs',['../classbatched__aio__reader.html#ae28b9aae83ce6753a5a5d6cbd6e7027d',1,'batched_aio_reader']]],
+  ['_5fbatch2_1707',['_batch2',['../classbatched__aio__reader.html#a10779ff674c145243083009310ace3b8',1,'batched_aio_reader']]],
+  ['_5fbatch2_5fptrs_1708',['_batch2_ptrs',['../classbatched__aio__reader.html#ad6ea5ba4276bf6c9fb4981b5d4899d84',1,'batched_aio_reader']]],
+  ['_5fbuffer_1709',['_buffer',['../classlibff_1_1concurrent__fifo__spsc.html#aed9b41e023a9a17d9bf2bf51ba4ed8e7',1,'libff::concurrent_fifo_spsc']]],
+  ['_5fbuffers_1710',['_buffers',['../classlibff_1_1concurrent__buffer__fifo__spsc.html#a122efd9bbb07a2b81ca96a942ac4153b',1,'libff::concurrent_buffer_fifo_spsc']]],
+  ['_5fcapacity_1711',['_capacity',['../classlibff_1_1concurrent__fifo__spsc.html#a0165c5a7431712bf73392345be520145',1,'libff::concurrent_fifo_spsc']]],
+  ['_5fconsumer_5fnext_5fidx_1712',['_consumer_next_idx',['../classlibff_1_1concurrent__fifo__spsc.html#a6a014bdd7824f3137fb837b4c07fc2a2',1,'libff::concurrent_fifo_spsc']]],
+  ['_5fconsumer_5fnum_5fconsumed_1713',['_consumer_num_consumed',['../classlibff_1_1concurrent__fifo__spsc.html#a9f363ee6b05c560abe36d27f2175ff36',1,'libff::concurrent_fifo_spsc']]],
+  ['_5fentries_5fper_5fbuffer_1714',['_entries_per_buffer',['../classlibff_1_1concurrent__buffer__fifo__spsc.html#aad8a5dc10ce8c416cf7934a4303fe8af',1,'libff::concurrent_buffer_fifo_spsc']]],
+  ['_5ffd_1715',['_fd',['../classbatched__aio__reader.html#a29ee0a26fc135821af4190a9dd57a293',1,'batched_aio_reader']]],
+  ['_5fnext_5fbatch_1716',['_next_batch',['../classbatched__aio__reader.html#aa9275419dfb3eb309edf6075e65fab33',1,'batched_aio_reader']]],
+  ['_5fnext_5fbatch_5fsize_1717',['_next_batch_size',['../classbatched__aio__reader.html#a934e15615a93bd72297f25cb3f056f39',1,'batched_aio_reader']]],
+  ['_5fnext_5fbuffer_5fidx_1718',['_next_buffer_idx',['../classlibff_1_1concurrent__buffer__fifo__spsc.html#aeb1e7ca77d633357aa0560cf90b5bca4',1,'libff::concurrent_buffer_fifo_spsc']]],
+  ['_5fproducer_5fnext_5fidx_1719',['_producer_next_idx',['../classlibff_1_1concurrent__fifo__spsc.html#acefb0d3cc760e37453ebf5dd0e3eaee0',1,'libff::concurrent_fifo_spsc']]],
+  ['_5fproducer_5fnum_5fproduced_1720',['_producer_num_produced',['../classlibff_1_1concurrent__fifo__spsc.html#a89e5d1fdd461c53e309bab5a857d31c1',1,'libff::concurrent_fifo_spsc']]],
+  ['_5fqueue_1721',['_queue',['../classlibff_1_1concurrent__buffer__fifo__spsc.html#a45e29a67806b0a40a001808382a3e561',1,'libff::concurrent_buffer_fifo_spsc']]]
+];

@@ -1,0 +1,25 @@
+<map id="/home/runner/work/libff/libff/libff/algebra/curves/bn128/bn128_g2.hpp" name="/home/runner/work/libff/libff/libff/algebra/curves/bn128/bn128_g2.hpp">
+<area shape="rect" id="node1" title=" " alt="" coords="226,5,406,61"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,199,157,240"/>
+<area shape="rect" id="node3" title=" " alt="" coords="977,474,1057,501"/>
+<area shape="rect" id="node4" href="$bn128__init_8hpp.html" title=" " alt="" coords="233,109,399,151"/>
+<area shape="rect" id="node6" title=" " alt="" coords="174,556,237,583"/>
+<area shape="rect" id="node22" href="$curve__utils_8hpp.html" title=" " alt="" coords="405,288,552,329"/>
+<area shape="rect" id="node5" href="$public__params_8hpp.html" title=" " alt="" coords="232,377,381,419"/>
+<area shape="rect" id="node7" href="$fp_8hpp.html" title=" " alt="" coords="629,199,768,240"/>
+<area shape="rect" id="node8" href="$exponentiation_8hpp.html" title=" " alt="" coords="667,288,869,329"/>
+<area shape="rect" id="node10" href="$bigint_8hpp.html" title=" " alt="" coords="576,377,715,419"/>
+<area shape="rect" id="node21" href="$fp_8tcc.html" title=" " alt="" coords="893,288,1032,329"/>
+<area shape="rect" id="node9" title=" " alt="" coords="739,385,805,411"/>
+<area shape="rect" id="node20" href="$exponentiation_8tcc.html" title=" " alt="" coords="829,377,1032,419"/>
+<area shape="rect" id="node11" title=" " alt="" coords="581,474,651,501"/>
+<area shape="rect" id="node12" title=" " alt="" coords="675,474,738,501"/>
+<area shape="rect" id="node13" href="$common_2serialization_8hpp.html" title=" " alt="" coords="337,474,557,501"/>
+<area shape="rect" id="node19" href="$bigint_8tcc.html" title=" " alt="" coords="763,467,901,508"/>
+<area shape="rect" id="node14" title=" " alt="" coords="261,556,333,583"/>
+<area shape="rect" id="node15" title=" " alt="" coords="357,556,408,583"/>
+<area shape="rect" id="node16" title=" " alt="" coords="433,556,509,583"/>
+<area shape="rect" id="node17" title=" " alt="" coords="533,556,576,583"/>
+<area shape="rect" id="node18" href="$serialization_8tcc.html" title=" " alt="" coords="601,556,815,583"/>
+<area shape="rect" id="node23" href="$curve__utils_8tcc.html" title=" " alt="" coords="405,377,552,419"/>
+</map>

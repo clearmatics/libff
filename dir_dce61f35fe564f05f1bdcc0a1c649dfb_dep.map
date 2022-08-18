@@ -1,0 +1,38 @@
+<map id="/home/runner/work/libff/libff/libff/algebra/curves" name="/home/runner/work/libff/libff/libff/algebra/curves">
+<area shape="rect" id="node2" href="dir_70ebed3bca22a098f1c47ace3ad0b0b2.html" title="alt_bn128" alt="" coords="422,159,509,207"/>
+<area shape="rect" id="node10" href="dir_bf26b09f174b29348f6c80a391c7ca34.html" title="fields" alt="" coords="908,255,980,303"/>
+<area shape="rect" id="edge15-headlabel" href="dir_000004_000015.html" title="4" alt="" coords="885,259,894,274"/>
+<area shape="rect" id="node12" href="dir_2510e2be87376b3e2d1f74f387381729.html" title="common" alt="" coords="905,351,983,399"/>
+<area shape="rect" id="edge16-headlabel" href="dir_000004_000018.html" title="1" alt="" coords="882,355,891,370"/>
+<area shape="rect" id="node3" href="dir_01fb10d6900a0a6695a5ecf31d68cbc4.html" title="bls12_377" alt="" coords="533,159,621,207"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000005_000015.html" title="4" alt="" coords="887,250,897,264"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000005_000018.html" title="1" alt="" coords="882,358,891,373"/>
+<area shape="rect" id="node4" href="dir_9672835ba5080c06f2429093598db00e.html" title="bls12_381" alt="" coords="427,63,515,111"/>
+<area shape="rect" id="edge22-headlabel" href="dir_000006_000015.html" title="4" alt="" coords="994,279,1003,294"/>
+<area shape="rect" id="edge23-headlabel" href="dir_000006_000018.html" title="1" alt="" coords="997,374,1007,389"/>
+<area shape="rect" id="node5" href="dir_ab1707a223f556ecfcdf825be4f6ce6c.html" title="bn128" alt="" coords="331,63,403,111"/>
+<area shape="rect" id="edge20-headlabel" href="dir_000009_000015.html" title="3" alt="" coords="995,250,1005,265"/>
+<area shape="rect" id="edge21-headlabel" href="dir_000009_000018.html" title="2" alt="" coords="999,355,1008,370"/>
+<area shape="rect" id="node6" href="dir_2d79aadfd4276ed8148e64d7a16dd53f.html" title="bw6_761" alt="" coords="539,63,619,111"/>
+<area shape="rect" id="edge6-headlabel" href="dir_000007_000015.html" title="3" alt="" coords="994,277,1004,291"/>
+<area shape="rect" id="edge7-headlabel" href="dir_000007_000018.html" title="1" alt="" coords="998,370,1007,385"/>
+<area shape="rect" id="node7" href="dir_2918ab91fc017b3c70d4beb7fc65537b.html" title="edwards" alt="" coords="229,63,307,111"/>
+<area shape="rect" id="edge4-headlabel" href="dir_000010_000015.html" title="3" alt="" coords="968,234,977,249"/>
+<area shape="rect" id="edge5-headlabel" href="dir_000010_000018.html" title="1" alt="" coords="978,334,987,348"/>
+<area shape="rect" id="node8" href="dir_ba7fcce3bf85c5a2b9d95d5b4ecaf512.html" title="mnt" alt="" coords="133,63,205,111"/>
+<area shape="rect" id="edge17-headlabel" href="dir_000008_000015.html" title="7" alt="" coords="951,229,960,244"/>
+<area shape="rect" id="node11" href="dir_0c1a8f5c643f92815ef0b8d4300b7f63.html" title="scalar_multiplication" alt="" coords="747,159,906,207"/>
+<area shape="rect" id="edge18-headlabel" href="dir_000008_000016.html" title="2" alt="" coords="726,143,736,157"/>
+<area shape="rect" id="edge19-headlabel" href="dir_000008_000018.html" title="2" alt="" coords="890,327,899,341"/>
+<area shape="rect" id="node9" href="dir_f44227b62f51ddd2e6c05facdd086fb9.html" title="profile" alt="" coords="37,63,109,111"/>
+<area shape="rect" id="edge10-headlabel" href="dir_000013_000004.html" title="2" alt="" coords="400,158,409,172"/>
+<area shape="rect" id="edge8-headlabel" href="dir_000013_000005.html" title="2" alt="" coords="513,142,522,157"/>
+<area shape="rect" id="edge9-headlabel" href="dir_000013_000018.html" title="2" alt="" coords="885,341,894,356"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000015_000018.html" title="3" alt="" coords="939,325,948,339"/>
+<area shape="rect" id="edge13-headlabel" href="dir_000016_000004.html" title="1" alt="" coords="507,147,516,162"/>
+<area shape="rect" id="edge11-headlabel" href="dir_000016_000015.html" title="1" alt="" coords="902,229,911,244"/>
+<area shape="rect" id="edge12-headlabel" href="dir_000016_000018.html" title="2" alt="" coords="920,323,929,338"/>
+<area shape="rect" id="edge14-headlabel" href="dir_000018_000015.html" title="2" alt="" coords="940,314,949,329"/>
+<area shape="rect" id="clust2" href="dir_dce61f35fe564f05f1bdcc0a1c649dfb.html" alt="" coords="27,52,725,217"/>
+<area shape="rect" id="clust1" href="dir_8f17be05df9a8aff7d7326a4703ec181.html" title="algebra" alt="" coords="16,16,736,228"/>
+</map>
