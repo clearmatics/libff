@@ -461,6 +461,14 @@ void fp_from_fp(Fp_model<wn, wmodulus> &wfp, const Fp_model<nn, nmodulus> &nfp)
     wfp = Fp_model<wn, wmodulus>(wint);
 }
 
+template<typename FieldT> void print_vector(const std::vector<FieldT> &v)
+{
+    for (size_t i = 0; i < v.size(); ++i) {
+        printf("[%2d]: ", (int)i);
+        v[i].print();
+    }
+}
+
 } // namespace libff
 
 #endif // FIELD_UTILS_TCC_
